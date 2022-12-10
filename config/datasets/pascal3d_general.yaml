@@ -1,0 +1,31 @@
+name: pascal3d_general
+class_name: nemo.datasets.pascal3d.Pascal3DPlus
+source: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+root_path: /mnt/sdc/wufei/data/PASCAL3D_NeMo_general
+occ_level: 0
+enable_cache: true
+subtypes: None
+weighted: true
+transforms:
+    - class_name: nemo.datasets.pascal3d.ToTensor
+
+single_mesh: true
+mesh_path: data/PASCAL3D+_release1.1/CAD_single
+training_only: false
+prepare_mode: first
+augment_by_dist: false
+pad_texture: false
+skip_occluded_data: true
+image_sizes:
+    aeroplane: [256, 256]
+    bicycle: [256, 256]
+    boat: [256, 256]
+    bottle: [256, 256]
+    bus: [256, 256]
+    car: [256, 256]
+    chair: [256, 256]
+    diningtable: [256, 256]
+    motorbike: [256, 256]
+    sofa: [256, 256]
+    train: [256, 256]
+    tvmonitor: [256, 256]

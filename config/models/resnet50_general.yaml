@@ -1,0 +1,25 @@
+name: resnet50general
+class_name: nemo.models.resnet.ResNetGeneral
+
+output_dim: 123
+num_bins: 41
+backbone: resnet50
+
+transforms:
+    - class_name: nemo.datasets.pascal3d.Normalize
+
+training:
+    loss:
+        class_name: torch.nn.CrossEntropyLoss
+        ignore_index: 41
+
+    optimizer:
+        class_name: torch.optim.SGD
+        lr: 0.01
+        momentum: 0.9
+        weight_decay: 0.0001
+
+    scheduler:
+        class_name: torch.optim.lr_scheduler.StepLR
+        step_size: 20
+        gamma: 0.1

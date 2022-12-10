@@ -28,6 +28,8 @@ class ResNetGeneral(BaseModel):
         else:
             model.fc = nn.Linear(512 * 4, self.output_dim)
         self.model = model.to(self.device)
+        if self.checkpoint is not None:
+            self.model.load_state_dict(self.checkpoint['state'])
 
         self.loss_func = construct_class_by_name(**self.training.loss).to(self.device)
         self.optim = construct_class_by_name(
@@ -71,24 +73,34 @@ class ResNetGeneral(BaseModel):
 
         return torch.from_numpy(targets)
 
+    def _prob_to_pose(self, prob):
+        pose_pred = np.argmax(prob.reshape(-1, 3, self.num_bins), axis=2).astype(np.float32)
+        pose_pred[:, 0] = (pose_pred[:, 0] + 0.5) * np.pi / (self.num_bins / 2.0)
+        pose_pred[:, 1] = (pose_pred[:, 1] - self.num_bins / 2.0) * np.pi / (self.num_bins / 2.0)
+        pose_pred[:, 2] = (pose_pred[:, 2] - self.num_bins / 2.0) * np.pi / (self.num_bins / 2.0)
+        return pose_pred
+
     def evaluate(self, sample):
         self.model.eval()
 
         img = sample['img'].to(self.device)
-        output = self.mdoel(img).detach().cpu().numpy()
+        output = self.model(img).detach().cpu().numpy()
 
-        img_flip = torch.clone(img)[::-1]
+        img_flip = torch.flip(img, dims=[3])
         output_flip = self.model(img_flip).detach().cpu().numpy()
 
-        azimuth = output_flip[0][:self.num_bins]
-        elevation = output_flip[0][self.num_bins:2*self.num_bins]
-        theta = output_flip[0][2*self.num_bins:3*self.num_bins]
-        output_flip = np.concatenate([azimuth[::-1], elevation, theta[::-1]]).reshape(1, self.num_bins * 3)
+        azimuth = output_flip[:, :self.num_bins]
+        elevation = output_flip[:, self.num_bins:2*self.num_bins]
+        theta = output_flip[:, 2*self.num_bins:3*self.num_bins]
+        output_flip = np.concatenate([azimuth[:, ::-1], elevation, theta[:, ::-1]], axis=1).reshape(-1, self.num_bins * 3)
 
         output = (output + output_flip) / 2.0
 
+        pose_pred = self._prob_to_pose(output)
+
         pred = {}
-        pred['output'] = output
+        pred['probabilities'] = output
+        pred['final'] = [{'azimuth': pose_pred[0, 0], 'elevation': pose_pred[0, 1], 'theta': pose_pred[0, 2]}]
 
         return pred
 

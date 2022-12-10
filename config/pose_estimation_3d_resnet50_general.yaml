@@ -1,0 +1,20 @@
+dataset: config/datasets/pascal3d_general.yaml
+model: config/models/resnet50_general.yaml
+
+task: 3d_pose_estimation
+
+training:
+    random_seed: 0
+    batch_size: 32
+    workers: 8
+    total_epochs: 90
+    log_interval: 1
+    ckpt_interval: 30
+    visualize_training_data: false
+
+inference:
+    random_seed: 0
+    loss: nemo.models.solve_pose.loss_fg_bg
+
+    search_translation: false
+    optimize_translation: false
