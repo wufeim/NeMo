@@ -244,7 +244,7 @@ def load_config(args, load_default_config=True, override=None, log_info=True):
     if load_default_config:
         config = Configuration(
             config_path,
-            default_config=os.path.join(nemo.utils.get_pkg_root(), "defaults/base.yml"),
+            default_config=os.path.join(nemo.utils.get_project_root(), "config/defaults.yaml"),
         )
     else:
         config = Configuration(config_path)

@@ -11,7 +11,7 @@ def inference_3d_pose_estimation(
 ):
     pose_errors = []
     for i, sample in enumerate(tqdm(dataloader, desc=f"{cfg.task}_{cfg.args.cate}")):
-        pred = model.predict(sample)
+        pred = model.evaluate(sample)
         pose_errors.append(pose_error(sample, pred["final"][0]))
     pose_errors = np.array(pose_errors)
 
