@@ -1,0 +1,394 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+
+<style type="text/css">
+body {
+    font-family: "Titillium Web", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: 300;
+    font-size: 17px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 980px;
+}
+h1 {
+    font-weight:300;
+    line-height: 1.15em;
+}
+h2 {
+    font-size: 1.75em;
+}
+a:link,a:visited {
+    color: #1367a7;
+    text-decoration: none;
+}
+a:hover {
+    color: #208799;
+}
+h1, h2, h3 {
+    text-align: center;
+}
+h1 {
+    font-size: 40px;
+    font-weight: 500;
+}
+h2 {
+    font-weight: 400;
+    margin: 16px 0px 4px 0px;
+}
+.paper-title {
+    padding: 16px 0px 16px 0px;
+}
+section {
+    margin: 32px 0px 32px 0px;
+    text-align: justify;
+    clear: both;
+}
+.col-6 {
+     width: 16.6%;
+     float: left;
+}
+.col-5 {
+     width: 20%;
+     float: left;
+}
+.col-4 {
+     width: 25%;
+     float: left;
+}
+.col-3 {
+     width: 33%;
+     float: left;
+}
+.col-2 {
+     width: 50%;
+     float: left;
+}
+.row, .author-row, .affil-row {
+     overflow: auto;
+}
+.author-row, .affil-row {
+    font-size: 20px;
+}
+.row {
+    margin: 16px 0px 16px 0px;
+}
+.authors {
+    font-size: 18px;
+}
+.affil-row {
+    margin-top: 16px;
+}
+.teaser {
+    max-width: 100%;
+}
+.text-center {
+    text-align: center;
+}
+.screenshot {
+    width: 196px;
+    border: 1px solid #ddd;
+}
+.screenshot-el {
+    margin-bottom: 16px;
+}
+hr {
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ddd;
+    margin: 0;
+}
+.material-icons {
+    vertical-align: -6px;
+}
+p {
+    line-height: 1.25em;
+}
+.caption {
+    font-size: 16px;
+    /*font-style: italic;*/
+    color: #666;
+    text-align: left;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+video {
+    display: block;
+    margin: auto;
+}
+figure {
+    display: block;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+#bibtex pre {
+    font-size: 14px;
+    background-color: #eee;
+    padding: 16px;
+}
+.blue {
+    color: #2c82c9;
+    font-weight: bold;
+}
+.orange {
+    color: #d35400;
+    font-weight: bold;
+}
+.flex-row {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+.paper-btn {
+  position: relative;
+  text-align: center;
+
+  display: inline-block;
+  margin: 8px;
+  padding: 8px 8px;
+
+  border-width: 0;
+  outline: none;
+  border-radius: 2px;
+
+  background-color: #1367a7;
+  color: #ecf0f1 !important;
+  font-size: 20px;
+  width: 100px;
+  font-weight: 600;
+}
+.supp-btn {
+  position: relative;
+  text-align: center;
+
+  display: inline-block;
+  margin: 8px;
+  padding: 8px 8px;
+
+  border-width: 0;
+  outline: none;
+  border-radius: 2px;
+
+  background-color: #1367a7;
+  color: #ecf0f1 !important;
+  font-size: 20px;
+  width: 150px;
+  font-weight: 600;
+}
+.paper-btn-parent {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0px;
+}
+.paper-btn:hover {
+    opacity: 0.85;
+}
+.container {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+.venue {
+    color: #1367a7;
+}
+.topnav {
+  overflow: hidden;
+  background-color: #EEEEEE;
+}
+.topnav a {
+  float: left;
+  color: black;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 16px;
+}
+</style>
+
+
+<div class="topnav" id="myTopnav">
+  <a href="https://www.nvidia.com/"><img height="21px" src="assets/jhu.png"></a>
+  <a href="https://nv-tlabs.github.io/" ><strong>Johns Hopkins University</strong></a>
+</div>
+
+<!-- End : Google Analytics Code -->
+<script type="text/javascript" src="../js/hidebib.js"></script>
+<link href='https://fonts.googleapis.com/css?family=Titillium+Web:400,600,400italic,600italic,300,300italic' rel='stylesheet' type='text/css'>
+<head>
+    <title>Neural Mesh Models for 3D Reasoning</title>
+    <meta property="og:description" content="Neural Mesh Models for 3D Reasoning"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+
+</head>
+
+
+ <body>
+<div class="container">
+    <div class="paper-title">
+      <h1>Neural Mesh Models for 3D Reasoning</h1>
+    </div>
+
+    <div id="authors">
+        <div class="author-row">
+            <div class="col-3 text-center"><a href="https://wufeim.github.io">Wufei Ma</a><sup>1,*</sup></div>
+            <div class="col-3 text-center"><a href="https://arturjssln.github.io">Artur Jesslen</a><sup>2,*</sup></div>
+            <div class="col-3 text-center"><a href="https://github.com/Angtian">Angtian Wang</a><sup>1,*</sup></div>
+            <div class="col-2 text-center"><a href="https://www.cs.jhu.edu/~ayuille/">Alan Yuille</a><sup>1</sup></div>
+            <div class="col-2 text-center"><a href="https://generativevision.mpi-inf.mpg.de">Adam Kortylewski</a><sup>2,3</sup></div>
+        </div>
+
+        <div class="affil-row">
+            <div class="col-3 text-center"><sup>1</sup>Johns Hopkins University</a></div>
+            <div class="col-3 text-center"><sup>2</sup>University of Freiburg</div>
+            <div class="col-3 text-center"><sup>3</sup>Max-Planck-Institute of Informatics</div>
+            <div class="col-1 text-center"><sup>*</sup>Equal contribution</div>
+        </div>
+
+        <!-- <div class="affil-row">
+            <div class="venue text-center"><b>NeurIPS 2022</b></div>
+        </div> -->
+
+        <div style="clear: both">
+            <div class="paper-btn-parent">
+            <a class="supp-btn" href="#paper">
+                <span class="material-icons"> description </span>
+                 Paper
+            </a>
+            </a>
+            <a class="supp-btn" href="#bibtex">
+                <span class="material-icons"> description </span>
+                  BibTeX
+            </a>
+            <a class="supp-btn" href="https://github.com/wufeim/NeMo">
+                <span class="material-icons"> description </span>
+                  Code
+            </a>
+        </div></div>
+    </div>
+
+    <section id="teaser">
+        <figure style="width: 100%;">
+            <a href="assets/teaser.png">
+                <img width="80%" src="assets/teaser.png" style="display: block; margin-left: auto; margin-right: auto;">
+            </a>
+            <p class="caption" style="margin-bottom: 1px;  text-align: justify">
+                We generate a 3D SDF and a texture field via two latent codes. We utilize DMTet to extract a 3D surface mesh from the SDF, and query the texture field at surface points to get colors. We train with adversarial losses defined on 2D images. In particular, we use a rasterization-based differentiable renderer to obtain RGB images and silhouettes. We utilize two 2D discriminators, each on RGB image, and silhouette, respectively, to classify whether the inputs are real or fake. The whole model is end-to-end trainable.
+            </p>
+        </figure>
+        <br>
+    </section>
+
+    <section id="abstract"/>
+        <h2>Abstract</h2>
+        <hr>
+        <p>
+            As several industries are moving towards modeling massive 3D virtual worlds, the need for content creation tools that can scale in terms of the quantity, quality, and diversity of 3D content is becoming evident. In our work, we aim to train performant 3D generative models that synthesize textured meshes which can be directly consumed by 3D rendering engines, thus immediately usable in downstream applications. Prior works on 3D generative modeling either lack geometric details, are limited in the mesh topology they can produce, typically do not support textures, or utilize neural renderers in the synthesis process, which makes their use in common 3D software non-trivial. In this work, we introduce GET3D, a Generative model that directly generates Explicit Textured 3D meshes with complex topology, rich geometric details, and high fidelity textures. We bridge recent success in the differentiable surface modeling, differentiable rendering as well as 2D Generative Adversarial Networks to train our model from 2D image collections. GET3D is able to generate high-quality 3D textured meshes, ranging from cars, chairs, animals, motorbikes and human characters to buildings, achieving significant improvements over previous methods.
+        </p>
+    </section>
+
+    <section id="results">
+
+        <h2>Features</h2>
+        <hr>
+
+        <figure style="width: 100%;">
+            <a href="assets/pose3d.gif">
+                <img width="100%" src="assets/pose3d.gif" style="display: block; margin-left: auto; margin-right: auto;">
+            </a>
+            <p class="caption" style="margin-bottom: 1px;  text-align: justify">
+                3D pose estimation.
+            </p>
+        </figure>
+
+    </section>
+
+    <section id="paper">
+        <h2>Paper</h2>
+        <hr>
+        <div class="flex-row">
+            <div style="box-sizing: border-box; padding: 16px; margin: auto;">
+                <a href="assets/nemo.pdf"><img class="screenshot" src="assets/nemo.jpg"></a>
+            </div>
+            <div style="width: 50%">
+                <p><b>NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation</b></p>
+                <p>Angtian Wang, Adam Kortylewski, Alan Yuille</p>
+                <p>ICLR 2021</p>
+                <div><span class="material-icons"> description </span><a href="assets/nemo.pdf"> PDF</a></div>
+                <div><span class="material-icons"> insert_comment </span><a href="assets/nemo_bib.txt"> BibTeX</a></div>
+            </div>
+        </div>
+        <div class="flex-row">
+            <div style="box-sizing: border-box; padding: 16px; margin: auto;">
+                <a href="assets/nemo6d.pdf"><img class="screenshot" src="assets/nemo6d.jpg"></a>
+            </div>
+            <div style="width: 50%">
+                <p><b>Robust Category-Level 6D Pose Estimation with Coarse-to-Fine Rendering of Neural Features</b></p>
+                <p>Wufei Ma, Angtian Wang, Adam Kortylewski, Alan Yuille</p>
+                <p>ECCV 2022</p>
+                <div><span class="material-icons"> description </span><a href="assets/nemo6d.pdf"> PDF</a></div>
+                <div><span class="material-icons"> insert_comment </span><a href="assets/nemo6d_bib.txt"> BibTeX</a></div>
+            </div>
+        </div>
+    </section>
+
+
+    <section id="bibtex">
+        <h2>Citation</h2>
+        <hr>
+
+        <pre><code>@inproceedings{wang2021nemo,
+    title={NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation},
+    author={Angtian Wang and Adam Kortylewski and Alan Yuille},
+    booktitle={International Conference on Learning Representations},
+    year={2021},
+    url={https://openreview.net/forum?id=pmj131uIL9H}
+}
+@software{nemo_code_2022,
+    title={Neural Mesh Models for 3D Reasoning},
+    author={Ma, Wufei and Jesslen, Artur and Wang, Angtian},
+    month={12},
+    year={2022},
+    url={https://github.com/wufeim/NeMo},
+    version={1.0.0}
+}
+</code></pre>
+
+    </section>
+
+        <section id="bibtex">
+        <h2>Further Information</h2>
+        <hr>
+        <p>
+            This repo builds upon several previous works:
+            <ul>
+                <li><a href="https://openreview.net/forum?id=pmj131uIL9H">NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation (ICLR 2021)</a></li>
+                <li><a href="https://link.springer.com/chapter/10.1007/978-3-031-20077-9_29">Robust Category-Level 6D Pose Estimation with Coarse-to-Fine Rendering of Neural Features (ECCV 2022)</a></li>
+            </ul>
+
+        </p>
+        <p>
+
+             Please also consider citing these papers if you follow our work.
+        </p>
+        <pre><code>@inproceedings{wang2021nemo,
+    title={NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation},
+    author={Angtian Wang and Adam Kortylewski and Alan Yuille},
+    booktitle={International Conference on Learning Representations},
+    year={2021},
+    url={https://openreview.net/forum?id=pmj131uIL9H}
+}</code></pre>
+
+    </section>
+
+<br />
+
+</div>
+</body>
+</html>
