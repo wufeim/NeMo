@@ -9,7 +9,7 @@ requirements = []
 setup(
     author="Wufei Ma, Artur Jesslen",
     author_email="wufeim@gmail.com",
-    name="nemo",
+    name="neural_mesh_model",
     version="1.0.0",
     python_requires=">=3.6",
     classifiers=[

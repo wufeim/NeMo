@@ -2,14 +2,11 @@
 NeMo Extensions
 ===============
 
-.. image:: https://img.shields.io/pypi/v/nemo.svg
-        :target: https://pypi.python.org/pypi/nemo
+.. image:: https://img.shields.io/pypi/v/neural-mesh-model.svg
+        :target: https://pypi.python.org/pypi/neural-mesh-model
 
-.. image:: https://img.shields.io/travis/wufeim/nemo.svg
-        :target: https://travis-ci.com/wufeim/nemo
-
-.. image:: https://readthedocs.org/projects/nemo/badge/?version=latest
-        :target: https://nemo.readthedocs.io/en/latest/?version=latest
+.. image:: https://readthedocs.org/projects/neural-mesh-model/badge/?version=latest
+        :target: https://neural-mesh-model.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
 Neural mesh models for 3D reasoning.
