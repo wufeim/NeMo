@@ -97,57 +97,47 @@ In Progress
 Models
 ^^^^^^
 
-[x] NeMo (Shipped: *Dec 08 2022*)
-
-[x] NeMo-6D (Shipped: *Dec 09 2022*)
-
-[x] ResNet50-General (Shipped: *Dec 09 2022*)
-
-[  ] NeMo-Cls
-
-[  ] Domain adaptation (from synthetic to real)
-
-[  ] StarMap
-
-[  ] PASCAL3D-Specific
-
-[  ] Faster R-CNN
-
-[  ] Mask R-CNN
-
-[  ] Transformers
-
-[  ] VoGe Renderer
+[x] NeMo (Shipped: *Dec 08 2022*) :raw-html:`<br />`
+[x] NeMo-6D (Shipped: *Dec 09 2022*) :raw-html:`<br />`
+[x] ResNet50-General (Shipped: *Dec 09 2022*) :raw-html:`<br />`
+[ ] NeMo-Cls :raw-html:`<br />`
+[ ] Domain adaptation (from synthetic to real) :raw-html:`<br />`
+[ ] StarMap :raw-html:`<br />`
+[ ] PASCAL3D-Specific :raw-html:`<br />`
+[ ] Faster R-CNN :raw-html:`<br />`
+[ ] Mask R-CNN :raw-html:`<br />`
+[ ] Transformers :raw-html:`<br />`
+[ ] VoGe Renderer
 
 Datasets
 ^^^^^^^^
 
-✔️ PASCAL3D+ (Shipped: *Dec 06 2022*)
+[x] PASCAL3D+ (Shipped: *Dec 06 2022*)
 
-✔️ Occluded PASCAL3D+ (Shipped: *Dec 06 2022*)
+[x] Occluded PASCAL3D+ (Shipped: *Dec 06 2022*)
 
-✔️ 6D training data (Shipped: *Dec 07 2022*)
+[x] 6D training data (Shipped: *Dec 07 2022*)
 
-🔲 OOD-CV
+[ ] OOD-CV
 
-🔲 SyntheticPASCAL3D+
+[ ] SyntheticPASCAL3D+
 
-🔲 ObjectNet3D
+[ ] ObjectNet3D
 
 Misc
 ^^^^
 
-✔️ Rewrite training and evaluate entry point (Shipped: _Dec 11 2022_)
+[x] Rewrite training and evaluate entry point (Shipped: *Dec 11 2022*)
 
-✔️ Project page (Shipped: _Dec 11 2022_)
+[x] Project page (Shipped: *Dec 11 2022*)
 
-🔲 Configuration hierarchy
+[ ] Configuration hierarchy
 
-🔲 Visualization tools
+[ ] Visualization tools
 
-🔲 Inference demo
+[ ] Inference demo
 
-🔲 Save predictions for reuse
+[ ] Save predictions for reuse
 
 Citation
 --------
