@@ -1,6 +1,6 @@
-===============
-NeMo Extensions
-===============
+====
+NeMo
+====
 
 .. image:: https://img.shields.io/pypi/v/neural-mesh-model.svg
         :target: https://pypi.python.org/pypi/neural-mesh-model
