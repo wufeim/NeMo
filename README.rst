@@ -94,19 +94,20 @@ See `data/README </data>`_.
 In Progress
 -----------
 
-**Models**
+Models
+^^^^^^
 
-✔️ NeMo (Shipped: _Dec 08 2022_)
+[x] NeMo (Shipped: _Dec 08 2022_)
 
-✔️ NeMo-6D (Shipped: _Dec 09 2022_)
+[x] NeMo-6D (Shipped: _Dec 09 2022_)
 
-✔️ ResNet50-General (Shipped: _Dec 09 2022_)
+[x] ResNet50-General (Shipped: _Dec 09 2022_)
 
-🔲 NeMo-Cls
+[ ] NeMo-Cls
 
-🔲 Domain adaptation (from synthetic to real)
+[ ] Domain adaptation (from synthetic to real)
 
-🔲 StarMap
+[ ] StarMap
 
 🔲 PASCAL3D-Specific
 
