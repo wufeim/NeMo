@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 from nemo.models.base_model import BaseModel
+from nemo.models.feature_banks import mask_remove_near
 from nemo.models.mesh_interpolate_module import MeshInterpolateModule
 from nemo.models.solve_pose import pre_compute_kp_coords
 from nemo.models.solve_pose import solve_pose
@@ -43,6 +44,8 @@ class NeMo(BaseModel):
         self.training_params = training
         self.inference_params = inference
 
+        self.accumulate_steps = 0
+
         self.build()
 
     def build(self):
@@ -53,30 +56,92 @@ class NeMo(BaseModel):
 
     def _build_train(self):
         self.n_gpus = torch.cuda.device_count()
-        if self.training.separate_bank:
+        if self.training_params.separate_bank:
             self.ext_gpu = f"cuda:{self.n_gpus-1}"
         else:
             self.ext_gpu = ""
 
         net = construct_class_by_name(**self.net_params)
-        if self.training.separate_bank:
+        if self.training_params.separate_bank:
             self.net = nn.DataParallel(net, device_ids=[i for i in range(self.n_gpus - 1)]).cuda()
         else:
             self.net = nn.DataParallel(net).cuda()
 
         self.num_verts = load_off(self.mesh_path)[0].shape[0]
         memory_bank = construct_class_by_name(
-            **self.memory_bank,
+            **self.memory_bank_params,
             output_size=self.num_verts+self.num_noise*self.max_group,
             num_pos=self.num_verts,
             num_noise=self.num_noise)
-        if self.training.separate_bank:
+        if self.training_params.separate_bank:
             self.memory_bank = memory_bank.cuda(self.ext_gpu)
         else:
             self.memory_bank = memory_bank.cuda()
 
         self.optim = construct_class_by_name(
-            **self.training.optimizer, params=self.model.parameters())
+            **self.training_params.optimizer, params=self.net.parameters())
+        self.scheduler = construct_class_by_name(
+            **self.training_params.scheduler, optimizer=self.optim)
+
+    def step_scheduler(self):
+        self.scheduler.step()
+
+    def train(self, sample):
+        self.net.train()
+
+        img = sample['img'].cuda()
+        kp = sample['kp'].cuda()
+        kpvis = sample["kpvis"].cuda().type(torch.bool)
+        obj_mask = sample["obj_mask"].cuda()
+        index = torch.Tensor([[k for k in range(self.num_verts)]] * img.shape[0]).cuda()
+
+        features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask)
+
+        if self.training_params.separate_bank:
+            get, y_idx, noise_sim = self.memory_bank(
+                features.to(self.ext_gpu), index.to(self.ext_gpu), kpvis.to(self.ext_gpu)
+            )
+        else:
+            get, y_idx, noise_sim = self.memory_bank(features, index, kpvis)
+
+        get /= self.training_params.T
+
+        mask_distance_legal = mask_remove_near(
+            kp,
+            thr=self.training_params.distance_thr
+            * torch.ones((img.shape[0],), dtype=torch.float32).cuda(),
+            num_neg=self.num_noise * self.max_group,
+            dtype_template=get,
+            neg_weight=self.training_params.weight_noise,
+        )
+
+        loss_main = nn.CrossEntropyLoss(reduction="none").cuda()(
+            (get.view(-1, get.shape[2]) - mask_distance_legal.view(-1, get.shape[2]))[
+                kpvis.view(-1), :
+            ],
+            y_idx.view(-1)[kpvis.view(-1)],
+        )
+        loss_main = torch.mean(loss_main)
+
+        if self.num_noise > 0:
+            loss_reg = torch.mean(noise_sim) * self.training_params.loss_reg_weight
+            loss = loss_main + loss_reg
+        else:
+            loss_reg = torch.zeros(1)
+            loss = loss_main
+
+        loss.backward()
+
+        self.accumulate_steps += 1
+        if self.accumulate_steps % self.training_params.train_accumulate == 0:
+            self.optim.step()
+            self.optim.zero_grad()
+
+        self.loss_trackers['loss'].append(loss.item())
+        self.loss_trackers['loss_main'].append(loss_main.item())
+        self.loss_trackers['loss_reg'].append(loss_reg.item())
+
+        return {'loss': loss.item(), 'loss_main': loss_main.item(), 'loss_reg': loss_reg.item()}
 
     def _build_inference(self):
         self.net = construct_class_by_name(**self.net_params)
@@ -178,3 +243,12 @@ class NeMo(BaseModel):
             pred["pose_error"] = pose_error(sample, pred["final"][0])
 
         return pred
+
+    def get_ckpt(self, **kwargs):
+        ckpt = {}
+        ckpt['state'] = self.net.state_dict()
+        ckpt['memory'] = self.memory_bank.memory
+        ckpt['lr'] = self.optim.param_groups[0]['lr']
+        for k in kwargs:
+            ckpt[k] = kwargs[k]
+        return ckpt

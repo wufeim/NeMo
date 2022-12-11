@@ -14,7 +14,3 @@ training:
 
 inference:
     random_seed: 0
-    loss: nemo.models.solve_pose.loss_fg_bg
-
-    search_translation: false
-    optimize_translation: false
