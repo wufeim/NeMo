@@ -96,27 +96,27 @@ In Progress
 
 **Models**
 
-☑ NeMo (Shipped: _Dec 08 2022_)
+✔️ NeMo (Shipped: _Dec 08 2022_)
 
-☑ NeMo-6D (Shipped: _Dec 09 2022_)
+✔️ NeMo-6D (Shipped: _Dec 09 2022_)
 
-☑ ResNet50-General (Shipped: _Dec 09 2022_)
+✔️ ResNet50-General (Shipped: _Dec 09 2022_)
 
-☐ NeMo-Cls
+🔲 NeMo-Cls
 
-☐ Domain adaptation (from synthetic to real)
+🔲 Domain adaptation (from synthetic to real)
 
-☐ StarMap
+🔲 StarMap
 
-☐ PASCAL3D-Specific
+🔲 PASCAL3D-Specific
 
-☐ Faster R-CNN
+🔲 Faster R-CNN
 
-☐ Mask R-CNN
+🔲 Mask R-CNN
 
-☐ Transformers
+🔲 Transformers
 
-☐ VoGe Renderer
+🔲 VoGe Renderer
 
 **Datasets**
 
