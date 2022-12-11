@@ -14,35 +14,41 @@ Neural mesh models for 3D reasoning.
 Features
 --------
 
-Models
-^^^^^^
+Easily train and evaluate neural mesh models on multiple tasks (3D pose estimation, 6D pose estimation, etc.):
 
-- Original NeMo (3D pose estimation)
-- 3D aware classification NeMo (3D pose estimation and classification)
-- 6D pose estimation NeMo
-- (Deformable NeMo ?)
+.. code::
 
-Baselines
-^^^^^^^^^
+   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
+       --cate car \
+       --config config/pose_estimation_3d_nemo.yaml \
+       --save_dir exp/pose_estimation_3d_nemo_car
 
-- ResNet50
-- Starmap
-- Transformer
-- Faster RCNN
+   CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
+       --cate car \
+       --config config/pose_estimation_3d_nemo.yaml \
+       --save_dir exp/pose_estimation_3d_nemo_car \
+       --checkpoint exp/pose_estimation_3d_nemo_car/ckpts/model_800.pth
 
-Datasets
-^^^^^^^^
+Reproduce baseline models (regression-based models, StarMap, etc.) for fair comparison:
 
-- OOD-CV
-- Pascal3D+
-- (Synthetic data ?)
-- (ObjectNet ?)
+.. code::
 
-Requirements
+   CUDA_VISIBLE_DEVICES=0 python3 scripts/train.py \
+       --cate all \
+       --config config/pose_estimation_3d_resnet50_general.yaml \
+       --save_dir exp/pose_estimation_3d_resnet50_general_car
+
+   CUDA_VISIBLE_DEVICES=1 python3 scripts/inference.py \
+       --cate car \
+       --config config/pose_estimation_3d_resnet50_general.yaml \
+       --save_dir exp/pose_estimation_3d_resnet50_general \
+       --checkpoint exp/pose_estimation_3d_resnet50_general/ckpts/model_90.pth
+
+Installation
 ------------
 
-Python Environment
-^^^^^^^^^^^^^^^^^^
+Environment
+^^^^^^^^^^^
 
 1. Create :code:`conda` environment:
 
@@ -85,9 +91,69 @@ Data Preparation
 
 See `data/README </data>`_.
 
-TODO
-----
+In Progress
+-----------
 
-- [ ] Add support for VoGe Renderer
-- [ ] Add support for multiple GPUs support
-- [ ] Add support for some visualizations
+**Done**
+
+  - [x] NeMo (Shipped: _Dec 08 2022_)
+  - [x] NeMo-6D (Shipped: _Dec 09 2022_)
+  - [x] ResNet50-General (Shipped: _Dec 09 2022_)
+  - [x] Rewrite training and evaluate entry point (Shipped: _Dec 11 2022_)
+  - [x] Project page (Shipped: _Dec 11 2022_)
+
+**Models**
+
+  - [ ] Add NeMo-Cls
+  - [ ] Domain adaptation (from synthetic to real)
+  - [ ] Add StarMap
+  - [ ] Add PASCAL3D-Specific
+  - [ ] Add Faster R-CNN
+  - [ ] Add Mask R-CNN
+  - [ ] Add transformers
+  - [ ] VoGe Renderer
+
+**Datasets**
+
+  - [x] PASCAL3D+ (Shipped: _Dec 06 2022_)
+  - [x] Occluded PASCAL3D+ (Shipped: _Dec 06 2022_)
+  - [x] 6D training data (Shipped: _Dec 07 2022_)
+  - [ ] OOD-CV
+  - [ ] SyntheticPASCAL3D+
+  - [ ] ObjectNet3D
+
+**Misc.**
+
+  - [ ] Configuration hierarchy
+  - [ ] Visualization tools
+  - [ ] Inference demo
+  - [ ] Save predictions for reuse
+
+Citation
+--------
+
+.. code::
+
+   @inproceedings{wang2021nemo,
+      title={NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation},
+      author={Angtian Wang and Adam Kortylewski and Alan Yuille},
+      booktitle={International Conference on Learning Representations},
+      year={2021},
+      url={https://openreview.net/forum?id=pmj131uIL9H}
+   }
+   @software{nemo_code_2022,
+      title={Neural Mesh Models for 3D Reasoning},
+      author={Ma, Wufei and Jesslen, Artur and Wang, Angtian},
+      month={12},
+      year={2022},
+      url={https://github.com/wufeim/NeMo},
+      version={1.0.0}
+   }
+
+Further Information
+-------------------
+
+This repo builds upon several previous works:
+
+* `NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation (ICLR 2021) <https://openreview.net/forum?id=pmj131uIL9H>`_
+* `Robust Category-Level 6D Pose Estimation with Coarse-to-Fine Rendering of Neural Features (ECCV 2022) <https://link.springer.com/chapter/10.1007/978-3-031-20077-9_29>`_
