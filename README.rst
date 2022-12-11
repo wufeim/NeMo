@@ -29,7 +29,7 @@ Features
 * OOD-CV
 * SyntheticPASCAL3D+
 
-**Reproduce baseline models for fair comparison.**
+**Reproduce baseline models for fair comparison:**
 
 * Regression-based models (ResNet50, Faster R-CNN, etc.)
 * Transformers
@@ -71,11 +71,16 @@ Environment
    conda install -c conda-forge timm tqdm pyyaml transformers
    pip install wget gdown BboxTools opencv-python
 
-2. Install NeMo-Extensions:
+5. Install NeMo-Extensions:
 
 .. code::
 
    pip install -e .
+
+Data Preparation
+^^^^^^^^^^^^^^^^
+
+See `data/README </data>`_.
 
 Quick Start
 -----------
@@ -109,11 +114,6 @@ Train and evaluate a regression-based model (:code:`ResNet50-General`) on PASCAL
        --config config/pose_estimation_3d_resnet50_general.yaml \
        --save_dir exp/pose_estimation_3d_resnet50_general \
        --checkpoint exp/pose_estimation_3d_resnet50_general/ckpts/model_90.pth
-
-Data Preparation
-^^^^^^^^^^^^^^^^
-
-See `data/README </data>`_.
 
 Roadmap
 -----------
