@@ -96,11 +96,15 @@ In Progress
 
 **Done**
 
-  - [x] NeMo (Shipped: _Dec 08 2022_)
-  - [x] NeMo-6D (Shipped: _Dec 09 2022_)
-  - [x] ResNet50-General (Shipped: _Dec 09 2022_)
-  - [x] Rewrite training and evaluate entry point (Shipped: _Dec 11 2022_)
-  - [x] Project page (Shipped: _Dec 11 2022_)
+  ✅ NeMo (Shipped: _Dec 08 2022_)
+
+  ✅ NeMo-6D (Shipped: _Dec 09 2022_)
+
+  ✅ ResNet50-General (Shipped: _Dec 09 2022_)
+
+  ✅ Rewrite training and evaluate entry point (Shipped: _Dec 11 2022_)
+
+  ✅ Project page (Shipped: _Dec 11 2022_)
 
 **Models**
 
