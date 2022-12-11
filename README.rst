@@ -94,28 +94,29 @@ See `data/README </data>`_.
 In Progress
 -----------
 
-**Done**
-
-  ✅ NeMo (Shipped: _Dec 08 2022_)
-
-  ✅ NeMo-6D (Shipped: _Dec 09 2022_)
-
-  ✅ ResNet50-General (Shipped: _Dec 09 2022_)
-
-  ✅ Rewrite training and evaluate entry point (Shipped: _Dec 11 2022_)
-
-  ✅ Project page (Shipped: _Dec 11 2022_)
-
 **Models**
 
-  - [ ] Add NeMo-Cls
-  - [ ] Domain adaptation (from synthetic to real)
-  - [ ] Add StarMap
-  - [ ] Add PASCAL3D-Specific
-  - [ ] Add Faster R-CNN
-  - [ ] Add Mask R-CNN
-  - [ ] Add transformers
-  - [ ] VoGe Renderer
+☑ NeMo (Shipped: _Dec 08 2022_)
+
+☑ NeMo-6D (Shipped: _Dec 09 2022_)
+
+☑ ResNet50-General (Shipped: _Dec 09 2022_)
+
+☐ NeMo-Cls
+
+☐ Domain adaptation (from synthetic to real)
+
+☐ StarMap
+
+☐ PASCAL3D-Specific
+
+☐ Faster R-CNN
+
+☐ Mask R-CNN
+
+☐ Transformers
+
+☐ VoGe Renderer
 
 **Datasets**
 
@@ -127,6 +128,10 @@ In Progress
   - [ ] ObjectNet3D
 
 **Misc.**
+
+☑ Rewrite training and evaluate entry point (Shipped: _Dec 11 2022_)
+
+☑ Project page (Shipped: _Dec 11 2022_)
 
   - [ ] Configuration hierarchy
   - [ ] Visualization tools
