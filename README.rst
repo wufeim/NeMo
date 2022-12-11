@@ -72,7 +72,7 @@ Python Environment
    conda install numpy matplotlib scipy scikit-image
    conda install pillow
    conda install -c conda-forge timm tqdm pyyaml transformers
-   pip install wget BboxTools opencv-python
+   pip install wget gdown BboxTools opencv-python
 
 2. Install NeMo-Extensions:
 
