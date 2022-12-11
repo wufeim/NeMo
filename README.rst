@@ -14,35 +14,26 @@ Neural mesh models for 3D reasoning.
 Features
 --------
 
-Easily train and evaluate neural mesh models on multiple tasks (3D pose estimation, 6D pose estimation, etc.):
+**Easily train and evaluate neural mesh models for multiple tasks:**
 
-.. code::
+* 3D pose estimation
+* 6D poes estimation
+* 3D-aware image classification
+* Amodal segmenation
 
-   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
-       --cate car \
-       --config config/pose_estimation_3d_nemo.yaml \
-       --save_dir exp/pose_estimation_3d_nemo_car
+**Experiment on various benchmark datasets:**
 
-   CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
-       --cate car \
-       --config config/pose_estimation_3d_nemo.yaml \
-       --save_dir exp/pose_estimation_3d_nemo_car \
-       --checkpoint exp/pose_estimation_3d_nemo_car/ckpts/model_800.pth
+* PASCAL3D+
+* Occluded PASCAL3D+
+* ObjectNet3D
+* OOD-CV
+* SyntheticPASCAL3D+
 
-Reproduce baseline models (regression-based models, StarMap, etc.) for fair comparison:
+**Reproduce baseline models for fair comparison.**
 
-.. code::
-
-   CUDA_VISIBLE_DEVICES=0 python3 scripts/train.py \
-       --cate all \
-       --config config/pose_estimation_3d_resnet50_general.yaml \
-       --save_dir exp/pose_estimation_3d_resnet50_general_car
-
-   CUDA_VISIBLE_DEVICES=1 python3 scripts/inference.py \
-       --cate car \
-       --config config/pose_estimation_3d_resnet50_general.yaml \
-       --save_dir exp/pose_estimation_3d_resnet50_general \
-       --checkpoint exp/pose_estimation_3d_resnet50_general/ckpts/model_90.pth
+* Regression-based models (ResNet50, Faster R-CNN, etc.)
+* Transformers
+* StarMap
 
 Installation
 ------------
@@ -86,12 +77,45 @@ Environment
 
    pip install -e .
 
+Quick Start
+-----------
+
+Train and evaluate a neural mesh model (:code:`NeMo`) on PASCAL3D+ for 3D pose estimation:
+
+.. code::
+
+   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
+       --cate car \
+       --config config/pose_estimation_3d_nemo.yaml \
+       --save_dir exp/pose_estimation_3d_nemo_car
+
+   CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
+       --cate car \
+       --config config/pose_estimation_3d_nemo.yaml \
+       --save_dir exp/pose_estimation_3d_nemo_car \
+       --checkpoint exp/pose_estimation_3d_nemo_car/ckpts/model_800.pth
+
+Train and evaluate a regression-based model (:code:`ResNet50-General`) on PASCAL3D+ for 3D pose estimation:
+
+.. code::
+
+   CUDA_VISIBLE_DEVICES=0 python3 scripts/train.py \
+       --cate all \
+       --config config/pose_estimation_3d_resnet50_general.yaml \
+       --save_dir exp/pose_estimation_3d_resnet50_general_car
+
+   CUDA_VISIBLE_DEVICES=1 python3 scripts/inference.py \
+       --cate car \
+       --config config/pose_estimation_3d_resnet50_general.yaml \
+       --save_dir exp/pose_estimation_3d_resnet50_general \
+       --checkpoint exp/pose_estimation_3d_resnet50_general/ckpts/model_90.pth
+
 Data Preparation
 ^^^^^^^^^^^^^^^^
 
 See `data/README </data>`_.
 
-In Progress
+Roadmap
 -----------
 
 Models
