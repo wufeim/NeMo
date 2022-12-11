@@ -1,0 +1,42 @@
+name: pascal3d
+class_name: nemo.datasets.pascal3d.Pascal3DPlus
+root_path: data/PASCAL3D_NeMo
+
+pascal3d_raw_path: data/PASCAL3D+_release1.1
+pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+pascal3d_occ_raw_path: data/OccludedPASCAL3D
+pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+dtd_raw_path: data/dtd
+image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+mesh_path: data/PASCAL3D+_release1.1/CAD_single
+
+pad_texture: false
+single_mesh: true
+training_only: false
+augment_by_dist: false
+prepare_mode: first
+
+occ_levels:
+    train: [0]
+    val: [0, 1, 2, 3]
+
+image_sizes:
+    aeroplane: [320, 672]
+    bicycle: [608, 608]
+    boat: [384, 672]
+    bottle: [480, 800]
+    bus: [320, 736]
+    chair: [608, 384]
+    car: [256, 672]
+    diningtable: [384, 800]
+    motorbike: [512, 512]
+    sofa: [352, 736]
+    train: [256, 608]
+    tvmonitor: [480, 448]
+
+occ_level: 0
+enable_cache: true
+subtypes: None
+weighted: true
+transforms:
+    - class_name: nemo.datasets.pascal3d.ToTensor
