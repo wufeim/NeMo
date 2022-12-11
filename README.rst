@@ -97,8 +97,8 @@ In Progress
 Models
 ^^^^^^
 
-[x] NeMo (Shipped: *Dec 08 2022*) :raw-html:`<br />`
-[x] NeMo-6D (Shipped: *Dec 09 2022*) :raw-html:`<br />`
+[x] NeMo (Shipped: *Dec 08 2022*) <br />
+[x] NeMo-6D (Shipped: *Dec 09 2022*) <br />
 [x] ResNet50-General (Shipped: *Dec 09 2022*) :raw-html:`<br />`
 [ ] NeMo-Cls :raw-html:`<br />`
 [ ] Domain adaptation (from synthetic to real) :raw-html:`<br />`
