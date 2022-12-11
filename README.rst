@@ -120,23 +120,31 @@ In Progress
 
 **Datasets**
 
-  - [x] PASCAL3D+ (Shipped: _Dec 06 2022_)
-  - [x] Occluded PASCAL3D+ (Shipped: _Dec 06 2022_)
-  - [x] 6D training data (Shipped: _Dec 07 2022_)
-  - [ ] OOD-CV
-  - [ ] SyntheticPASCAL3D+
-  - [ ] ObjectNet3D
+✔️ PASCAL3D+ (Shipped: _Dec 06 2022_)
+
+✔️ Occluded PASCAL3D+ (Shipped: _Dec 06 2022_)
+
+✔️ 6D training data (Shipped: _Dec 07 2022_)
+
+🔲 OOD-CV
+
+🔲 SyntheticPASCAL3D+
+
+🔲 ObjectNet3D
 
 **Misc.**
 
-☑ Rewrite training and evaluate entry point (Shipped: _Dec 11 2022_)
+✔️ Rewrite training and evaluate entry point (Shipped: _Dec 11 2022_)
 
-☑ Project page (Shipped: _Dec 11 2022_)
+✔️ Project page (Shipped: _Dec 11 2022_)
 
-  - [ ] Configuration hierarchy
-  - [ ] Visualization tools
-  - [ ] Inference demo
-  - [ ] Save predictions for reuse
+🔲 Configuration hierarchy
+
+🔲 Visualization tools
+
+🔲 Inference demo
+
+🔲 Save predictions for reuse
 
 Citation
 --------
