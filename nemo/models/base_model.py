@@ -35,7 +35,7 @@ class BaseModel:
     def get_training_state(self):
         state_msg = f'lr={self.optim.param_groups[0]["lr"]:.5f}'
         for l in self.loss_names:
-            state_msg += f' {l}={np.mean(self.loss_trackers[l])}'
+            state_msg += f' {l}={np.mean(self.loss_trackers[l]):.5f}'
             self.loss_trackers[l] = []
         return state_msg
 
