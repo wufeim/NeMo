@@ -97,35 +97,36 @@ In Progress
 Models
 ^^^^^^
 
-[x] NeMo (Shipped: _Dec 08 2022_)
+[x] NeMo (Shipped: *Dec 08 2022*)
 
-[x] NeMo-6D (Shipped: _Dec 09 2022_)
+[x] NeMo-6D (Shipped: *Dec 09 2022*)
 
-[x] ResNet50-General (Shipped: _Dec 09 2022_)
+[x] ResNet50-General (Shipped: *Dec 09 2022*)
 
-[ ] NeMo-Cls
+[  ] NeMo-Cls
 
-[ ] Domain adaptation (from synthetic to real)
+[  ] Domain adaptation (from synthetic to real)
 
-[ ] StarMap
+[  ] StarMap
 
-🔲 PASCAL3D-Specific
+[  ] PASCAL3D-Specific
 
-🔲 Faster R-CNN
+[  ] Faster R-CNN
 
-🔲 Mask R-CNN
+[  ] Mask R-CNN
 
-🔲 Transformers
+[  ] Transformers
 
-🔲 VoGe Renderer
+[  ] VoGe Renderer
 
-**Datasets**
+Datasets
+^^^^^^^^
 
-✔️ PASCAL3D+ (Shipped: _Dec 06 2022_)
+✔️ PASCAL3D+ (Shipped: *Dec 06 2022*)
 
-✔️ Occluded PASCAL3D+ (Shipped: _Dec 06 2022_)
+✔️ Occluded PASCAL3D+ (Shipped: *Dec 06 2022*)
 
-✔️ 6D training data (Shipped: _Dec 07 2022_)
+✔️ 6D training data (Shipped: *Dec 07 2022*)
 
 🔲 OOD-CV
 
@@ -133,7 +134,8 @@ Models
 
 🔲 ObjectNet3D
 
-**Misc.**
+Misc
+^^^^
 
 ✔️ Rewrite training and evaluate entry point (Shipped: _Dec 11 2022_)
 
