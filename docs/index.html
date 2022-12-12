@@ -279,7 +279,7 @@ figure {
                 <img width="80%" src="assets/teaser.png" style="display: block; margin-left: auto; margin-right: auto;">
             </a>
             <p class="caption" style="margin-bottom: 1px;  text-align: justify">
-                We generate a 3D SDF and a texture field via two latent codes. We utilize DMTet to extract a 3D surface mesh from the SDF, and query the texture field at surface points to get colors. We train with adversarial losses defined on 2D images. In particular, we use a rasterization-based differentiable renderer to obtain RGB images and silhouettes. We utilize two 2D discriminators, each on RGB image, and silhouette, respectively, to classify whether the inputs are real or fake. The whole model is end-to-end trainable.
+                We propose neural mesh models (NeMo) that learns a generative model of nueral feature activiations at each vertex on a dense 3D mesh. Using differentiable rendering we solve 3D objects by minimizing the reconstruction error between a predicted feature representation and a representation rendered from an estimated 3D scene.
             </p>
         </figure>
         <br>
@@ -289,12 +289,11 @@ figure {
         <h2>Abstract</h2>
         <hr>
         <p>
-            As several industries are moving towards modeling massive 3D virtual worlds, the need for content creation tools that can scale in terms of the quantity, quality, and diversity of 3D content is becoming evident. In our work, we aim to train performant 3D generative models that synthesize textured meshes which can be directly consumed by 3D rendering engines, thus immediately usable in downstream applications. Prior works on 3D generative modeling either lack geometric details, are limited in the mesh topology they can produce, typically do not support textures, or utilize neural renderers in the synthesis process, which makes their use in common 3D software non-trivial. In this work, we introduce GET3D, a Generative model that directly generates Explicit Textured 3D meshes with complex topology, rich geometric details, and high fidelity textures. We bridge recent success in the differentiable surface modeling, differentiable rendering as well as 2D Generative Adversarial Networks to train our model from 2D image collections. GET3D is able to generate high-quality 3D textured meshes, ranging from cars, chairs, animals, motorbikes and human characters to buildings, achieving significant improvements over previous methods.
+            Our work is built on feature-level render-and-compare methods, which approximate the analysis-by-synthesis approaches in computer vision. Analysis-by-synthesis approaches have several advantages over purely discriminative methods as it enables efficient learning and largely enhances robustness in image classification, pose estimation, and scene understanding, as well as when objects are viewed from unseen 3D poses. We propose neural mesh models (NeMo) that learns a generative model of nueral feature activiations at each vertex on a dense 3D mesh. Using differentiable rendering we solve 3D objects by minimizing the reconstruction error between a predicted feature representation and a representation rendered from an estimated 3D scene. This codebase implements <a href="#paper">multiple previous works</a> on neural mesh methods, which targets various tasks (e.g., 3D/6D pose estimation and 3D-aware image classification) in different settings (i.e., few-shot and fully-supervised).
         </p>
     </section>
 
     <section id="results">
-
         <h2>Features</h2>
         <hr>
 
@@ -306,7 +305,14 @@ figure {
                 3D pose estimation.
             </p>
         </figure>
+    </section>
 
+    <section id="results">
+        <h2>Documentation</h2>
+        <hr>
+        <p>
+            See <a href="documentation.html">documentation.html</a>.
+        </p>
     </section>
 
     <section id="paper">

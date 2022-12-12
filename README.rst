@@ -71,7 +71,7 @@ Environment
    conda install -c conda-forge timm tqdm pyyaml transformers
    pip install wget gdown BboxTools opencv-python
 
-5. Install NeMo-Extensions:
+5. Install NeMo:
 
 .. code::
 
@@ -109,14 +109,19 @@ Train and evaluate a regression-based model (:code:`ResNet50-General`) on PASCAL
        --config config/pose_estimation_3d_resnet50_general.yaml \
        --save_dir exp/pose_estimation_3d_resnet50_general_car
 
-   CUDA_VISIBLE_DEVICES=1 python3 scripts/inference.py \
+   CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
        --cate car \
        --config config/pose_estimation_3d_resnet50_general.yaml \
        --save_dir exp/pose_estimation_3d_resnet50_general \
        --checkpoint exp/pose_estimation_3d_resnet50_general/ckpts/model_90.pth
 
+Documentation
+-------------
+
+See `documentation <https://wufeim.github.io/NeMo/documentation.html>`_.
+
 Roadmap
------------
+-------
 
 Models
 ^^^^^^

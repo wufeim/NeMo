@@ -1,0 +1,353 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+
+<style type="text/css">
+body {
+    font-family: "Titillium Web", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: 300;
+    font-size: 17px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 980px;
+}
+h1 {
+    font-weight:300;
+    line-height: 1.15em;
+}
+h2 {
+    font-size: 1.75em;
+}
+a:link,a:visited {
+    color: #1367a7;
+    text-decoration: none;
+}
+a:hover {
+    color: #208799;
+}
+h1, h2, h3 {
+    text-align: center;
+}
+h1 {
+    font-size: 40px;
+    font-weight: 500;
+}
+h2 {
+    font-weight: 400;
+    margin: 16px 0px 4px 0px;
+}
+.paper-title {
+    padding: 16px 0px 16px 0px;
+}
+section {
+    margin: 32px 0px 32px 0px;
+    text-align: justify;
+    clear: both;
+}
+.col-6 {
+     width: 16.6%;
+     float: left;
+}
+.col-5 {
+     width: 20%;
+     float: left;
+}
+.col-4 {
+     width: 25%;
+     float: left;
+}
+.col-3 {
+     width: 33%;
+     float: left;
+}
+.col-2 {
+     width: 50%;
+     float: left;
+}
+.row, .author-row, .affil-row {
+     overflow: auto;
+}
+.author-row, .affil-row {
+    font-size: 20px;
+}
+.row {
+    margin: 16px 0px 16px 0px;
+}
+.authors {
+    font-size: 18px;
+}
+.affil-row {
+    margin-top: 16px;
+}
+.teaser {
+    max-width: 100%;
+}
+.text-center {
+    text-align: center;
+}
+.screenshot {
+    width: 196px;
+    border: 1px solid #ddd;
+}
+.screenshot-el {
+    margin-bottom: 16px;
+}
+hr {
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ddd;
+    margin: 0;
+}
+.material-icons {
+    vertical-align: -6px;
+}
+p {
+    line-height: 1.25em;
+}
+.caption {
+    font-size: 16px;
+    /*font-style: italic;*/
+    color: #666;
+    text-align: left;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+video {
+    display: block;
+    margin: auto;
+}
+figure {
+    display: block;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+#bibtex pre {
+    font-size: 14px;
+    background-color: #eee;
+    padding: 16px;
+}
+.blue {
+    color: #2c82c9;
+    font-weight: bold;
+}
+.orange {
+    color: #d35400;
+    font-weight: bold;
+}
+.flex-row {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+.paper-btn {
+  position: relative;
+  text-align: center;
+
+  display: inline-block;
+  margin: 8px;
+  padding: 8px 8px;
+
+  border-width: 0;
+  outline: none;
+  border-radius: 2px;
+
+  background-color: #1367a7;
+  color: #ecf0f1 !important;
+  font-size: 20px;
+  width: 100px;
+  font-weight: 600;
+}
+.supp-btn {
+  position: relative;
+  text-align: center;
+
+  display: inline-block;
+  margin: 8px;
+  padding: 8px 8px;
+
+  border-width: 0;
+  outline: none;
+  border-radius: 2px;
+
+  background-color: #1367a7;
+  color: #ecf0f1 !important;
+  font-size: 20px;
+  width: 150px;
+  font-weight: 600;
+}
+.paper-btn-parent {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0px;
+}
+.paper-btn:hover {
+    opacity: 0.85;
+}
+.container {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+.venue {
+    color: #1367a7;
+}
+.topnav {
+  overflow: hidden;
+  background-color: #EEEEEE;
+}
+.topnav a {
+  float: left;
+  color: black;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 16px;
+}
+.block-code {
+    font-size: 14px;
+    background-color:#eee;
+    padding: 16px;
+}
+.inline-code {
+    font-size: 14px;
+    background-color: #eee;
+    padding: 4px;
+}
+</style>
+
+
+<div class="topnav" id="myTopnav">
+  <a href="https://www.nvidia.com/"><img height="21px" src="assets/jhu.png"></a>
+  <a href="https://nv-tlabs.github.io/" ><strong>Johns Hopkins University</strong></a>
+</div>
+
+<!-- End : Google Analytics Code -->
+<script type="text/javascript" src="../js/hidebib.js"></script>
+<link href='https://fonts.googleapis.com/css?family=Titillium+Web:400,600,400italic,600italic,300,300italic' rel='stylesheet' type='text/css'>
+<head>
+    <title>Neural Mesh Models for 3D Reasoning</title>
+    <meta property="og:description" content="Neural Mesh Models for 3D Reasoning"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+
+</head>
+
+
+ <body>
+<div class="container">
+    <div class="paper-title" style="padding-bottom: 0px;">
+      <h1>Neural Mesh Models for 3D Reasoning</h1>
+      <h3>Documentation</h3>
+    </div>
+
+    <div id="authors">
+        <div style="clear: both">
+            <div class="paper-btn-parent">
+            <a class="supp-btn" href="index.html#paper">
+                <span class="material-icons"> description </span>
+                 Paper
+            </a>
+            </a>
+            <a class="supp-btn" href="index.html#bibtex">
+                <span class="material-icons"> description </span>
+                  BibTeX
+            </a>
+            <a class="supp-btn" href="https://github.com/wufeim/NeMo">
+                <span class="material-icons"> description </span>
+                  Code
+            </a>
+        </div></div>
+
+        <div class="col-1 text-center"><p><a href="index.html"><- back to homepage</a></p></div>
+    </div>
+
+    <section id="installation"/>
+        <h2>Installation</h2>
+        <hr>
+        <ol>
+            <li>
+                Create <code class="inline-code">conda</code> environment:
+                <pre class="block-code"><code>conda create -n nemo python=3.9
+conda activate nemo</code></pre>
+            </li>
+            <li>
+                Install <code class="inline-code">PyTorch</code> (see <a href="https://pytorch.org/">pytorch.org</a>):
+                <pre class="block-code"><code>conda install pytorch==1.12.0 torchvision==0.13.0 torchaudio==0.12.0 cudatoolkit=10.2 -c pytorch</code></pre>
+            </li>
+            <li>
+                Install <code class="inline-code">PyTorch3D</code> (see <a href="https://github.com/facebookresearch/pytorch3d/blob/main/INSTALL.md">github.com/facebookresearch/pytorch3d</a>):
+                <pre class="block-code"><code>conda install -c fvcore -c iopath -c conda-forge fvcore iopath
+conda install -c bottler nvidiacub
+conda install pytorch3d -c pytorch3d</code></pre>
+            </li>
+            <li>
+                Install other dependencies:
+                <pre class="block-code"><code>conda install numpy matplotlib scipy scikit-image
+conda install pillow
+conda install -c conda-forge timm tqdm pyyaml transformers
+pip install wget gdown BboxTools opencv-python</code></pre>
+            </li>
+            <li>
+                Install NeMo:
+                <pre class="block-code"><code>pip install -e .</code></pre>
+            </li>
+        </ol>
+    </section>
+
+    <section id="data">
+        <h2>Data Preparation</h2>
+        <hr>
+        <ul>
+            <li>
+                <a href="">PASCAL3D+</a> and Occluded PASCAL3D+.
+                <pre class="block-code"><code>python3 prepare_pascal3d.py \
+    --config config/datasets/pascal3d_general.yaml</code></pre>
+            </li>
+            <li>
+                <a href="https://www.ood-cv.org">OOD-CV</a>.
+                <pre class="block-code"><code>python3 prepare_ood_cv.py \
+    --config config/datasets/ood_cv.yaml</code></pre>
+            </li>
+        </ul>
+    </section>
+
+    <section id="usage">
+        <h2>NeMo Models</h2>
+        <hr>
+        <ul>
+            <li>
+                <b>NeMo.</b> Neural mesh models (NeMo) for 3D pose estimation.
+                <ul>
+                    <li>Configuration: <code class="inline-code">config/models/nemo.yaml</code></li>
+                    <li>Configuration for 3D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_3d_resnet50_general.yaml</code></li>
+                    <li>Reference: <a href="https://openreview.net/forum?id=pmj131uIL9H">NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation (ICLR 2021)</a></li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+    <section id="usage-baseline">
+        <h2>Baseline Models</h2>
+        <hr>
+        <ul>
+            <li>
+                <b>ResNet50-General.</b> Regression-based model that formulate 3D pose estimation as a classification problem.
+                <ul>
+                    <li>Configuration: <code class="inline-code">config/models/resnet50_general.yaml</code></li>
+                    <li>Configuration for 3D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_3d_resnet50_general.yaml</code></li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+<br />
+
+</div>
+</body>
+</html>
