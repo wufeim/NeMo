@@ -188,12 +188,12 @@ class NeMo(BaseModel):
         render_image_size = max(image_h, image_w) // self.down_sample_rate
         map_shape = (image_h // self.down_sample_rate, image_w // self.down_sample_rate)
 
-        cameras = construct_class_by_name(**self.cameras_params, device=self.device)
+        cameras = construct_class_by_name(**self.inference_params.cameras, device=self.device)
         raster_settings = construct_class_by_name(
-            **self.raster_settings_params, image_size=render_image_size
+            **self.inference_params.raster_settings, image_size=render_image_size
         )
         rasterizer = construct_class_by_name(
-            **self.rasterizer_params, cameras=cameras, raster_settings=raster_settings
+            **self.inference_params.rasterizer, cameras=cameras, raster_settings=raster_settings
         )
         self.inter_module = MeshInterpolateModule(
             xvert,
