@@ -1,3 +1,4 @@
+import copy
 import os
 
 import BboxTools as bbt
@@ -5,6 +6,7 @@ import numpy as np
 import torch
 import torchvision
 from PIL import Image
+import skimage
 from torch.utils.data import Dataset
 
 from nemo.utils import construct_class_by_name
@@ -23,6 +25,7 @@ class Pascal3DPlus(Dataset):
         occ_level=0,
         enable_cache=True,
         weighted=True,
+        remove_no_bg=None,
         **kwargs,
     ):
         self.data_type = data_type
@@ -32,6 +35,7 @@ class Pascal3DPlus(Dataset):
         self.occ_level = occ_level
         self.enable_cache = enable_cache
         self.weighted = weighted
+        self.remove_no_bg = remove_no_bg
         self.transforms = torchvision.transforms.Compose(
             [construct_class_by_name(**t) for t in transforms]
         )
@@ -68,9 +72,22 @@ class Pascal3DPlus(Dataset):
                 ),
                 [],
             )
-        self.file_list = file_list
-
+        # OOD-CV seems to have duplicate samples -- remove duplicates from file list
+        self.file_list = list(set(file_list))
         self.cache = {}
+
+        self.filter()
+
+    def filter(self):
+        if self.remove_no_bg is None:
+            return
+        filtered_file_list = []
+        for i in range(len(self.file_list)):
+            sample = self.__getitem__(i)
+            obj_mask = skimage.measure.block_reduce(sample['obj_mask'], (self.remove_no_bg, self.remove_no_bg), np.max)
+            if np.sum(1-obj_mask) >= 5:
+                filtered_file_list.append(self.file_list[i])
+        self.file_list = filtered_file_list
 
     def __len__(self):
         return len(self.file_list)
@@ -79,7 +96,7 @@ class Pascal3DPlus(Dataset):
         name_img = self.file_list[item]
 
         if self.enable_cache and name_img in self.cache.keys():
-            sample = self.cache[name_img]
+            sample = copy.deepcopy(self.cache[name_img])
         else:
             img = Image.open(os.path.join(self.image_path, f"{name_img}.JPEG"))
             if img.mode != "RGB":
@@ -137,7 +154,7 @@ class Pascal3DPlus(Dataset):
                 sample['kpvis'] = iskpvisible.astype(bool)
 
             if self.enable_cache:
-                self.cache[name_img] = sample.copy()
+                self.cache[name_img] = copy.deepcopy(sample)
 
         if self.transforms:
             sample = self.transforms(sample)
