@@ -19,8 +19,6 @@ mesh_para_names = [
     "focal",
     "principal",
     "viewport",
-    "height",
-    "width",
     "cad_index",
     "bbox",
 ]
@@ -50,6 +48,7 @@ def prepare_pascal3d_sample(
     single_mesh=True,
     mesh_manager=None,
     direction_dicts=None,
+    obj_ids=None
 ):
     """
     Prepare a sample for training and validation.
@@ -72,10 +71,13 @@ def prepare_pascal3d_sample(
     single_mesh: bool, default True
     mesh_manager: MeshConverter, default None
     direction_dicts: dict, default None
+    obj_ids: list, default None
     """
     if not os.path.isfile(img_path):
+        print(img_path)
         return None
     if not os.path.isfile(anno_path):
+        print(anno_path)
         return None
 
     mat_contents = sio.loadmat(anno_path)
@@ -85,14 +87,18 @@ def prepare_pascal3d_sample(
     else:
         occ_mask = None
 
-    obj_ids = get_obj_ids(record, cate=cate)
-    if len(obj_ids) == 0:
-        return None
-    if prepare_mode == "first":
-        if obj_ids[0] != 0:
-            return []
-        else:
-            obj_ids = [0]
+    if obj_ids is None:
+        obj_ids = get_obj_ids(record, cate=cate)
+        if len(obj_ids) == 0:
+            return None
+        if prepare_mode == "first":
+            if obj_ids[0] != 0:
+                return []
+            else:
+                obj_ids = [0]
+
+    img = np.array(Image.open(img_path))
+    _h, _w = img.shape[0], img.shape[1]
 
     save_image_names = []
     for obj_id in obj_ids:
@@ -111,6 +117,8 @@ def prepare_pascal3d_sample(
         all_resize_rates = [float(dist / x) for x in target_distances]
 
         for rr_idx, resize_rate in enumerate(all_resize_rates):
+            if resize_rate <= 0.001:
+                resize_rate = min(out_shape[0] / box.shape[0], out_shape[1] / box.shape[1])
             try:
                 box_ori = bbt.from_numpy(bbox, sorts=("x0", "y0", "x1", "y1"))
                 box = bbt.from_numpy(bbox, sorts=("x0", "y0", "x1", "y1")) * resize_rate
@@ -188,6 +196,7 @@ def prepare_pascal3d_sample(
 
                 img_cropped = box.apply(img)
 
+                """
                 proj_foo = bbt.projection_function_by_boxes(
                     box_ori, box_in_cropped, compose=False
                 )
@@ -215,6 +224,7 @@ def prepare_pascal3d_sample(
                         cropped_kp_x = cropped_kp_y = 0
                     states_list.append(states)
                     cropped_kp_list.append([cropped_kp_y, cropped_kp_x])
+                """
             except:
                 continue
 
@@ -228,8 +238,8 @@ def prepare_pascal3d_sample(
                 box=box.numpy(),
                 box_ori=box_ori.numpy(),
                 box_obj=box_in_cropped.numpy(),
-                cropped_kp_list=cropped_kp_list,
-                visible=states_list,
+                # cropped_kp_list=cropped_kp_list,
+                # visible=states_list,
                 occ_mask=occ_mask,
             )
             save_parameters = {
@@ -241,6 +251,8 @@ def prepare_pascal3d_sample(
                     )
                 },
             }
+            save_parameters["height"] = _h
+            save_parameters["width"] = _w
             save_parameters["resize_rate"] = resize_rate
             save_parameters["padding_params"] = np.array(
                 [
