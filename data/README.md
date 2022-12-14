@@ -1,12 +1,43 @@
-`splits` folder contains the name of images for each split.
+Data Preparation
+================
 
-`splits/TrainSet.txt` is the name of images in the training split.
+PASCAL3D+ and Occluded PASCAL3D+
+--------------------------------
 
-`splits/CadPoseBias_val.txt` is the val split with shape and pose bias
+.. code::
 
-`splits/CadBias_val.txt` is the val split with shape bias
+   python3 prepare_pascal3d.py \
+       --config config/datasets/pascal3d_general.yaml
 
-`splits/PoseBias_val.txt` is the val split with pose bias
+**Parameters.** The parameters are loaded from the :code:`.yaml` files.
 
-`splits/{class}_{context,texture,weather}` is the val split for each `class` with `{context,texture,weather}` biases.
+* :code:`pad_texture`: If :code:`True`, use describable textures when padding.
+* :code:`occ_levels`: The occlusion levels we prepare for training and validation data.
+* :code:`single_mesh`: Type of mesh we generate.
+* :code:`root_path`: Path to the generated data.
+* :code:`training_only`: If :code:`True`, skip validation data.
+* :code:`image_sizes`: Image sizes of the output images.
+* :code:`mesh_path`: Path to the meshes used for generating 3D keypoint annotations.
+* :code:`prepare_mode`: Preparation mode, :code:`first` or :code:`all`.
+* :code:`augment_by_dist`: If :code:`True`, augment samples by object distances (scales); commonly used for 6D pose estimation training.
 
+OOD-CV
+------
+
+.. code::
+
+   python3 prepare_ood_cv.py \
+       --config config/datasets/ood_cv.yaml
+
+**Parameters.** The parameters are loaded from the :code:`.yaml` files.
+
+* :code:`nuisances`: Types of nuisances we consider.
+* :code:`pad_texture`: If :code:`True`, use describable textures when padding.
+* :code:`occ_levels`: The occlusion levels we prepare for training and validation data.
+* :code:`single_mesh`: Type of mesh we generate.
+* :code:`root_path`: Path to the generated data.
+* :code:`training_only`: If :code:`True`, skip validation data.
+* :code:`image_sizes`: Image sizes of the output images.
+* :code:`mesh_path`: Path to the meshes used for generating 3D keypoint annotations.
+* :code:`prepare_mode`: Preparation mode, :code:`first` or :code:`all`.
+* :code:`augment_by_dist`: If :code:`True`, augment samples by object distances (scales); commonly used for 6D pose estimation training.
