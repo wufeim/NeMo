@@ -11,6 +11,7 @@ training:
     log_interval: 1
     ckpt_interval: 200
     visualize_training_data: false
+    remove_no_bg: 8
 
 inference:
     random_seed: 0
