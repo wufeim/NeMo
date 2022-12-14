@@ -1,10 +1,12 @@
 import argparse
 import logging
+import os
 
 import torch
 from inference_helpers import helper_func_by_task
 
 from nemo.utils import construct_class_by_name
+from nemo.utils import get_abs_path
 from nemo.utils import load_config
 from nemo.utils import save_src_files
 from nemo.utils import set_seed
@@ -45,10 +47,13 @@ def inference(cfg):
         model,
         val_dataloader,
     )
+    torch.save(results["save_pred"], os.path.join(get_abs_path(cfg.save_dir), f'{cfg.dataset.name}_{cfg.args.cate}_val.pth'))
 
     if cfg.task == "3d_pose_estimation":
         print(f"\n3D Pose Estimation Results:")
-        print(f"Dataset:     {cfg.dataset.name} (num={len(val_dataset)})")
+        print(f"Dataset:     {cfg.dataset.name} (root={cfg.dataset.root_path})")
+        print(f"Category:    {cfg.args.cate}")
+        print(f"# samples:   {len(val_dataset)}")
         print(f"Model:       {cfg.model.name} (ckpt={cfg.args.checkpoint})")
         print(f'pi/6 acc:    {results["pi6_acc"]*100:.2f}%')
         print(f'pi/18 acc:   {results["pi18_acc"]*100:.2f}%')
