@@ -1,0 +1,44 @@
+name: ood-cv
+class_name: nemo.datasets.pascal3d.Pascal3DPlus
+root_path: data/OOD_CV_NeMo
+
+pascal3d_raw_path: data/PASCAL3D+_release1.1
+ood_cv_data_path: data/OOD-CV-dataset
+ood_cv_data_url: https://drive.google.com/file/d/1WBujBnnHxzNcmSHxrErdfOHhQz8AGsRb/view?usp=share_link
+ood_cv_list_path: data/phase-1-pose-npz
+ood_cv_list_url: https://drive.google.com/file/d/1gKckXkA4wmkLjD9BTP3Y4mOgVWRRYmte/view?usp=share_link
+dtd_raw_path: data/dtd
+mesh_path: data/PASCAL3D+_release1.1/CAD_single
+
+pad_texture: false
+single_mesh: true
+training_only: false
+augment_by_dist: false
+prepare_mode: first
+
+image_sizes:
+    aeroplane: [320, 672]
+    bicycle: [608, 608]
+    boat: [384, 672]
+    bus: [320, 736]
+    chair: [608, 384]
+    car: [256, 672]
+    diningtable: [384, 800]
+    motorbike: [512, 512]
+    sofa: [352, 736]
+    train: [256, 608]
+
+nuisances:
+    - context
+    - occlusion
+    - pose
+    - shape
+    - texture
+    - weather
+
+occ_level: 0
+enable_cache: true
+subtypes: None
+weighted: true
+transforms:
+    - class_name: nemo.datasets.pascal3d.ToTensor
