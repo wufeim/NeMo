@@ -93,6 +93,7 @@ def solve_pose(
     kp_vis,
     px_samples=None,
     py_samples=None,
+    debug=False,
     device="cuda",
 ):
     nkpt, c = kp_features.size()
@@ -193,8 +194,9 @@ def solve_pose(
                     "principal": [px_samples[e[0]], py_samples[e[1]]],
                 }
             )
-    pred["pre_rendering_poses"] = extrema
-    pred["corr2d"] = corr2d_max
+    if debug:
+        pred["pre_rendering_poses"] = extrema
+        pred["corr2d"] = corr2d_max
 
     if len(extrema) == 0:
         pred["final"] = []
@@ -316,11 +318,12 @@ def solve_pose(
     else:
         raise NotImplementedError
 
-    object_score_maps = np.array(object_score_list)
-    segmentation_maps = np.array(seg_map_list)
-    object_idx_map, new_seg_maps = resolve_occ(segmentation_maps, object_score_maps)
-    pred["object_idx_map"] = object_idx_map
-    pred["seg_maps"] = new_seg_maps
+    if debug:
+        object_score_maps = np.array(object_score_list)
+        segmentation_maps = np.array(seg_map_list)
+        object_idx_map, new_seg_maps = resolve_occ(segmentation_maps, object_score_maps)
+        pred["object_idx_map"] = object_idx_map
+        pred["seg_maps"] = new_seg_maps
 
     return pred
 

@@ -220,7 +220,7 @@ class NeMo(BaseModel):
             distance_samples=distance_samples,
         )
 
-    def evaluate(self, sample):
+    def evaluate(self, sample, debug=False):
         sample = self.transforms(sample)
         img = sample["img"].to(self.device)
         assert len(img) == 1, "The batch size during validation should be 1"
@@ -236,6 +236,7 @@ class NeMo(BaseModel):
             self.poses,
             self.kp_coords,
             self.kp_vis,
+            debug=debug,
             device=self.device,
         )
 
