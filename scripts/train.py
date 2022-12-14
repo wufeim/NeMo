@@ -28,7 +28,7 @@ def parse_args():
 
 
 def train(cfg):
-    dataset_kwargs = {"data_type": "train", "category": cfg.args.cate}
+    dataset_kwargs = {"data_type": "train", "category": cfg.args.cate, "remove_no_bg": cfg.training.remove_no_bg}
     train_dataset = construct_class_by_name(**cfg.dataset, **dataset_kwargs)
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset,
