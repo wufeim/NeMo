@@ -41,3 +41,24 @@ OOD-CV
 * :code:`mesh_path`: Path to the meshes used for generating 3D keypoint annotations.
 * :code:`prepare_mode`: Preparation mode, :code:`first` or :code:`all`.
 * :code:`augment_by_dist`: If :code:`True`, augment samples by object distances (scales); commonly used for 6D pose estimation training.
+
+Synthetic ShapeNet
+------------------
+
+First download ShapeNet v1 from `shapenet.org <https://shapenet.org>`_. Then install `Blender 2.90 <https://download.blender.org/release/Blender2.90/>`_:
+
+.. code::
+
+   apt-get install -y libxi6 libgconf-2-4 libfontconfig1 libxrender1
+   wget https://download.blender.org/release/Blender2.90/blender-2.90.0-linux64.tar.xz
+   tar tar -xf blender-2.90.0-linux64.tar.xz
+   cd blender-2.90.0-linux64/2.90/python/bin
+   ./python3.7m -m ensurepip
+   ./python3.7m -m pip install numpy
+
+Then run the following script.
+
+.. code::
+
+   python3 create_synthetic_shapenet.py \
+       --config config/datasets/synthetic_shapenet.yaml
