@@ -40,5 +40,8 @@ occ_level: 0
 enable_cache: true
 subtypes: None
 weighted: true
+remove_no_bg: true
 transforms:
     - class_name: nemo.datasets.pascal3d.ToTensor
+
+sampler: None

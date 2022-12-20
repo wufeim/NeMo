@@ -29,3 +29,7 @@ image_sizes:
     sofa: [256, 256]
     train: [256, 256]
     tvmonitor: [256, 256]
+
+remove_no_bg: true
+
+sampler: None

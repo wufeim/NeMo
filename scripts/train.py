@@ -28,13 +28,22 @@ def parse_args():
 
 
 def train(cfg):
-    dataset_kwargs = {"data_type": "train", "category": cfg.args.cate, "remove_no_bg": cfg.training.remove_no_bg}
+    dataset_kwargs = {"data_type": "train", "category": cfg.args.cate}
     train_dataset = construct_class_by_name(**cfg.dataset, **dataset_kwargs)
+    if cfg.dataset.sampler is not None:
+        train_dataset_sampler = construct_class_by_name(
+            **cfg.dataset.sampler, dataset=train_dataset, rank=0, num_replicas=1,
+            seed=cfg.training.random_seed)
+        shuffle = False
+    else:
+        train_dataset_sampler = None
+        shuffle = True
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=cfg.training.batch_size,
-        shuffle=True,
+        shuffle=shuffle,
         num_workers=cfg.training.workers,
+        sampler=train_dataset_sampler
     )
     logging.info(f"Number of training images: {len(train_dataset)}")
 
