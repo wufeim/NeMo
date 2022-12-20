@@ -69,7 +69,8 @@ Environment
    conda install numpy matplotlib scipy scikit-image
    conda install pillow
    conda install -c conda-forge timm tqdm pyyaml transformers
-   pip install wget gdown BboxTools opencv-python
+   pip install git+https://github.com/NVlabs/nvdiffrast/
+   pip install wget gdown BboxTools opencv-python xatlas
 
 5. Install NeMo:
 
@@ -186,3 +187,14 @@ This repo builds upon several previous works:
 
 * `NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation (ICLR 2021) <https://openreview.net/forum?id=pmj131uIL9H>`_
 * `Robust Category-Level 6D Pose Estimation with Coarse-to-Fine Rendering of Neural Features (ECCV 2022) <https://link.springer.com/chapter/10.1007/978-3-031-20077-9_29>`_
+
+Acknowledgements
+----------------
+
+In this project, we borrow codes from several other repos:
+
+* :code:`NeMo` by Angtian Wang in `Angtian/NeMo <https://github.com/Angtian/NeMo>`_
+* :code:`DMTet` by NVIDIA in `nv-tlabs/GET3D <https://github.com/nv-tlabs/GET3D>`_
+* :code:`torch_utils` by NVIDIA in `nv-tlabs/GET3D <https://github.com/nv-tlabs/GET3D>`_
+* :code:`uni_rep` by NVIDIA in `nv-tlabs/GET3D <https://github.com/nv-tlabs/GET3D>`_
+* :code:`dnnlib` by NVIDIA in `nv-tlabs/GET3D <https://github.com/nv-tlabs/GET3D>`_
