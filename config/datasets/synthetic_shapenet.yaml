@@ -1,0 +1,25 @@
+name: synthetic_shapenet
+class_name: nemo.datasets.synthetic_shapenet.SyntheticShapeNet
+root_path: data/synthetic_shapenet
+
+shapenet_path: data/ShapeNetCore.v1
+shapenet_url: https://shapenet.cs.stanford.edu/shapenet/obj-zip/ShapeNetCore.v1.zip
+blender_path: blender-2.90.0-linux64/blender
+n_view_per_model: 6
+
+synset_name:
+    car: "02958343"
+    chair: "03001627"
+    motorbike: "03790512"
+
+render_scale:
+    car: 0.9
+    chair: 0.7
+    motorbike: 0.9
+
+num_models:
+    train: 2000
+    val: 500
+
+sampler:
+    class_name: nemo.torch_utils.misc.InfiniteSampler
