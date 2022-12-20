@@ -62,3 +62,14 @@ Then run the following script.
 
    python3 create_synthetic_shapenet.py \
        --config config/datasets/synthetic_shapenet.yaml
+
+Misc
+----
+
+**Tetrahedra grids.**
+
+.. code::
+
+   wget https://www.cs.jhu.edu/~wufeim/NeMo/tets.zip
+   unzip tets.zip
+   rm tets.zip

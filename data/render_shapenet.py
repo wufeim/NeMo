@@ -224,33 +224,24 @@ rotation_mode = 'XYZ'
 model_identifier = os.path.split(os.path.split(args.obj)[0])[1]
 synset_idx = args.obj.split('/')[-3]
 
-img_follder = os.path.join(os.path.abspath(args.output_folder), 'img', synset_idx, model_identifier)
-camera_follder = os.path.join(os.path.abspath(args.output_folder), 'camera', synset_idx, model_identifier)
+img_folder = os.path.join(os.path.abspath(args.output_folder), 'img')
+# camera_folder = os.path.join(os.path.abspath(args.output_folder), 'camera')
+anno_folder = os.path.join(os.path.abspath(args.output_folder), 'anno')
 
-os.makedirs(img_follder, exist_ok=True)
-os.makedirs(camera_follder, exist_ok=True)
+os.makedirs(img_folder, exist_ok=True)
+os.makedirs(anno_folder, exist_ok=True)
 
 rotation_angle_list = np.random.rand(args.views)
 elevation_angle_list = np.random.rand(args.views)
 rotation_angle_list = rotation_angle_list * 360
 elevation_angle_list = elevation_angle_list * 30
-np.save(os.path.join(camera_follder, 'rotation'), rotation_angle_list)
-np.save(os.path.join(camera_follder, 'elevation'), elevation_angle_list)
-
-# creation of the transform.json
-to_export = {
-    'camera_angle_x': bpy.data.cameras[0].angle_x,
-    "aabb": [[-scale/2,-scale/2,-scale/2],
-             [scale/2,scale/2,scale/2]]
-}
-frames = []
 
 for i in range(0, args.views):
     cam_empty.rotation_euler[2] = math.radians(rotation_angle_list[i])
     cam_empty.rotation_euler[0] = math.radians(elevation_angle_list[i])
 
     print("Rotation {}, {}".format((stepsize * i), math.radians(stepsize * i)))
-    render_file_path = os.path.join(img_follder, '%03d.png' % (i))
+    render_file_path = os.path.join(img_folder, f'{synset_idx}_{model_identifier}_{i:03d}.png')
     scene.render.filepath = render_file_path
     bpy.ops.render.render(write_still=True)
     # might not need it, but just in case cam is not updated correctly
@@ -270,12 +261,14 @@ for i in range(0, args.views):
     matrix.append([0,0,0,1])
     print(matrix)
 
-    to_add = {\
-        "file_path":f'{str(i).zfill(3)}.png',
-        "transform_matrix":matrix
+    to_add = {
+        "file_path": f'{synset_idx}_{model_identifier}_{i:03d}.png',
+        "transform_matrix": matrix,
+        "rotation": math.radians(rotation_angle_list[i]),
+        "elevation": math.radians(elevation_angle_list[i]),
+        "synset_idx": synset_idx,
+        "model_id": model_identifier,
+        "camera_angle_x": bpy.data.cameras[0].angle_x,
+        "aabb": np.array([[-scale/2,-scale/2,-scale/2], [scale/2,scale/2,scale/2]])
     }
-    frames.append(to_add)
-
-to_export['frames'] = frames
-with open(f'{img_follder}/transforms.json', 'w') as f:
-    json.dump(to_export, f,indent=4)
+    np.save(os.path.join(anno_folder, f"{synset_idx}_{model_identifier}_{i:03d}"), to_add)

@@ -32,14 +32,16 @@ def download_shapenet(cfg):
 def prepare_shapenet(cfg, workers=4):
     root_path = get_abs_path(cfg.root_path)
     shapenet_path = get_abs_path(cfg.shapenet_path)
-    os.makedirs(root_path)
 
-    for cate in cfg.synset_name:
-        file_list = sorted(os.listdir(os.path.join(shapenet_path, cfg.synset_name[cate])))
-        for file in tqdm(file_list):
-            os.system(f"{cfg.blender_path} -b -P render_shapenet.py -- --output {root_path} "
-                      f"{os.path.join(shapenet_path, cfg.synset_name[cate], file, 'model.obj')} "
-                      f"--scale {cfg.render_scale[cate]} --views 24 --resolution 1024 >> tmp.out")
+    for data_type in cfg.num_models:
+        for cate in cfg.synset_name:
+            rp = os.path.join(root_path, data_type, cate)
+            os.makedirs(rp, exist_ok=True)
+            file_list = sorted(os.listdir(os.path.join(shapenet_path, cfg.synset_name[cate])))
+            for file in file_list[:cfg.num_models[data_type]]:
+                os.system(f"{cfg.blender_path} -b -P render_shapenet.py -- --output {rp} "
+                        f"{os.path.join(shapenet_path, cfg.synset_name[cate], file, 'model.obj')} "
+                        f"--scale {cfg.render_scale[cate]} --views 6 --resolution 1024 >> tmp.out")
 
 
 def main():
