@@ -26,52 +26,63 @@ def parse_args():
 
 
 def inference(cfg):
-    dataset_kwargs = {"data_type": "val", "category": cfg.args.cate}
-    val_dataset = construct_class_by_name(**cfg.dataset, **dataset_kwargs)
-    val_dataloader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=1, shuffle=True, num_workers=1
-    )
-    logging.info(f"Number of inference images: {len(val_dataset)}")
-
-    model = construct_class_by_name(
-        **cfg.model,
-        cfg=cfg,
-        cate=cfg.args.cate,
-        mode="test",
-        checkpoint=cfg.args.checkpoint,
-        device="cuda:0",
-    )
-
-    results = helper_func_by_task[cfg.task](
-        cfg,
-        model,
-        val_dataloader,
-    )
-    torch.save(results["save_pred"], os.path.join(get_abs_path(cfg.save_dir), f'{cfg.dataset.name}_{cfg.args.cate}_val.pth'))
-
-    if cfg.task == "3d_pose_estimation":
-        print(f"\n3D Pose Estimation Results:")
-        print(f"Dataset:     {cfg.dataset.name} (root={cfg.dataset.root_path})")
-        print(f"Category:    {cfg.args.cate}")
-        print(f"# samples:   {len(val_dataset)}")
-        print(f"Model:       {cfg.model.name} (ckpt={cfg.args.checkpoint})")
-        print(f'pi/6 acc:    {results["pi6_acc"]*100:.2f}%')
-        print(f'pi/18 acc:   {results["pi18_acc"]*100:.2f}%')
-        print(f'Median err:  {results["med_err"]:.2f}')
+    if cfg.args.cate == 'all':
+        all_categories = sorted(list(cfg.dataset.image_sizes.keys()))
     else:
-        raise NotImplementedError
+        all_categories = [cfg.args.cate]
+
+    running_results = []
+    for cate in all_categories:
+        dataset_kwargs = {"data_type": "val", "category": cate}
+        val_dataset = construct_class_by_name(**cfg.dataset, **dataset_kwargs)
+        val_dataloader = torch.utils.data.DataLoader(
+            val_dataset, batch_size=1, shuffle=True, num_workers=1
+        )
+        logging.info(f"Number of inference images: {len(val_dataset)}")
+
+        model = construct_class_by_name(
+            **cfg.model,
+            cfg=cfg,
+            cate=cate,
+            mode="test",
+            checkpoint=cfg.args.checkpoint.format(cate),
+            device="cuda:0",
+        )
+
+        save_pred_path = os.path.join(get_abs_path(cfg.args.save_dir.format(cate)), f'{cfg.dataset.name}_{cate}_val.pth')
+        if os.path.isfile(save_pred_path):
+            cached_pred = torch.load(save_pred_path)
+            results = helper_func_by_task[cfg.task](
+                cfg,
+                cate,
+                model,
+                val_dataloader,
+                cached_pred=cached_pred
+            )
+        else:
+            results = helper_func_by_task[cfg.task](
+                cfg,
+                cate,
+                model,
+                val_dataloader,
+            )
+            torch.save(results["save_pred"], save_pred_path)
+
+        running_results += results['running']
+
+    helper_func_by_task[cfg.task+'_print'](cfg, all_categories, running_results)
 
 
 def main():
     args = parse_args()
 
-    setup_logging(args.save_dir)
+    setup_logging(args.save_dir.format(args.cate))
     logging.info(args)
 
     cfg = load_config(args, override=args.opts)
 
     set_seed(cfg.inference.random_seed)
-    save_src_files(args.save_dir, [args.config, __file__])
+    save_src_files(args.save_dir.format(args.cate), [args.config, __file__])
 
     inference(cfg)
 
