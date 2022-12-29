@@ -51,7 +51,7 @@ First download ShapeNet v1 from `shapenet.org <https://shapenet.org>`_. Then ins
 
    apt-get install -y libxi6 libgconf-2-4 libfontconfig1 libxrender1
    wget https://download.blender.org/release/Blender2.90/blender-2.90.0-linux64.tar.xz
-   tar tar -xf blender-2.90.0-linux64.tar.xz
+   tar -xf blender-2.90.0-linux64.tar.xz
    cd blender-2.90.0-linux64/2.90/python/bin
    ./python3.7m -m ensurepip
    ./python3.7m -m pip install numpy
