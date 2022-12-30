@@ -178,17 +178,20 @@ def worker(params):
             image_names = [x.strip() for x in fp.readlines() if x != '\n']
     elif set_type == 'val':
         image_names = []
+        nuisances = []
 
         # iid
         fnames = [x[:-4] for x in os.listdir(os.path.join(ood_cv_list_raw_path, 'phase-1', 'iid_test', 'annotations')) if x.endswith('.npz')]
         fnames = [x for x in fnames if cate == x.split('_')[1]]
         image_names += fnames
+        nuisances += ['iid'] * len(fnames)
 
         # nuisances
         for n in cfg.nuisances:
             fnames = [x[:-4] for x in os.listdir(os.path.join(ood_cv_list_raw_path, 'phase-1', 'nuisances', n, 'annotations')) if x.endswith('.npz')]
             fnames = [x for x in fnames if cate == x.split('_')[1]]
             image_names += fnames
+            nuisances += [n] * len(fnames)
     else:
         raise ValueError(f'Unknown set type: {set_type}')
 
@@ -197,7 +200,7 @@ def worker(params):
 
     num_errors = 0
     mesh_name_list = [[] for _ in range(MESH_LEN[cate])]
-    for img_name in image_names:
+    for idx, img_name in enumerate(image_names):
         if set_type == 'train':
             if img_name.startswith('n'):
                 img_path = os.path.join(pascal3d_raw_path, 'Images', f'{cate}_imagenet', f'{img_name}.JPEG')
@@ -241,7 +244,8 @@ def worker(params):
             single_mesh=cfg.single_mesh,
             mesh_manager=manager,
             direction_dicts=direction_dicts,
-            obj_ids=obj_ids
+            obj_ids=obj_ids,
+            extra_anno=None if set_type == 'train' else {'nuisance': nuisances[idx]}
         )
         if prepared_sample_names is None:
             num_errors += 1
