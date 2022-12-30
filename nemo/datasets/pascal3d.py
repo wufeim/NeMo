@@ -11,6 +11,7 @@ from torch.utils.data import Dataset
 
 from nemo.utils import construct_class_by_name
 from nemo.utils import get_abs_path
+from nemo.utils import load_off
 from nemo.utils.pascal3d_utils import CATEGORIES
 
 
@@ -21,11 +22,13 @@ class Pascal3DPlus(Dataset):
         category,
         root_path,
         transforms,
+        mesh_path,
         subtypes=None,
         occ_level=0,
         enable_cache=True,
         weighted=True,
         remove_no_bg=None,
+        skip_kp=False,
         **kwargs,
     ):
         self.data_type = data_type
@@ -36,6 +39,8 @@ class Pascal3DPlus(Dataset):
         self.enable_cache = enable_cache
         self.weighted = weighted
         self.remove_no_bg = remove_no_bg
+        self.skip_kp = skip_kp
+        self.mesh_path = mesh_path
         self.transforms = torchvision.transforms.Compose(
             [construct_class_by_name(**t) for t in transforms]
         )
@@ -50,6 +55,11 @@ class Pascal3DPlus(Dataset):
         self.annotation_path = os.path.join(self.root_path, data_type, "annotations")
         self.list_path = os.path.join(self.root_path, data_type, "lists")
 
+        num_verts = []
+        for cate in self.category:
+            num_verts.append(load_off(os.path.join(self.mesh_path, cate, '01.off'))[0].shape[0])
+        self.max_n = max(num_verts)
+
         file_list = []
         for cate in self.category:
             if self.occ_level == 0:
@@ -60,7 +70,7 @@ class Pascal3DPlus(Dataset):
             if cate not in self.subtypes:
                 self.subtypes[cate] = [t.split(".")[0] for t in os.listdir(_list_path)]
 
-            file_list += sum(
+            _file_list = sum(
                 (
                     [
                         os.path.join(cate if self.occ_level == 0 else f"{cate}FGL{self.occ_level}_BGL{self.occ_level}", l.strip())
@@ -72,6 +82,7 @@ class Pascal3DPlus(Dataset):
                 ),
                 [],
             )
+            file_list += [(f, cate) for f in _file_list]
         # OOD-CV seems to have duplicate samples -- remove duplicates from file list
         self.file_list = list(set(file_list))
         self.cache = {}
@@ -93,7 +104,7 @@ class Pascal3DPlus(Dataset):
         return len(self.file_list)
 
     def __getitem__(self, item):
-        name_img = self.file_list[item]
+        name_img, cate = self.file_list[item]
 
         if self.enable_cache and name_img in self.cache.keys():
             sample = copy.deepcopy(self.cache[name_img])
@@ -137,6 +148,12 @@ class Pascal3DPlus(Dataset):
             except KeyboardInterrupt:
                 obj_mask = np.zeros((img.size[1], img.size[0]))
 
+            label = 0 if len(self.category) == 0 else self.category.index(cate)
+            pad_size = self.max_n - kp.shape[0]
+            kp = np.pad(kp, pad_width=((0, pad_size), (0, 0)), mode='constant', constant_values=0)
+            iskpvisible = np.pad(iskpvisible, pad_width=(0, pad_size), mode='constant', constant_values=False)
+            index = np.array([self.max_n * label + k for k in range(self.max_n)])
+
             sample = {
                 "this_name": this_name,
                 "cad_index": int(annotation_file["cad_index"]),
@@ -148,8 +165,10 @@ class Pascal3DPlus(Dataset):
                 "obj_mask": obj_mask,
                 "img": img,
                 "original_img": np.array(img),
+                "label": label,
+                "index": index,
             }
-            if not self.multi_cate:
+            if not self.skip_kp:
                 sample['kp'] = kp.astype(np.float32)
                 sample['kpvis'] = iskpvisible.astype(bool)
 
@@ -158,6 +177,14 @@ class Pascal3DPlus(Dataset):
 
         if self.transforms:
             sample = self.transforms(sample)
+
+        """
+        for k in sample:
+            if isinstance(sample[k], torch.Tensor) or isinstance(sample[k], np.ndarray):
+                print(k, sample[k].shape)
+            else:
+                print(k, type(sample[k]))
+        """
         return sample
 
     def debug(self, item, save_dir=""):
