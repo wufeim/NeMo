@@ -88,6 +88,7 @@ class NeMo(BaseModel):
 
     def train(self, sample):
         self.net.train()
+        sample = self.transforms(sample)
 
         img = sample['img'].cuda()
         kp = sample['kp'].cuda()
