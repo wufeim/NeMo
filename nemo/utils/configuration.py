@@ -4,6 +4,7 @@ import logging
 import os
 from ast import literal_eval
 
+import torch
 import yaml
 
 import nemo
@@ -260,6 +261,8 @@ def load_config(args, load_default_config=True, override=None, log_info=True):
 
     config.defrost()
     config.args = args
+
+    config.num_gpus = torch.cuda.device_count()
     config.freeze()
 
     return config

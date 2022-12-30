@@ -27,7 +27,7 @@ mesh_para_names = [
 def get_target_distances(start=4.0, end=32.0, num=14):
     ranges = np.linspace(start, end, num + 1)
     return (
-        np.random.rand(14, dtype=np.float32) * (ranges[1:] - ranges[:-1]) + ranges[:-1]
+        np.random.rand(14).astype(np.float32) * (ranges[1:] - ranges[:-1]) + ranges[:-1]
     )
 
 
@@ -48,7 +48,8 @@ def prepare_pascal3d_sample(
     single_mesh=True,
     mesh_manager=None,
     direction_dicts=None,
-    obj_ids=None
+    obj_ids=None,
+    extra_anno=None
 ):
     """
     Prepare a sample for training and validation.
@@ -267,6 +268,10 @@ def prepare_pascal3d_sample(
 
             if texture_filenames is not None:
                 save_parameters["texture_name"] = texture_name
+
+            if extra_anno is not None:
+                for k in extra_anno:
+                    save_parameters[k] = extra_anno[k]
 
             try:
                 # Prepare 3D annotations for NeMo training

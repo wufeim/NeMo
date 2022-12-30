@@ -7,6 +7,7 @@ from .data_preparation import prepare_pascal3d_sample
 from .distributed_utils import is_main_process
 from .dnnlib import call_func_by_name
 from .dnnlib import construct_class_by_name
+from .dnnlib import EasyDict
 from .evaluate import pose_error
 from .features import normalize_features
 from .flow_warp import flow_warp
