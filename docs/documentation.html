@@ -291,6 +291,7 @@ conda install pytorch3d -c pytorch3d</code></pre>
                 <pre class="block-code"><code>conda install numpy matplotlib scipy scikit-image
 conda install pillow
 conda install -c conda-forge timm tqdm pyyaml transformers
+pip install git+https://github.com/NVlabs/nvdiffrast/
 pip install wget gdown BboxTools opencv-python</code></pre>
             </li>
             <li>
@@ -325,9 +326,18 @@ pip install wget gdown BboxTools opencv-python</code></pre>
                 <b>NeMo.</b> Neural mesh models (NeMo) for 3D pose estimation.
                 <ul>
                     <li>Configuration: <code class="inline-code">config/models/nemo.yaml</code></li>
-                    <li>Configuration for 3D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_3d_resnet50_general.yaml</code></li>
+                    <li>Configuration for 3D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_3d.yaml</code></li>
                     <li>Reference: <a href="https://openreview.net/forum?id=pmj131uIL9H">NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation (ICLR 2021)</a></li>
-                    <li>Weights: <code class="inline-code">https://www.cs.jhu.edu/~wufeim/NeMo/pascal3d/nemo/CATEGORY/model_800.pth</code></li>, change <code class="inline-code">CATEGORY</code> to a proper category name (<code class="inline-code">aeroplane</code>, <code class="inline-code">car</code>, etc.).
+                    <li>Weights: <code class="inline-code">https://www.cs.jhu.edu/~wufeim/NeMo/pascal3d/nemo/CATEGORY/model_800.pth</code>, change <code class="inline-code">CATEGORY</code> to a proper category name (<code class="inline-code">aeroplane</code>, <code class="inline-code">car</code>, etc.).
+                </ul>
+            </li>
+            <li>
+                <b>NeMo-Cls.</b> Neural mesh models (NeMo) for 3D-aware image classification.
+                <ul>
+                    <li>Configuration: <code class="inline-code">config/models/nemo_cls.yaml</code></li>
+                    <li>Configuration for 3D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_3d_nemo_cls.yaml</code></li>
+                    <!-- <li>Reference: <a href="https://openreview.net/forum?id=pmj131uIL9H">NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation (ICLR 2021)</a></li> -->
+                    <li>Weights: <code class="inline-code" style="color: red">coming...</code>, change <code class="inline-code">CATEGORY</code> to a proper category name (<code class="inline-code">aeroplane</code>, <code class="inline-code">car</code>, etc.).
                 </ul>
             </li>
         </ul>
