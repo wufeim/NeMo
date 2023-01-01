@@ -148,7 +148,6 @@ class NeMo(BaseModel):
         self.net = construct_class_by_name(**self.net_params)
         self.net = nn.DataParallel(self.net).to(self.device)
         self.net.load_state_dict(self.checkpoint["state"])
-        self.down_sample_rate = self.down_sample_rate
 
         xvert, xface = load_off(self.mesh_path, to_torch=True)
         self.num_verts = int(xvert.shape[0])
@@ -176,7 +175,7 @@ class NeMo(BaseModel):
             .cpu()
             .numpy()
         )
-        self.feature_bank = torch.from_numpy(memory)
+        feature_bank = torch.from_numpy(memory)
         self.clutter_bank = torch.from_numpy(clutter).to(self.device)
         self.clutter_bank = normalize_features(
             torch.mean(self.clutter_bank, dim=0)
@@ -199,7 +198,7 @@ class NeMo(BaseModel):
         self.inter_module = MeshInterpolateModule(
             xvert,
             xface,
-            self.feature_bank,
+            feature_bank,
             rasterizer,
             post_process=center_crop_fun(map_shape, (render_image_size,) * 2),
         ).to(self.device)
@@ -222,6 +221,8 @@ class NeMo(BaseModel):
         )
 
     def evaluate(self, sample, debug=False):
+        self.net.eval()
+
         sample = self.transforms(sample)
         img = sample["img"].to(self.device)
         assert len(img) == 1, "The batch size during validation should be 1"
