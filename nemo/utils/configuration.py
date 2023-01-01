@@ -131,9 +131,11 @@ class Configuration:
 
             includes = mapping.get("includes", [])
 
+            if isinstance(includes, str):
+                includes = [includes]
             if not isinstance(includes, list):
                 raise AttributeError(
-                    "Includes must be a list, {} provided".format(type(includes))
+                    "Includes must be a list or a str, {} provided".format(type(includes))
                 )
             include_mapping = {}
 
@@ -240,7 +242,7 @@ def load_config(args, load_default_config=True, override=None, log_info=True):
     config_path = nemo.utils.get_abs_path(args.config)
     assert os.path.isfile(
         config_path
-    ), f"configuration file doe not exist: {config_path}"
+    ), f"configuration file does not exist: {config_path}"
 
     if load_default_config:
         config = Configuration(
