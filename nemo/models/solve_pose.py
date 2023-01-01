@@ -307,6 +307,7 @@ def solve_pose(
                     py_pred * cfg.model.down_sample_rate
                     + hm_h * cfg.model.down_sample_rate / 2,
                 ],
+                "score": loss.item(),
             }
         )
 
