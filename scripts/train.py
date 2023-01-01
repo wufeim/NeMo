@@ -57,7 +57,9 @@ def train(cfg):
     if cfg.args.dry_run:
         exit()
 
-    model = construct_class_by_name(**cfg.model, cfg=cfg, cate=cfg.args.cate, mode='train')
+    model = construct_class_by_name(
+        **cfg.model, cfg=cfg, cate=cfg.args.cate, mode='train',
+        image_sizes=cfg.dataset.image_sizes)
 
     logging.info("Start training")
     for epo in range(cfg.training.total_epochs):
