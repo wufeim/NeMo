@@ -31,8 +31,8 @@ training:
 
 inference:
     cameras:
-        class_name: pytorch3d.renderer.OpenGLPerspectiveCameras
-        fov: 12.0
+        class_name: pytorch3d.renderer.PerspectiveCameras
+        focal_length: 3000
 
     raster_settings:
         class_name: pytorch3d.renderer.RasterizationSettings
