@@ -1,4 +1,4 @@
-dataset: config/datasets/pascal3d_general.yaml
+dataset: config/datasets/pascal3d_cls.yaml
 model: config/models/resnet50_general.yaml
 
 task: 3d_pose_estimation

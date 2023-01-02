@@ -211,6 +211,23 @@ class Pascal3DPlus(Dataset):
         )
 
 
+class Resize:
+    def __init__(self, height, width):
+        self.height = height
+        self.width = width
+
+    def __call__(self, sample):
+        assert len(sample['img'].shape) == 4
+        b, c, h, w = sample['img'].shape
+        if h != self.height or w != self.width:
+            sample['img'] = sample['img'].resize_(b, c, self.height, self.width)
+            if 'kp' in sample:
+                assert len(sample['kp'].shape) == 3
+                sample['kp'][:, :, 0] *= self.width / w
+                sample['kp'][:, :, 1] *= self.height / h
+        return sample
+
+
 class ToTensor:
     def __init__(self):
         self.trans = torchvision.transforms.ToTensor()

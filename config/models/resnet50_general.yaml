@@ -6,6 +6,9 @@ num_bins: 41
 backbone: resnet50
 
 transforms:
+    - class_name: nemo.datasets.pascal3d.Resize
+      height: 256
+      width: 256
     - class_name: nemo.datasets.pascal3d.Normalize
 
 training:

@@ -39,6 +39,7 @@ class ResNetGeneral(BaseModel):
 
     def train(self, sample):
         self.model.train()
+        sample = self.transforms(sample)
 
         img = sample['img'].to(self.device)
         targets = self._get_targets(sample).long().view(-1).to(self.device)
@@ -82,6 +83,7 @@ class ResNetGeneral(BaseModel):
 
     def evaluate(self, sample):
         self.model.eval()
+        sample = self.transforms(sample)
 
         img = sample['img'].to(self.device)
         output = self.model(img).detach().cpu().numpy()
