@@ -58,7 +58,7 @@ class NeMoCls(BaseModel):
         else:
             self._build_inference()
 
-    def sanity_check():
+    def sanity_check(self):
         # All image sizes should be the same
         size_0 = self.image_sizes['aeroplane']
         for cate in CATEGORIES:
