@@ -316,14 +316,52 @@ pip install wget gdown BboxTools opencv-python</code></pre>
         <hr>
         <ul>
             <li>
-                <a href="">PASCAL3D+</a> and Occluded PASCAL3D+.
+                <a href="https://cvgl.stanford.edu/projects/pascal3d.html">PASCAL3D+</a> and <a href="https://github.com/Angtian/OccludedPASCAL3D">Occluded PASCAL3D+</a>.
                 <pre class="block-code"><code>python3 prepare_pascal3d.py \
-    --config config/datasets/pascal3d_general.yaml</code></pre>
+    --config config/datasets/pascal3d.yaml</code></pre>
+                To prepare the dataset for specific uses, variants of the configurations files are provided:
+                <ul>
+                    <li><code class="inline-code">config/datasets/pascal3d_cls.yaml</code>: for 3D-aware image classification; uniform image sizes for all categories.</li>
+                    <li><code class="inline-code">config/datasets/pascal3d_6d.yaml</code>: training set for 6D pose estimation; data augmentated with varying object scales and background texture padding</li>
+                </ul>
+            </li>
+            <li>
+                <a href="https://cvgl.stanford.edu/projects/objectnet3d/">ObjectNet3D</a>.
+                <pre class="block-code"><code>python3 prepare_objectnet3d.py \
+    --config config/datasets/objectnet3d.yaml</code></pre>
             </li>
             <li>
                 <a href="https://www.ood-cv.org">OOD-CV</a>.
                 <pre class="block-code"><code>python3 prepare_ood_cv.py \
     --config config/datasets/ood_cv.yaml</code></pre>
+                To prepare the dataset for specific uses, variants of the configurations files are provided:
+                <ul>
+                    <li><code class="inline-code">config/datasets/ood_cv_cls.yaml</code>: for 3D-aware image classification; uniform image sizes for all categories.</li>
+                    <li><code class="inline-code">config/datasets/ood_cv_6d.yaml</code>: training set for 6D pose estimation; data augmentated with varying object scales and background texture padding</li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+    <section id="data">
+        <h2>Training and Evaluation</h2>
+        <hr>
+        <ul>
+            <li>
+                <b>Training.</b> There is a general entry point for training baselines and NeMo models. Run the following command with the appropriate configuration and a directory for results:
+                <pre class="block-code"><code>CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
+    --cate aeroplane \
+    --config config/pose_estimation_3d.yaml \
+    --save_dir exp/pose_estimation_3d_nemo_aeroplane</code></pre>
+            </li>
+            <li>
+                <b>Evaluation.</b> After training, evaluate the model by specifying the desired model checkpoint
+                <pre class="block-code"><code>CUDA_VISIBLE_DEVICES=0 python3 scripts/train.py \
+    --cate aeroplane \
+    --config config/pose_estimation_3d.yaml \
+    --save_dir exp/pose_estimation_3d_nemo_aeroplane \
+    --checkpoint exp/pose_estimation_3d_nemo_aeroplane/ckpts/model_800.pth</code></pre>
+                Model predctions will also be exported to the saving directory (e.g., <code class="inline-code">pascal3d_aeroplane_val.pth</code>) for reuse.
             </li>
         </ul>
     </section>
@@ -338,7 +376,7 @@ pip install wget gdown BboxTools opencv-python</code></pre>
                     <li>Configuration: <code class="inline-code">config/models/nemo.yaml</code></li>
                     <li>Configuration for 3D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_3d.yaml</code></li>
                     <li>Reference: <a href="https://openreview.net/forum?id=pmj131uIL9H">NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation (ICLR 2021)</a></li>
-                    <li>Weights: <code class="inline-code">https://www.cs.jhu.edu/~wufeim/NeMo/pascal3d/nemo/CATEGORY/model_800.pth</code>, change <code class="inline-code">CATEGORY</code> to a proper category name (<code class="inline-code">aeroplane</code>, <code class="inline-code">car</code>, etc.).
+                    <li>Weights: <code class="inline-code">https://www.cs.jhu.edu/~wufeim/NeMo/pascal3d/nemo/CATEGORY/model_800.pth</code>, replace <code class="inline-code">CATEGORY</code> with a proper category name (<code class="inline-code">aeroplane</code>, <code class="inline-code">car</code>, etc.).
                 </ul>
             </li>
             <li>
@@ -347,7 +385,16 @@ pip install wget gdown BboxTools opencv-python</code></pre>
                     <li>Configuration: <code class="inline-code">config/models/nemo_cls.yaml</code></li>
                     <li>Configuration for 3D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_3d_nemo_cls.yaml</code></li>
                     <!-- <li>Reference: <a href="https://openreview.net/forum?id=pmj131uIL9H">NeMo: Neural Mesh Models of Contrastive Features for Robust 3D Pose Estimation (ICLR 2021)</a></li> -->
-                    <li>Weights: <code class="inline-code" style="color: red">coming...</code>, change <code class="inline-code">CATEGORY</code> to a proper category name (<code class="inline-code">aeroplane</code>, <code class="inline-code">car</code>, etc.).
+                    <li>Weights: <code class="inline-code" style="color: red">coming...</code>.
+                </ul>
+            </li>
+            <li>
+                <b>NeMo-6D.</b> Neural mesh models (NeMo) for 6D pose estimation.
+                <ul>
+                    <li>Configuration: <code class="inline-code">config/models/nemo_6d.yaml</code></li>
+                    <li>Configuration for 6D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_6d_nemo_6d.yaml</code></li>
+                    <li>Reference: <a href="https://link.springer.com/chapter/10.1007/978-3-031-20077-9_29">Robust Category-Level 6D Pose Estimation with Coarse-to-Fine Rendering of Neural Features (ECCV 2022)</a></li>
+                    <li>Weights: <code class="inline-code" style="color: red">coming...</code>, replace <code class="inline-code">CATEGORY</code> with a proper category name (<code class="inline-code">aeroplane</code>, <code class="inline-code">car</code>, etc.).
                 </ul>
             </li>
         </ul>
@@ -362,6 +409,7 @@ pip install wget gdown BboxTools opencv-python</code></pre>
                 <ul>
                     <li>Configuration: <code class="inline-code">config/models/resnet50_general.yaml</code></li>
                     <li>Configuration for 3D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_3d_resnet50_general.yaml</code></li>
+                    <li>Weights: <code class="inline-code" style="color: red">coming...</code>.</li>
                 </ul>
             </li>
         </ul>
