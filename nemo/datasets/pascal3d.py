@@ -207,7 +207,7 @@ class Pascal3DPlus(Dataset):
         gray_img[obj_mask == 1] = img[obj_mask == 1]
 
         Image.fromarray(gray_img).save(
-            os.path.join(save_dir, f'debug_{sample["this_name"]}.png')
+            os.path.join(save_dir, f'debug_{sample["this_name"].replace("/", "_")}.png')
         )
 
 
@@ -215,12 +215,13 @@ class Resize:
     def __init__(self, height, width):
         self.height = height
         self.width = width
+        self.transform = torchvision.transforms.Resize(size=(height, width))
 
     def __call__(self, sample):
         assert len(sample['img'].shape) == 4
         b, c, h, w = sample['img'].shape
         if h != self.height or w != self.width:
-            sample['img'] = sample['img'].resize_(b, c, self.height, self.width)
+            sample['img'] = self.transform(sample['img'])
             if 'kp' in sample:
                 assert len(sample['kp'].shape) == 3
                 sample['kp'][:, :, 0] *= self.width / w
