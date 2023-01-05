@@ -3,10 +3,8 @@ class_name: nemo.datasets.pascal3d.Pascal3DPlus
 root_path: data/OOD_CV_NeMo
 
 pascal3d_raw_path: data/PASCAL3D+_release1.1
-ood_cv_data_path: data/OOD-CV-dataset
-ood_cv_data_url: https://drive.google.com/file/d/1WBujBnnHxzNcmSHxrErdfOHhQz8AGsRb/view?usp=share_link
-ood_cv_list_path: data/phase-1-pose-npz
-ood_cv_list_url: https://drive.google.com/file/d/1gKckXkA4wmkLjD9BTP3Y4mOgVWRRYmte/view?usp=share_link
+ood_cv_pose_url: https://drive.google.com/file/d/1WwoevPJGylRROW8fbsvCtr6EZo2Mtj8q/view?usp=share_link
+ood_cv_pose_data_path: data/ood_cv_pose
 dtd_raw_path: data/dtd
 mesh_path: data/PASCAL3D+_release1.1/CAD_single
 

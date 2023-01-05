@@ -43,8 +43,7 @@ def parse_args():
 
 def download_ood_cv(cfg):
     pascal3d_raw_path = get_abs_path(cfg.pascal3d_raw_path)
-    ood_cv_data_path = get_abs_path(cfg.ood_cv_data_path)
-    ood_cv_list_path = get_abs_path(cfg.ood_cv_list_path)
+    ood_cv_pose_data_path = get_abs_path(cfg.ood_cv_pose_data_path)
     dtd_raw_path = get_abs_path(cfg.dtd_raw_path)
 
     if os.path.isdir(pascal3d_raw_path):
@@ -55,21 +54,17 @@ def download_ood_cv(cfg):
         os.system("unzip PASCAL3D+_release1.1.zip")
         os.system("rm PASCAL3D+_release1.1.zip")
 
-    if os.path.isdir(ood_cv_data_path):
-        print(f"Found OOD-CV dataset at {ood_cv_data_path}")
+    if os.path.isdir(ood_cv_pose_data_path):
+        print(f"Found OOD-CV pose dataset at {ood_cv_pose_data_path}")
     else:
-        print(f"Downloading OOD-CV dataset at {ood_cv_data_path}")
-        gdown.download(cfg.ood_cv_data_url, output="OOD-CV-dataset.zip", fuzzy=True)
-        os.system("unzip OOD-CV-dataset.zip -d OOD-CV-dataset")
-        os.system("rm OOD-CV-dataset.zip")
-
-    if os.path.isdir(ood_cv_list_path):
-        print(f"Found OOD-CV list dataset at {ood_cv_list_path}")
-    else:
-        print(f"Downloading OOD-CV list dataset at {ood_cv_list_path}")
-        gdown.download(cfg.ood_cv_list_url, output="phase-1-pose-npz.zip", fuzzy=True)
-        os.system("unzip phase-1-pose-npz.zip -d phase-1-pose-npz")
-        os.system("rm phase-1-pose-npz.zip")
+        print(f"Downloading OOD-CV pose dataset at {ood_cv_pose_data_path}")
+        gdown.download(cfg.ood_cv_pose_url, output="pose.zip", fuzzy=True)
+        os.system(f"unzip pose.zip -d {ood_cv_pose_data_path}")
+        os.system("rm pose.zip")
+        os.system(f"mv {os.path.join(ood_cv_pose_data_path, 'pose', 'train')} {os.path.join(ood_cv_pose_data_path, 'train')}")
+        os.system(f"mv {os.path.join(ood_cv_pose_data_path, 'pose', 'phase-1')} {os.path.join(ood_cv_pose_data_path, 'phase-1')}")
+        os.system(f"mv {os.path.join(ood_cv_pose_data_path, 'pose', 'phase2')} {os.path.join(ood_cv_pose_data_path, 'phase2')}")
+        os.system(f"rm -rf {os.path.join(ood_cv_pose_data_path, 'pose')}")
 
     if not cfg.pad_texture:
         print("Skipping Describable Textures Dataset")
@@ -147,8 +142,7 @@ def prepare_ood_cv(cfg, workers=4):
 def worker(params):
     cfg, set_type, occ, cate, dtd_filenames = params
     pascal3d_raw_path = get_abs_path(cfg.pascal3d_raw_path)
-    ood_cv_raw_path = get_abs_path(cfg.ood_cv_data_path)
-    ood_cv_list_raw_path = get_abs_path(cfg.ood_cv_list_path)
+    ood_cv_pose_data_path = get_abs_path(cfg.ood_cv_pose_data_path)
     ood_cv_path = get_abs_path(cfg.root_path)
     dtd_raw_path = get_abs_path(cfg.dtd_raw_path)
     save_root = os.path.join(ood_cv_path, set_type)
@@ -173,7 +167,7 @@ def worker(params):
     os.makedirs(save_list_path, exist_ok=True)
 
     if set_type == 'train':
-        list_file = os.path.join(ood_cv_list_raw_path, 'train', f'{cate}.txt')
+        list_file = os.path.join(ood_cv_pose_data_path, 'train', f'{cate}.txt')
         with open(list_file, 'r') as fp:
             image_names = [x.strip() for x in fp.readlines() if x != '\n']
     elif set_type == 'val':
@@ -181,14 +175,14 @@ def worker(params):
         nuisances = []
 
         # iid
-        fnames = [x[:-4] for x in os.listdir(os.path.join(ood_cv_list_raw_path, 'phase-1', 'iid_test', 'annotations')) if x.endswith('.npz')]
+        fnames = [x[:-4] for x in os.listdir(os.path.join(ood_cv_pose_data_path, 'phase-1', 'iid_test', 'annotations')) if x.endswith('.npz')]
         fnames = [x for x in fnames if cate == x.split('_')[1]]
         image_names += fnames
         nuisances += ['iid'] * len(fnames)
 
         # nuisances
         for n in cfg.nuisances:
-            fnames = [x[:-4] for x in os.listdir(os.path.join(ood_cv_list_raw_path, 'phase-1', 'nuisances', n, 'annotations')) if x.endswith('.npz')]
+            fnames = [x[:-4] for x in os.listdir(os.path.join(ood_cv_pose_data_path, 'phase-1', 'nuisances', n, 'annotations')) if x.endswith('.npz')]
             fnames = [x for x in fnames if cate == x.split('_')[1]]
             image_names += fnames
             nuisances += [n] * len(fnames)
