@@ -6,7 +6,7 @@ import ssl
 import numpy as np
 import scipy.io as sio
 import wget
-from create_cuboid_mesh import create_meshes
+import pycocotools.mask
 from tqdm import tqdm
 
 from nemo.models.mesh_memory_map import MeshConverter
@@ -16,6 +16,8 @@ from nemo.utils import load_config
 from nemo.utils import prepare_pascal3d_sample
 from nemo.utils.pascal3d_utils import CATEGORIES
 from nemo.utils.pascal3d_utils import MESH_LEN
+
+from create_cuboid_mesh import create_meshes
 
 mesh_para_names = [
     "azimuth",
@@ -39,6 +41,24 @@ def parse_args():
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--workers", type=int, default=8)
     return parser.parse_args()
+
+
+def mask_to_rle(mask):
+    mask = np.asfortranarray(mask)
+    rle = {'counts': [], 'size': list(mask.shape)}
+    counts = rle.get('counts')
+    for i, (value, elements) in enumerate(groupby(mask.ravel(order='F'))):
+        if i == 0 and value == 1:
+            counts.append(0)
+        counts.append(len(list(elements)))
+    return rle
+
+
+def rle_to_mask(rle):
+    if isinstance(rle, np.ndarray):
+        rle = rle[()]
+    compressed_rle = pycocotools.mask.frPyObjects(rle, rle.get('size')[0], rle.get('size')[1])
+    return pycocotools.mask.decode(compressed_rle).astype(np.uint8)
 
 
 def download_pascal3d(cfg):
@@ -98,6 +118,59 @@ def download_pascal3d(cfg):
             number_vertices=1000,
             linear_coverage=0.99,
         )
+
+    if hasattr(cfg, 'segmentation_masks'):
+        seg_data_path = get_abs_path(cfg.seg_data_path)
+        if os.path.isdir(seg_data_path):
+            print(f"Found segmentation data at {seg_data_path}")
+        else:
+            print(f"Generating segmentation data at {seg_data_path}")
+            os.system(f'gdown {cfg.seg_data_url}')
+            gdown.download(cfg.seg_data_url, output="Occluded_Vehicles.zip", fuzzy=True)
+            os.system('unzip Occluded_Vehicles.zip')
+            os.system('rm Occluded_Vehicles.zip')
+
+            # Training
+            for cate in CATEGORIES:
+                img_path = os.path.join('Occluded_Vehicles', 'training', 'images', f'{cate}_raw')
+                anno_path = os.path.join('Occluded_Vehicles', 'training', 'annotations', f'{cate}_raw')
+
+                save_path = os.path.join(seg_data_path, 'train', cate)
+                os.makedirs(save_path, exist_ok=True)
+
+                filenames = [x for x in os.listdir(anno_path) if x.endswith('.npz')]
+                for fname in tqdm(filenames, desc=f'training_{cate}'):
+                    sz = Image.open(os.path.join(img_path, fname.split('.')[0]+'.JPEG')).size
+                    annotation = np.load(os.path.join(anno_path, fname), allow_pickle=True)
+                    try:
+                        mask = pycocotools.mask.decode(pycocotools.mask.merge(pycocotools.mask.frPyObjects(annotation['mask'].tolist(), sz[1], sz[0])))
+                        np.save(os.path.join(save_path, fname[:-4]), mask_to_rle(mask))
+                    except:
+                        continue
+
+            # Validation
+            for cate in CATEGORIES:
+                for occ_level in [0, 1, 2, 3]:
+                    img_path = os.path.join('Occluded_Vehicles', 'testing', 'images', f'{cate}FGL{occ_level}_BGL{occ_level}')
+                    anno_path = os.path.join('Occluded_Vehicles', 'testing', 'annotations', f'{cate}FGL{occ_level}_BGL{occ_level}')
+
+                    if occ_level == 0:
+                        save_path = os.path.join(seg_data_path, 'val', f'{cate}')
+                    else:
+                        save_path = os.path.join(seg_data_path, 'val', f'{cate}FGL{occ_level}_BGL{occ_level}')
+                    os.makedirs(save_path, exist_ok=True)
+
+                    filenames = [x for x in os.listdir(anno_path) if x.endswith('.npz')]
+                    for fname in tqdm(filenames, desc=f'val_{cate}FGL{occ_level}_BGL{occ_level}'):
+                        sz = Image.open(os.path.join(img_path, fname.split('.')[0]+'.JPEG')).size
+                        annotation = np.load(os.path.join(anno_path, fname))
+                        try:
+                            mask = pycocotools.mask.decode(pycocotools.mask.merge(pycocotools.mask.frPyObjects(annotation['mask'].tolist(), sz[1], sz[0])))
+                            np.save(os.path.join(save_path, fname[:-4]), mask_to_rle(mask))
+                        except:
+                            continue
+    else:
+        print("Skipping segmentation data")
 
 
 def get_target_distances():

@@ -7,6 +7,8 @@ pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
 pascal3d_occ_raw_path: data/OccludedPASCAL3D
 pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
 image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+seg_data_path: data/PASCAL3D_segmentation
 dtd_raw_path: data/dtd
 mesh_path: data/PASCAL3D+_release1.1/CAD_single
 
