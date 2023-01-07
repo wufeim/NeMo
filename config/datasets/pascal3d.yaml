@@ -18,6 +18,7 @@ training_only: false
 augment_by_dist: false
 prepare_mode: first
 
+occ_level: 0
 occ_levels:
     train: [0]
     val: [0, 1, 2, 3]

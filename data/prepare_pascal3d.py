@@ -119,7 +119,7 @@ def download_pascal3d(cfg):
             linear_coverage=0.99,
         )
 
-    if hasattr(cfg, 'segmentation_masks'):
+    if hasattr(cfg, 'segmentation_masks') and len(getattr(cfg, 'segmentation_masks')) > 0:
         seg_data_path = get_abs_path(cfg.seg_data_path)
         if os.path.isdir(seg_data_path):
             print(f"Found segmentation data at {seg_data_path}")
@@ -250,6 +250,9 @@ def worker(params):
     dtd_raw_path = get_abs_path(cfg.dtd_raw_path)
     pascal3d_data_path = get_abs_path(cfg.root_path)
     save_root = os.path.join(pascal3d_data_path, set_type)
+    prepare_seg = hasattr(cfg, 'segmentation_masks') and len(getattr(cfg, 'segmentation_masks')) > 0
+    if prepare_seg:
+        seg_data_path = get_abs_path(cfg.seg_data_path)
 
     this_size = cfg.image_sizes[cate]
     out_shape = [
@@ -297,6 +300,8 @@ def worker(params):
     for img_name in image_names:
         img_path = os.path.join(img_dir, f"{img_name}.JPEG")
         anno_path = os.path.join(anno_dir, f"{img_name}.mat")
+        if prepare_seg:
+            seg_mask_path = os.path.join(seg_data_path, set_type, cate, f'{img_name}.npy')
 
         prepared_sample_names = prepare_pascal3d_sample(
             cate,
@@ -317,6 +322,7 @@ def worker(params):
             single_mesh=cfg.single_mesh,
             mesh_manager=manager,
             direction_dicts=direction_dicts,
+            seg_mask_path=seg_mask_path
         )
         if prepared_sample_names is None:
             num_errors += 1

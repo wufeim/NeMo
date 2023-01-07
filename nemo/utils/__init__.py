@@ -1,3 +1,4 @@
+from .mask_utils import mask_to_rle, rle_to_mask
 from .calculate_occ import cal_occ_one_image
 from .calculate_point_direction import cal_point_weight
 from .calculate_point_direction import direction_calculator

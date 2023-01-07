@@ -7,6 +7,7 @@ import scipy.io as sio
 from PIL import Image
 
 from nemo.utils import cal_point_weight
+from nemo.utils import rle_to_mask
 from nemo.utils.pascal3d_utils import get_anno
 from nemo.utils.pascal3d_utils import get_obj_ids
 from nemo.utils.pascal3d_utils import KP_LIST
@@ -49,7 +50,8 @@ def prepare_pascal3d_sample(
     mesh_manager=None,
     direction_dicts=None,
     obj_ids=None,
-    extra_anno=None
+    extra_anno=None,
+    seg_mask_path=None
 ):
     """
     Prepare a sample for training and validation.
@@ -84,9 +86,14 @@ def prepare_pascal3d_sample(
     mat_contents = sio.loadmat(anno_path)
     record = mat_contents["record"][0][0]
     if occ_path is not None:
-        occ_mask = np.load(occ_path, allow_pickle=True)["occluder_mask"]
+        occ_mask = np.load(occ_path, allow_pickle=True)["occluder_mask"].astype(np.uint8)
     else:
         occ_mask = None
+    if seg_mask_path is not None and os.path.isfile(seg_mask_path):
+        rle = np.load(seg_mask_path, allow_pickle=True)
+        amodal_mask = rle_to_mask(rle).astype(np.uint8)
+    else:
+        amodal_mask = None
 
     if obj_ids is None:
         obj_ids = get_obj_ids(record, cate=cate)
@@ -130,13 +137,12 @@ def prepare_pascal3d_sample(
                 img = np.array(img)
                 box_ori = box_ori.set_boundary(img.shape[0:2])
 
-                img = cv2.resize(
-                    img,
-                    dsize=(
-                        int(img.shape[1] * resize_rate),
-                        int(img.shape[0] * resize_rate),
-                    ),
-                )
+                dsize = (int(img.shape[1] * resize_rate), int(img.shape[0] * resize_rate))
+                img = cv2.resize(img, dsize=dsize)
+                if occ_mask is not None:
+                    occ_mask = cv2.resize(occ_mask, dsize=dsize, interpolation=cv2.INTER_NEAREST)
+                if amodal_mask is not None:
+                    amodal_mask = cv2.resize(amodal_mask, dsize=dsize, interpolation=cv2.INTER_NEAREST)
 
                 if texture_filenames is not None:
                     texture_name = np.random.choice(texture_filenames)
@@ -186,6 +192,11 @@ def prepare_pascal3d_sample(
                         ] = img
                         img = texture_img
 
+                    if occ_mask is not None:
+                        occ_mask = np.pad(occ_mask, (padding[0], padding[1]), mode='constant')
+                    if amodal_mask is not None:
+                        amodal_mask = np.pad(amodal_mask, (padding[0], padding[1]), mode='constant')
+
                     box = box.shift([padding[0][0], padding[1][0]])
                     box1 = box1.shift([padding[0][0], padding[1][0]])
                 else:
@@ -195,7 +206,21 @@ def prepare_pascal3d_sample(
                 box = box1.set_boundary(img.shape[0:2])
                 box_in_cropped = box.box_in_box(box_in_cropped)
 
-                img_cropped = box.apply(img)
+                bbox = box.bbox
+                # img_cropped = box.apply(img)
+                img_cropped = img[bbox[0][0]:bbox[0][1], bbox[1][0]:bbox[1][1], :]
+                if occ_mask is not None:
+                    occ_mask = occ_mask[bbox[0][0]:bbox[0][1], bbox[1][0]:bbox[1][1]]
+                if amodal_mask is not None:
+                    amodal_mask = amodal_mask[bbox[0][0]:bbox[0][1], bbox[1][0]:bbox[1][1]]
+
+                if amodal_mask is not None:
+                    if occ_mask is not None:
+                        inmodal_mask = amodal_mask * (1 - occ_mask)
+                    else:
+                        inmodal_mask = amodal_mask
+                else:
+                    inmodal_mask = None
 
                 """
                 proj_foo = bbt.projection_function_by_boxes(
@@ -226,7 +251,7 @@ def prepare_pascal3d_sample(
                     states_list.append(states)
                     cropped_kp_list.append([cropped_kp_y, cropped_kp_x])
                 """
-            except:
+            except KeyboardInterrupt:
                 continue
 
             if augment_by_dist:
@@ -242,6 +267,8 @@ def prepare_pascal3d_sample(
                 # cropped_kp_list=cropped_kp_list,
                 # visible=states_list,
                 occ_mask=occ_mask,
+                amodal_mask=amodal_mask,
+                inmodal_mask=inmodal_mask,
             )
             save_parameters = {
                 **save_parameters,

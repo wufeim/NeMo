@@ -29,6 +29,7 @@ class Pascal3DPlus(Dataset):
         weighted=True,
         remove_no_bg=None,
         skip_kp=False,
+        segmentation_masks=None,
         **kwargs,
     ):
         self.data_type = data_type
@@ -40,6 +41,7 @@ class Pascal3DPlus(Dataset):
         self.weighted = weighted
         self.remove_no_bg = remove_no_bg
         self.skip_kp = skip_kp
+        self.segmentation_masks = segmentation_masks
         self.mesh_path = mesh_path
         self.transforms = torchvision.transforms.Compose(
             [construct_class_by_name(**t) for t in transforms]
@@ -90,15 +92,25 @@ class Pascal3DPlus(Dataset):
         self.filter()
 
     def filter(self):
-        if self.remove_no_bg is None:
-            return
-        filtered_file_list = []
-        for i in range(len(self.file_list)):
-            sample = self.__getitem__(i)
-            obj_mask = skimage.measure.block_reduce(sample['obj_mask'], (self.remove_no_bg, self.remove_no_bg), np.max)
-            if np.sum(1-obj_mask) >= 5:
+        if self.remove_no_bg is not None:
+            filtered_file_list = []
+            for i in range(len(self.file_list)):
+                sample = self.__getitem__(i)
+                obj_mask = skimage.measure.block_reduce(sample['obj_mask'], (self.remove_no_bg, self.remove_no_bg), np.max)
+                if np.sum(1-obj_mask) >= 5:
+                    filtered_file_list.append(self.file_list[i])
+            self.file_list = filtered_file_list
+
+        if self.segmentation_masks is None:
+            filtered_file_list = []
+            for i in range(len(self.file_list)):
+                sample = self.__getitem__(i)
+                if 'inmodal' in self.segmentation_masks and sample['inmodal_mask'] is None:
+                    continue
+                if 'amodal' in self.segmentation_masks and sample['amodal_mask'] is None:
+                    continue
                 filtered_file_list.append(self.file_list[i])
-        self.file_list = filtered_file_list
+            self.file_list = filtered_file_list
 
     def __len__(self):
         return len(self.file_list)
@@ -167,6 +179,8 @@ class Pascal3DPlus(Dataset):
                 "original_img": np.array(img),
                 "label": label,
                 "index": index,
+                "amodal_mask": annotation_file["amodal_mask"],
+                "inmodal_mask": annotation_file["inmodal_mask"],
             }
             if not self.skip_kp:
                 sample['kp'] = kp.astype(np.float32)
