@@ -70,7 +70,7 @@ Environment
    conda install pillow
    conda install -c conda-forge timm tqdm pyyaml transformers
    pip install git+https://github.com/NVlabs/nvdiffrast/
-   pip install wget gdown BboxTools opencv-python xatlas
+   pip install wget gdown BboxTools opencv-python xatlas pycocotools seaborn
 
 5. Install NeMo:
 
