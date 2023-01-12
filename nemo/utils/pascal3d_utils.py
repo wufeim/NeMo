@@ -16,6 +16,18 @@ CATEGORIES = [
     "train",
     "tvmonitor",
 ]
+CATEGORIES_OODCV = [
+    "aeroplane",
+    "bicycle",
+    "boat",
+    "bus",
+    "car",
+    "chair",
+    "diningtable",
+    "motorbike",
+    "sofa",
+    "train",
+]
 KP_LIST = {
     "aeroplane": [
         "left_wing",

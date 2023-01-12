@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.linalg import logm
+import torch
 
 
 def pose_error(gt, pred):
@@ -31,3 +32,16 @@ def pose_error(gt, pred):
             (logm(np.dot(np.transpose(pred_matrix), anno_matrix)) ** 2).sum()
         ) ** 0.5 / (2.0 ** 0.5)
     return error_
+
+
+def iou(mask1, mask2):
+    if isinstance(mask1, torch.Tensor):
+        mask1 = mask1.detach().cpu().numpy()
+    if isinstance(mask2, torch.Tensor):
+        mask2 = mask2.detach().cpu().numpy()
+
+    intersection = np.sum(mask1 * mask2)
+    union = np.sum(mask1) + np.sum(mask2) - intersection
+    if union == 0:
+        return 1.0
+    return intersection / union

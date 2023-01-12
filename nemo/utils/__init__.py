@@ -4,12 +4,12 @@ from .calculate_point_direction import cal_point_weight
 from .calculate_point_direction import direction_calculator
 from .configuration import Configuration
 from .configuration import load_config
-from .data_preparation import prepare_pascal3d_sample
+from .data_preparation import prepare_pascal3d_sample, prepare_pascal3d_sample_det
 from .distributed_utils import is_main_process
 from .dnnlib import call_func_by_name
 from .dnnlib import construct_class_by_name
 from .dnnlib import EasyDict
-from .evaluate import pose_error
+from .evaluate import pose_error, iou
 from .features import normalize_features
 from .flow_warp import flow_warp
 from .general import get_abs_path
@@ -67,4 +67,6 @@ __all__ = [
     "normalize_features",
     "cal_rotation_matrix",
     "pose_error",
+    "iou",
+    "prepare_pascal3d_sample_det",
 ]
