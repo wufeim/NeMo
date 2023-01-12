@@ -1,5 +1,8 @@
+import cv2
+import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from nemo.models.base_model import BaseModel
 from nemo.models.feature_banks import mask_remove_near
@@ -11,7 +14,7 @@ from nemo.utils import construct_class_by_name
 from nemo.utils import get_param_samples
 from nemo.utils import load_off
 from nemo.utils import normalize_features
-from nemo.utils import pose_error
+from nemo.utils import pose_error, iou
 from nemo.utils.pascal3d_utils import IMAGE_SIZES
 
 
@@ -255,3 +258,65 @@ class NeMo(BaseModel):
         for k in kwargs:
             ckpt[k] = kwargs[k]
         return ckpt
+
+    def predict_inmodal(self, sample, visualize=False):
+        self.net.eval()
+
+        # sample = self.transforms(sample)
+        img = sample["img"].to(self.device)
+        assert len(img) == 1, "The batch size during validation should be 1"
+
+        with torch.no_grad():
+            feature_map = self.net.module.forward_test(img)
+
+        clutter_score = None
+        if not isinstance(self.clutter_bank, list):
+            clutter_bank = [self.clutter_bank]
+        for cb in clutter_bank:
+            _score = (
+                torch.nn.functional.conv2d(feature_map, cb.unsqueeze(2).unsqueeze(3))
+                .squeeze(0)
+                .squeeze(0)
+            )
+            if clutter_score is None:
+                clutter_score = _score
+            else:
+                clutter_score = torch.max(clutter_score, _score)
+
+        nkpt, c = self.kp_features.shape
+        feature_map_nkpt = feature_map.expand(nkpt, -1, -1, -1)
+        kp_features = self.kp_features.view(nkpt, c, 1, 1)
+        kp_score = torch.sum(feature_map_nkpt * kp_features, dim=1)
+        kp_score, _ = torch.max(kp_score, dim=0)
+
+        clutter_score = clutter_score.detach().cpu().numpy().astype(np.float32)
+        kp_score = kp_score.detach().cpu().numpy().astype(np.float32)
+        pred_mask = (kp_score > clutter_score).astype(np.uint8)
+        pred_mask_up = cv2.resize(
+            pred_mask, dsize=(pred_mask.shape[1]*self.down_sample_rate, pred_mask.shape[0]*self.down_sample_rate),
+            interpolation=cv2.INTER_NEAREST)
+
+        pred = {
+            'clutter_score': clutter_score,
+            'kp_score': kp_score,
+            'pred_mask_orig': pred_mask,
+            'pred_mask': pred_mask_up,
+        }
+
+        if 'inmodal_mask' in sample:
+            gt_mask = sample['inmodal_mask'][0].detach().cpu().numpy()
+            pred['gt_mask'] = gt_mask
+            pred['iou'] = iou(gt_mask, pred_mask_up)
+
+            obj_mask = sample['amodal_mask'][0].detach().cpu().numpy()
+            pred['obj_mask'] = obj_mask
+
+            # pred_mask_up[obj_mask == 0] = 0
+            thr = 0.8
+            new_mask = (kp_score > thr).astype(np.uint8)
+            new_mask = cv2.resize(new_mask, dsize=(obj_mask.shape[1], obj_mask.shape[0]), interpolation=cv2.INTER_NEAREST)
+            new_mask[obj_mask == 0] = 0
+            pred['iou'] = iou(gt_mask, new_mask)
+            pred['pred_mask'] = new_mask
+
+        return pred
