@@ -29,7 +29,7 @@ class Pascal3DPlus(Dataset):
         weighted=True,
         remove_no_bg=None,
         skip_kp=False,
-        segmentation_masks=None,
+        segmentation_masks=[],
         **kwargs,
     ):
         self.data_type = data_type
@@ -101,13 +101,13 @@ class Pascal3DPlus(Dataset):
                     filtered_file_list.append(self.file_list[i])
             self.file_list = filtered_file_list
 
-        if self.segmentation_masks is None:
+        if self.segmentation_masks is not None:
             filtered_file_list = []
             for i in range(len(self.file_list)):
                 sample = self.__getitem__(i)
-                if 'inmodal' in self.segmentation_masks and sample['inmodal_mask'] is None:
+                if 'inmodal' in self.segmentation_masks and len(sample['inmodal_mask'].shape) < 2:
                     continue
-                if 'amodal' in self.segmentation_masks and sample['amodal_mask'] is None:
+                if 'amodal' in self.segmentation_masks and len(sample['amodal_mask'].shape) < 2:
                     continue
                 filtered_file_list.append(self.file_list[i])
             self.file_list = filtered_file_list
@@ -179,9 +179,11 @@ class Pascal3DPlus(Dataset):
                 "original_img": np.array(img),
                 "label": label,
                 "index": index,
-                "amodal_mask": annotation_file["amodal_mask"],
-                "inmodal_mask": annotation_file["inmodal_mask"],
             }
+            if 'amodal' in self.segmentation_masks:
+                sample['amodal_mask'] = annotation_file['amodal_mask']
+            if 'inmodal' in self.segmentation_masks:
+                sample['inmodal_mask'] = annotation_file['inmodal_mask']
             if not self.skip_kp:
                 sample['kp'] = kp.astype(np.float32)
                 sample['kpvis'] = iskpvisible.astype(bool)
@@ -192,13 +194,6 @@ class Pascal3DPlus(Dataset):
         if self.transforms:
             sample = self.transforms(sample)
 
-        """
-        for k in sample:
-            if isinstance(sample[k], torch.Tensor) or isinstance(sample[k], np.ndarray):
-                print(k, sample[k].shape)
-            else:
-                print(k, type(sample[k]))
-        """
         return sample
 
     def debug(self, item, save_dir=""):
