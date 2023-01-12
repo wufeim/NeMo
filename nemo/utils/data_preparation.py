@@ -8,6 +8,7 @@ from PIL import Image
 
 from nemo.utils import cal_point_weight
 from nemo.utils import rle_to_mask
+from nemo.utils.pascal3d_utils import CATEGORIES
 from nemo.utils.pascal3d_utils import get_anno
 from nemo.utils.pascal3d_utils import get_obj_ids
 from nemo.utils.pascal3d_utils import KP_LIST
@@ -23,6 +24,7 @@ mesh_para_names = [
     "cad_index",
     "bbox",
 ]
+cate_to_id = {cate: i for i, cate in enumerate(CATEGORIES)}
 
 
 def get_target_distances(start=4.0, end=32.0, num=14):
@@ -333,3 +335,191 @@ def prepare_pascal3d_sample(
                 continue
 
     return save_image_names
+
+
+def prepare_pascal3d_sample_det(
+    cate,
+    img_name,
+    img_path,
+    anno_path,
+    occ_level,
+    save_image_path,
+    save_annotation_path,
+    out_shape,
+    occ_path=None,
+    prepare_mode="first",
+    augment_by_dist=False,
+    texture_filenames=None,
+    texture_path=None,
+    single_mesh=True,
+    mesh_manager=None,
+    direction_dicts=None,
+    obj_ids=None,
+    extra_anno=None,
+    seg_mask_path=None
+):
+    """
+    Prepare a sample for training and validation.
+
+    Parameters
+    ----------
+    cate: str
+    img_name: str
+    img_path: str
+    anno_path: str
+    occ_level: int
+    save_image_path: str
+    save_annotation_path: str
+    out_shape: list
+    occ_path: str, default None
+    prepare_mode: {'first', 'all'}, default 'first'
+    augment_by_dist: bool, default False
+    texture_filenames: list, default None
+    texture_path: str, default None
+    single_mesh: bool, default True
+    mesh_manager: MeshConverter, default None
+    direction_dicts: dict, default None
+    obj_ids: list, default None
+    """
+    if not os.path.isfile(img_path):
+        print(img_path)
+        return None
+    if not os.path.isfile(anno_path):
+        print(anno_path)
+        return None
+
+    mat_contents = sio.loadmat(anno_path)
+    record = mat_contents["record"][0][0]
+
+    if obj_ids is None:
+        obj_ids = get_obj_ids(record, cate=cate)
+        if len(obj_ids) == 0:
+            return None
+        if prepare_mode == "first":
+            if obj_ids[0] != 0:
+                return []
+            else:
+                obj_ids = [0]
+
+    img = np.array(Image.open(img_path))
+    _h, _w = img.shape[0], img.shape[1]
+
+    filtered_obj_ids = []
+    for obj_id in obj_ids:
+        if get_anno(record, "distance", idx=obj_id) <= 0:
+            continue
+        filtered_obj_ids.append(obj_id)
+    obj_ids = filtered_obj_ids
+
+    boxes, labels, distances, azimuths, elevations, thetas = [], [], [], [], [], []
+    for obj_id in obj_ids:
+        boxes.append(get_anno(record, 'bbox', idx=obj_id))
+        labels.append(cate_to_id[get_anno(record, 'category', idx=obj_id)])
+        azimuths.append(get_anno(record, 'azimuth', idx=obj_id))
+        elevations.append(get_anno(record, 'elevation', idx=obj_id))
+        thetas.append(get_anno(record, 'theta', idx=obj_id))
+        distances.append(get_anno(record, 'distance', idx=obj_id))
+    boxes = [bbt.from_numpy(b, sorts=("x0", "y0", "x1", "y1")) for b in boxes]
+
+    img = Image.open(img_path)
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+    img = np.array(img)
+
+    resize_rate = min(out_shape[0] / img.shape[0], out_shape[1] / img.shape[1])
+    dsize = (int(img.shape[1] * resize_rate), int(img.shape[0] * resize_rate))
+    img = cv2.resize(img, dsize=dsize)
+    boxes = [b * resize_rate for b in boxes]
+
+    if texture_filenames is not None:
+        texture_name = np.random.choice(texture_filenames)
+
+    center = (out_shape[0]//2, out_shape[1]//2)
+    box1 = bbt.box_by_shape(out_shape, center)
+    if (
+        out_shape[0] // 2 - center[0] > 0
+        or out_shape[1] // 2 - center[1] > 0
+        or out_shape[0] // 2 + center[0] - img.shape[0] > 0
+        or out_shape[1] // 2 + center[1] - img.shape[1] > 0
+    ):
+        padding = (
+            (
+                max(out_shape[0] // 2 - center[0], 0),
+                max(out_shape[0] // 2 + center[0] - img.shape[0], 0),
+            ),
+            (
+                max(out_shape[1] // 2 - center[1], 0),
+                max(out_shape[1] // 2 + center[1] - img.shape[1], 0),
+            ),
+            (0, 0),
+        )
+
+        if texture_filenames is None:
+            img = np.pad(img, padding, mode="constant")
+        else:
+            texture_img = Image.open(
+                os.path.join(texture_path, "images", texture_name)
+            )
+            if texture_img.mode != "RGB":
+                texture_img = texture_img.convert("RGB")
+            texture_img = np.array(texture_img)
+            texture_img = cv2.resize(
+                texture_img,
+                dsize=(
+                    img.shape[1] + padding[1][0] + padding[1][1],
+                    img.shape[0] + padding[0][0] + padding[0][1],
+                ),
+            )
+            texture_img[
+                padding[0][0] : padding[0][0] + img.shape[0],
+                padding[1][0] : padding[1][0] + img.shape[1],
+                :,
+            ] = img
+            img = texture_img
+
+        boxes = [b.shift([padding[0][0], padding[1][0]]) for b in boxes]
+        box1.shift([padding[0][0], padding[1][0]])
+    else:
+        padding = ((0, 0), (0, 0), (0, 0))
+
+    box1 = box1.set_boundary(img.shape[0:2])
+
+    bbox = box1.bbox
+    img_cropped = img[bbox[0][0]:bbox[0][1], bbox[1][0]:bbox[1][1], :]
+
+    boxes = [box1.box_in_box(b) for b in boxes]
+    distances = [d / resize_rate for d in distances]
+
+    save_parameters = {}
+    save_parameters["img_name"] = img_name
+    save_parameters["boxes"] = [b.numpy() for b in boxes]
+    save_parameters["distances"] = distances
+    save_parameters["azimuth"] = azimuths
+    save_parameters["elevation"] = elevations
+    save_parameters["theta"] = thetas
+    save_parameters["num_obj"] = len(azimuths)
+    save_parameters["height"] = _h
+    save_parameters["width"] = _w
+    save_parameters["resize_rate"] = resize_rate
+    save_parameters["padding_params"] = np.array(
+        [
+            padding[0][0],
+            padding[0][1],
+            padding[1][0],
+            padding[1][1],
+            padding[2][0],
+            padding[2][1],
+        ]
+    )
+
+    if texture_filenames is not None:
+        save_parameters["texture_name"] = texture_name
+
+    np.savez(
+        os.path.join(save_annotation_path, img_name), **save_parameters
+    )
+    Image.fromarray(img_cropped).save(
+        os.path.join(save_image_path, img_name + ".JPEG")
+    )
+
+    return [(1, img_name)]
