@@ -4,7 +4,6 @@ model: config/models/nemo.yaml
 task: 3d_pose_estimation
 
 training:
-    random_seed: 0
     batch_size: 108
     workers: 8
     total_epochs: 800
@@ -14,7 +13,6 @@ training:
     remove_no_bg: 8
 
 inference:
-    random_seed: 0
     loss: nemo.models.solve_pose.loss_fg_bg
 
     search_translation: false
