@@ -1,0 +1,23 @@
+includes: config/datasets/pascal3d.yaml
+
+name: pascal3d_det
+class_name: nemo.datasets.pascal3d_det.Pascal3DPlusDet
+root_path: /mnt/sdc/wufei/data/PASCAL3D_NeMo_det
+
+occ_levels:
+    train: [0]
+    val: [0, 1, 2, 3]
+
+image_sizes:
+    aeroplane: [512, 512]
+    bicycle: [512, 512]
+    boat: [512, 512]
+    bottle: [512, 512]
+    bus: [512, 512]
+    chair: [512, 512]
+    car: [512, 512]
+    diningtable: [512, 512]
+    motorbike: [512, 512]
+    sofa: [512, 512]
+    train: [512, 512]
+    tvmonitor: [512, 512]
