@@ -1,0 +1,6 @@
+training:
+    random_seed: 0
+
+inference:
+    random_seed: 0
+    visualize_num_samples: 0
