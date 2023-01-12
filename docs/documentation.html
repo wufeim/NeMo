@@ -405,10 +405,18 @@ pip install wget gdown BboxTools opencv-python</code></pre>
         <hr>
         <ul>
             <li>
-                <b>ResNet50-General.</b> Regression-based model that formulate 3D pose estimation as a classification problem.
+                <b>ResNet50-General.</b> Regression-based model that formulates 3D pose estimation as a classification problem.
                 <ul>
                     <li>Configuration: <code class="inline-code">config/models/resnet50_general.yaml</code></li>
                     <li>Configuration for 3D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_3d_resnet50_general.yaml</code></li>
+                    <li>Weights: <code class="inline-code" style="color: red">coming...</code>.</li>
+                </ul>
+            </li>
+            <li>
+                <b>Faster R-CNN.</b> Faster R-CNN extended for 6D pose estimation that formulates pose estimation as a classification problem.
+                <ul>
+                    <li>Configuration: <code class="inline-code">config/models/faster_rcnn.yaml</code></li>
+                    <li>Configuration for 6D pose estimation on PASCAL3D+: <code class="inline-code">config/pose_estimation_6d_faster_rcnn.yaml</code></li>
                     <li>Weights: <code class="inline-code" style="color: red">coming...</code>.</li>
                 </ul>
             </li>
