@@ -1,0 +1,21 @@
+name: faterrcnn
+class_name: nemo.models.faster_rcnn.FasterRCNN
+
+pretrained: true
+num_bins: 41
+num_classes: 2
+transforms: []
+
+training:
+    optimizer:
+        class_name: torch.optim.SGD
+        lr: 0.02
+        momentum: 0.9
+        nesterov: false
+        weight_decay: 0.0001
+    scheduler:
+        class_name: torch.optim.lr_scheduler.MultiStepLR
+        milestones:
+            - 30
+            - 35
+        gamma: 0.1

@@ -1,0 +1,3 @@
+includes: config/pose_estimation_6d_faster_rcnn.yaml
+
+dataset: config/datasets/ood_cv_det.yaml

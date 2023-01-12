@@ -1,0 +1,17 @@
+dataset: config/datasets/pascal3d_det.yaml
+model: config/models/faster_rcnn.yaml
+
+task: 6d_pose_estimation
+
+training:
+    random_seed: 0
+    batch_size: 24
+    workers: 8
+    total_epochs: 40
+    log_interval: 1
+    ckpt_interval: 30
+    visualize_training_data: false
+
+inference:
+    random_seed: 0
+    visualize_num_samples: 0
