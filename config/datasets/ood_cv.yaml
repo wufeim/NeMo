@@ -4,7 +4,7 @@ root_path: data/OOD_CV_NeMo
 
 pascal3d_raw_path: data/PASCAL3D+_release1.1
 ood_cv_pose_url: https://drive.google.com/file/d/1WwoevPJGylRROW8fbsvCtr6EZo2Mtj8q/view?usp=share_link
-ood_cv_pose_data_path: data/ood_cv_pose
+ood_cv_pose_data_path: data/ood_cv
 dtd_raw_path: data/dtd
 mesh_path: data/PASCAL3D+_release1.1/CAD_single
 
@@ -28,7 +28,6 @@ image_sizes:
 
 nuisances:
     - context
-    - occlusion
     - pose
     - shape
     - texture
