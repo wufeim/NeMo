@@ -53,6 +53,11 @@ backbone:
     pretrain: true
     n_noise_points: 5
 
+ffnet:
+    class_name: nemo.models.TODO
+    net_type: resnet50
+    pretrain: true
+
 memory_bank:
     class_name: nemo.models.feature_banks_cls.NearestMemoryManager
     input_size: 128

@@ -17,13 +17,14 @@ from nemo.utils.pascal3d_utils import CATEGORIES
 from nemo.utils.pascal3d_utils import IMAGE_SIZES
 
 
-class NeMoCls(BaseModel):
+class NeMoClsCompo(BaseModel):
     def __init__(
         self,
         cfg,
         cate,
         mode,
         backbone,
+        ffnet,
         memory_bank,
         num_noise,
         max_group,
@@ -39,6 +40,7 @@ class NeMoCls(BaseModel):
     ):
         super().__init__(cfg, cate, mode, checkpoint, transforms, ['loss', 'loss_main', 'loss_reg'], device)
         self.net_params = backbone
+        self.ffnet_params = ffnet
         self.memory_bank_params = memory_bank
         self.num_noise = num_noise
         self.max_group = max_group

@@ -1,13 +1,12 @@
-includes: config/datasets/pascal3d.yaml
+includes: config/datasets/ood_cv.yaml
 
-name: pascal3d_cls
-root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo_Cls
+name: ood-cv-cls
+root_path: /misc/lmbraid21/jesslen/NeMo/data/OOD_CV_NeMo_Cls
 
 image_sizes:
     aeroplane: [512, 512]
     bicycle: [512, 512]
     boat: [512, 512]
-    bottle: [512, 512]
     bus: [512, 512]
     chair: [512, 512]
     car: [512, 512]
@@ -15,7 +14,6 @@ image_sizes:
     motorbike: [512, 512]
     sofa: [512, 512]
     train: [512, 512]
-    tvmonitor: [512, 512]
 
 transforms:
     - class_name: nemo.datasets.pascal3d.ToTensor

@@ -1,4 +1,4 @@
-dataset: config/datasets/pascal3d_cls.yaml
+dataset: config/datasets/pascal3d.yaml
 model: config/models/resnet50_general.yaml
 
 task: 3d_pose_estimation
@@ -7,9 +7,9 @@ training:
     random_seed: 0
     batch_size: 32
     workers: 8
-    total_epochs: 90
-    log_interval: 1
-    ckpt_interval: 30
+    total_epochs: 200
+    log_interval: 5
+    ckpt_interval: 10
     visualize_training_data: false
 
 inference:

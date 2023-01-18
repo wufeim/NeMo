@@ -1,0 +1,234 @@
+Start time: Di 17. Jan 15:15:50 CET 2023
+2023-01-17 15:16:20,847 - INFO - Namespace(cate='all', config='config/3d_aware_cls_nemo_cls.yaml', save_dir='exp/3d_aware_cls_nemo_cls', dry_run=False, opts=None)
+2023-01-17 15:16:20,961 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 512
+    - 512
+    bicycle:
+    - 512
+    - 512
+    boat:
+    - 512
+    - 512
+    bottle:
+    - 512
+    - 512
+    bus:
+    - 512
+    - 512
+    car:
+    - 512
+    - 512
+    chair:
+    - 512
+    - 512
+    diningtable:
+    - 512
+    - 512
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 512
+    - 512
+    train:
+    - 512
+    - 512
+    tvmonitor:
+    - 512
+    - 512
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d_cls
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  - class_name: nemo.datasets.pascal3d.Normalize
+  weighted: True
+inference:
+  azim_sample:
+    max_pi: 2.0
+    min_pi: 0.0
+    num: 12
+  blur_radius: 0.0
+  dist_sample:
+    max: 6.0
+    min: 4.0
+    num: 3
+  elev_sample:
+    max_pi: 0.3333
+    min_pi: -0.1667
+    num: 4
+  epochs: 300
+  inter_mode: bilinear
+  loss: nemo.models.solve_pose.loss_fg_bg
+  min_distance: 2
+  optimize_translation: False
+  optimizer:
+    betas:
+    - 0.4
+    - 0.6
+    class_name: torch.optim.Adam
+    lr: 0.05
+  pre_rendering_thr: 80
+  px_sample:
+    max: 0.0
+    min: 0.0
+    num: 1
+  py_sample:
+    max: 0.0
+    min: 0.0
+    num: 1
+  random_seed: 0
+  scheduler:
+    class_name: torch.optim.lr_scheduler.ExponentialLR
+    gamma: 0.2
+  search_translation: False
+  theta_sample:
+    max_pi: 0.1667
+    min_pi: -0.1667
+    num: 3
+  translation_scale: 0.1
+  visualize_num_samples: 0
+model:
+  backbone:
+    class_name: nemo.models.keypoint_representation_net.NetE2E
+    local_size:
+    - 1
+    - 1
+    n_noise_points: 5
+    net_type: resnetext
+    noise_on_mask: False
+    output_dimension: 128
+    pretrain: True
+    reduce_function: None
+  class_name: nemo.models.nemo_cls.NeMoCls
+  down_sample_rate: 8
+  inference:
+    cameras:
+      class_name: pytorch3d.renderer.PerspectiveCameras
+      focal_length: 3000
+    raster_settings:
+      bin_size: 0
+      blur_radius: 0.0
+      class_name: pytorch3d.renderer.RasterizationSettings
+      faces_per_pixel: 1
+    rasterizer:
+      class_name: pytorch3d.renderer.MeshRasterizer
+  max_group: 512
+  memory_bank:
+    K: 1
+    class_name: nemo.models.feature_banks_cls.NearestMemoryManager
+    input_size: 128
+    momentum: 0.96
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single/{:s}/01.off
+  name: nemo
+  num_noise: 5
+  training:
+    T: 0.07
+    distance_thr: 48
+    loss_reg_weight: 0.1
+    optimizer:
+      class_name: torch.optim.Adam
+      lr: 0.0001
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.2
+      step_size: 40
+    separate_bank: False
+    train_accumulate: 10
+    weight_noise: 0.005
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 36
+  ckpt_interval: 10
+  log_interval: 1
+  random_seed: 0
+  remove_no_bg: 8
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-17 15:16:22,328 - INFO - Set random seed to 0
+2023-01-17 15:32:42,384 - INFO - Number of training images: 11025
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+2023-01-17 15:33:23,843 - INFO - Start training
+/home/jesslen/Documents/Github/NeMo/nemo/models/upsampling_layer.py:38: UserWarning: __floordiv__ is deprecated, and its behavior will change in a future version of pytorch. It currently rounds toward 0 (like the 'trunc' function NOT 'floor'). This results in incorrect rounding for negative values. To keep the current behavior, use torch.div(a, b, rounding_mode='trunc'), or for actual floor division, use torch.div(a, b, rounding_mode='floor').
+  X1 = F.pad(X1, [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2])
+/home/jesslen/Documents/Github/NeMo/nemo/models/keypoint_representation_net.py:191: UserWarning: __floordiv__ is deprecated, and its behavior will change in a future version of pytorch. It currently rounds toward 0 (like the 'trunc' function NOT 'floor'). This results in incorrect rounding for negative values. To keep the current behavior, use torch.div(a, b, rounding_mode='trunc'), or for actual floor division, use torch.div(a, b, rounding_mode='floor').
+  keypoints[:, :, 0] // downsample_rate * line_size
+/home/jesslen/Documents/Github/NeMo/nemo/models/keypoint_representation_net.py:192: UserWarning: __floordiv__ is deprecated, and its behavior will change in a future version of pytorch. It currently rounds toward 0 (like the 'trunc' function NOT 'floor'). This results in incorrect rounding for negative values. To keep the current behavior, use torch.div(a, b, rounding_mode='trunc'), or for actual floor division, use torch.div(a, b, rounding_mode='floor').
+  + keypoints[:, :, 1] // downsample_rate
+2023-01-17 16:12:21,875 - INFO - [Epoch 1/200] lr=0.00010 loss=7.21389 loss_main=7.20407 loss_reg=0.00982
+2023-01-17 16:48:05,688 - INFO - [Epoch 2/200] lr=0.00010 loss=4.94545 loss_main=4.93636 loss_reg=0.00910
+2023-01-17 17:21:48,248 - INFO - [Epoch 3/200] lr=0.00010 loss=4.35084 loss_main=4.34602 loss_reg=0.00482
+2023-01-17 17:56:35,733 - INFO - [Epoch 4/200] lr=0.00010 loss=3.95113 loss_main=3.94889 loss_reg=0.00225
+2023-01-17 18:32:02,324 - INFO - [Epoch 5/200] lr=0.00010 loss=3.63787 loss_main=3.63694 loss_reg=0.00093
+2023-01-17 19:05:22,600 - INFO - [Epoch 6/200] lr=0.00010 loss=3.38187 loss_main=3.38154 loss_reg=0.00033
+2023-01-17 19:41:03,774 - INFO - [Epoch 7/200] lr=0.00010 loss=3.16651 loss_main=3.16644 loss_reg=0.00007
+2023-01-17 20:15:46,712 - INFO - [Epoch 8/200] lr=0.00010 loss=2.98890 loss_main=2.98897 loss_reg=-0.00007
+2023-01-17 20:49:08,234 - INFO - [Epoch 9/200] lr=0.00010 loss=2.81493 loss_main=2.81508 loss_reg=-0.00015
+2023-01-17 21:25:00,006 - INFO - [Epoch 10/200] lr=0.00010 loss=2.67849 loss_main=2.67871 loss_reg=-0.00022
+2023-01-17 21:59:37,863 - INFO - [Epoch 11/200] lr=0.00010 loss=2.55386 loss_main=2.55415 loss_reg=-0.00029
+2023-01-17 22:33:01,384 - INFO - [Epoch 12/200] lr=0.00010 loss=2.44813 loss_main=2.44849 loss_reg=-0.00036
+2023-01-17 23:09:22,249 - INFO - [Epoch 13/200] lr=0.00010 loss=2.36624 loss_main=2.36665 loss_reg=-0.00041
+2023-01-17 23:44:03,323 - INFO - [Epoch 14/200] lr=0.00010 loss=2.28835 loss_main=2.28879 loss_reg=-0.00044
+2023-01-18 00:18:24,391 - INFO - [Epoch 15/200] lr=0.00010 loss=2.21525 loss_main=2.21574 loss_reg=-0.00049
+2023-01-18 00:52:29,542 - INFO - [Epoch 16/200] lr=0.00010 loss=2.15507 loss_main=2.15560 loss_reg=-0.00053
+2023-01-18 01:26:28,759 - INFO - [Epoch 17/200] lr=0.00010 loss=2.10077 loss_main=2.10134 loss_reg=-0.00057
+2023-01-18 02:01:24,684 - INFO - [Epoch 18/200] lr=0.00010 loss=2.06048 loss_main=2.06108 loss_reg=-0.00059
+2023-01-18 02:37:32,020 - INFO - [Epoch 19/200] lr=0.00010 loss=2.01873 loss_main=2.01935 loss_reg=-0.00062
+2023-01-18 03:10:41,568 - INFO - [Epoch 20/200] lr=0.00010 loss=1.96697 loss_main=1.96765 loss_reg=-0.00068
+2023-01-18 03:44:23,173 - INFO - [Epoch 21/200] lr=0.00010 loss=1.91195 loss_main=1.91266 loss_reg=-0.00071
+2023-01-18 04:20:07,971 - INFO - [Epoch 22/200] lr=0.00010 loss=1.86905 loss_main=1.86980 loss_reg=-0.00075
+2023-01-18 04:56:18,855 - INFO - [Epoch 23/200] lr=0.00010 loss=1.83865 loss_main=1.83945 loss_reg=-0.00080
+2023-01-18 05:31:35,527 - INFO - [Epoch 24/200] lr=0.00010 loss=1.80941 loss_main=1.81024 loss_reg=-0.00082
+2023-01-18 06:04:36,295 - INFO - [Epoch 25/200] lr=0.00010 loss=1.77554 loss_main=1.77639 loss_reg=-0.00086
+2023-01-18 06:41:20,489 - INFO - [Epoch 26/200] lr=0.00010 loss=1.73340 loss_main=1.73430 loss_reg=-0.00090
+2023-01-18 07:16:25,233 - INFO - [Epoch 27/200] lr=0.00010 loss=1.71322 loss_main=1.71412 loss_reg=-0.00089
+2023-01-18 07:51:42,714 - INFO - [Epoch 28/200] lr=0.00010 loss=1.68843 loss_main=1.68935 loss_reg=-0.00091
+2023-01-18 08:28:11,530 - INFO - [Epoch 29/200] lr=0.00010 loss=1.65641 loss_main=1.65736 loss_reg=-0.00095
+2023-01-18 09:03:33,720 - INFO - [Epoch 30/200] lr=0.00010 loss=1.63328 loss_main=1.63426 loss_reg=-0.00098
+2023-01-18 09:37:49,721 - INFO - [Epoch 31/200] lr=0.00010 loss=1.62298 loss_main=1.62396 loss_reg=-0.00098
+2023-01-18 10:11:41,328 - INFO - [Epoch 32/200] lr=0.00010 loss=1.59882 loss_main=1.59983 loss_reg=-0.00101
+2023-01-18 10:46:55,874 - INFO - [Epoch 33/200] lr=0.00010 loss=1.57959 loss_main=1.58062 loss_reg=-0.00103
+2023-01-18 11:22:31,114 - INFO - [Epoch 34/200] lr=0.00010 loss=1.55782 loss_main=1.55887 loss_reg=-0.00105
+2023-01-18 11:57:19,492 - INFO - [Epoch 35/200] lr=0.00010 loss=1.54752 loss_main=1.54855 loss_reg=-0.00103
+/var/spool/torque/mom_priv/jobs/2483679.lmbtorque.informatik.uni-freiburg.de.SC: Zeile 20: 14493 Getötet                python scripts/train.py --cate all --config config/3d_aware_cls_nemo_cls.yaml --save_dir exp/3d_aware_cls_nemo_cls
+End time: Mi 18. Jan 12:12:21 CET 2023

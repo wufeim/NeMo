@@ -2,12 +2,13 @@ import argparse
 import multiprocessing
 import os
 import ssl
-
+import gdown
 import numpy as np
 import scipy.io as sio
 import wget
 import pycocotools.mask
 from tqdm import tqdm
+from PIL import Image
 
 from nemo.models.mesh_memory_map import MeshConverter
 from nemo.utils import direction_calculator
@@ -42,15 +43,16 @@ def parse_args():
     parser.add_argument("--workers", type=int, default=8)
     return parser.parse_args()
 
-
+# REMOVE NEXT 2 FUNCTIONS
 def mask_to_rle(mask):
-    mask = np.asfortranarray(mask)
-    rle = {'counts': [], 'size': list(mask.shape)}
-    counts = rle.get('counts')
-    for i, (value, elements) in enumerate(groupby(mask.ravel(order='F'))):
-        if i == 0 and value == 1:
-            counts.append(0)
-        counts.append(len(list(elements)))
+    rle = pycocotools.mask.encode(mask)
+    # mask = np.asfortranarray(mask)
+    # rle = {'counts': [], 'size': list(mask.shape)}
+    # counts = rle.get('counts')
+    # for i, (value, elements) in enumerate(groupby(mask.ravel(order='F'))):
+    #     if i == 0 and value == 1:
+    #         counts.append(0)
+    #     counts.append(len(list(elements)))
     return rle
 
 
@@ -184,9 +186,9 @@ def get_target_distances():
 def prepare_pascal3d(cfg, workers=4):
     pascal3d_data_path = get_abs_path(cfg.root_path)
     dtd_raw_path = get_abs_path(cfg.dtd_raw_path)
-    if os.path.isdir(pascal3d_data_path):
-        print(f"Found prepared PASCAL3D+ dataset at {pascal3d_data_path}")
-        return
+    # if os.path.isdir(pascal3d_data_path):
+    #     print(f"Found prepared PASCAL3D+ dataset at {pascal3d_data_path}")
+    #     return
 
     if cfg.pad_texture:
         dtd_mat = sio.loadmat(os.path.join(dtd_raw_path, "imdb", "imdb.mat"))
@@ -300,6 +302,7 @@ def worker(params):
     for img_name in image_names:
         img_path = os.path.join(img_dir, f"{img_name}.JPEG")
         anno_path = os.path.join(anno_dir, f"{img_name}.mat")
+        seg_mask_path = None
         if prepare_seg:
             seg_mask_path = os.path.join(seg_data_path, set_type, cate, f'{img_name}.npy')
 

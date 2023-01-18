@@ -1,0 +1,1315 @@
+Start time: Mo 16. Jan 10:45:00 CET 2023
+Training for category aeroplane
+2023-01-16 10:45:08,472 - INFO - Namespace(cate='aeroplane', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_aeroplane', checkpoint='exp/pose_estimation_3d_resnet50_general_aeroplane/ckpts/model_200.pth', opts=None)
+2023-01-16 10:45:08,624 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-16 10:45:09,487 - INFO - Set random seed to 0
+2023-01-16 10:45:37,745 - INFO - Number of inference images: 964
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+3d_pose_estimation_aeroplane:   0%|          | 0/964 [00:00<?, ?it/s]3d_pose_estimation_aeroplane:   0%|          | 1/964 [00:13<3:29:12, 13.04s/it]3d_pose_estimation_aeroplane:   1%|          | 8/964 [00:13<19:06,  1.20s/it]  3d_pose_estimation_aeroplane:   2%|▏         | 15/964 [00:13<08:22,  1.89it/s]3d_pose_estimation_aeroplane:   2%|▏         | 23/964 [00:13<04:25,  3.54it/s]3d_pose_estimation_aeroplane:   3%|▎         | 31/964 [00:13<02:41,  5.77it/s]3d_pose_estimation_aeroplane:   4%|▍         | 38/964 [00:13<01:50,  8.35it/s]3d_pose_estimation_aeroplane:   5%|▍         | 46/964 [00:13<01:15, 12.16it/s]3d_pose_estimation_aeroplane:   5%|▌         | 53/964 [00:13<00:55, 16.28it/s]3d_pose_estimation_aeroplane:   6%|▌         | 60/964 [00:13<00:42, 21.24it/s]3d_pose_estimation_aeroplane:   7%|▋         | 68/964 [00:14<00:32, 27.50it/s]3d_pose_estimation_aeroplane:   8%|▊         | 75/964 [00:14<00:26, 33.42it/s]3d_pose_estimation_aeroplane:   9%|▊         | 82/964 [00:14<00:22, 39.46it/s]3d_pose_estimation_aeroplane:   9%|▉         | 89/964 [00:14<00:19, 45.21it/s]3d_pose_estimation_aeroplane:  10%|▉         | 96/964 [00:14<00:18, 48.07it/s]3d_pose_estimation_aeroplane:  11%|█         | 103/964 [00:14<00:16, 53.02it/s]3d_pose_estimation_aeroplane:  11%|█▏        | 110/964 [00:14<00:15, 56.93it/s]3d_pose_estimation_aeroplane:  12%|█▏        | 117/964 [00:14<00:14, 60.13it/s]3d_pose_estimation_aeroplane:  13%|█▎        | 124/964 [00:14<00:13, 62.68it/s]3d_pose_estimation_aeroplane:  14%|█▎        | 131/964 [00:14<00:12, 64.57it/s]3d_pose_estimation_aeroplane:  14%|█▍        | 138/964 [00:15<00:12, 65.87it/s]3d_pose_estimation_aeroplane:  15%|█▌        | 146/964 [00:15<00:12, 67.24it/s]3d_pose_estimation_aeroplane:  16%|█▌        | 154/964 [00:15<00:11, 68.26it/s]3d_pose_estimation_aeroplane:  17%|█▋        | 161/964 [00:15<00:11, 68.69it/s]3d_pose_estimation_aeroplane:  18%|█▊        | 169/964 [00:15<00:11, 69.12it/s]3d_pose_estimation_aeroplane:  18%|█▊        | 176/964 [00:15<00:11, 69.31it/s]3d_pose_estimation_aeroplane:  19%|█▉        | 183/964 [00:15<00:11, 68.76it/s]3d_pose_estimation_aeroplane:  20%|█▉        | 191/964 [00:15<00:11, 69.20it/s]3d_pose_estimation_aeroplane:  21%|██        | 198/964 [00:15<00:11, 69.32it/s]3d_pose_estimation_aeroplane:  21%|██▏       | 205/964 [00:16<00:11, 67.05it/s]3d_pose_estimation_aeroplane:  22%|██▏       | 212/964 [00:16<00:11, 67.86it/s]3d_pose_estimation_aeroplane:  23%|██▎       | 219/964 [00:16<00:10, 68.39it/s]3d_pose_estimation_aeroplane:  23%|██▎       | 226/964 [00:16<00:10, 68.58it/s]3d_pose_estimation_aeroplane:  24%|██▍       | 233/964 [00:16<00:10, 68.84it/s]3d_pose_estimation_aeroplane:  25%|██▍       | 240/964 [00:16<00:10, 69.05it/s]3d_pose_estimation_aeroplane:  26%|██▌       | 247/964 [00:16<00:10, 69.21it/s]3d_pose_estimation_aeroplane:  26%|██▋       | 254/964 [00:16<00:10, 69.28it/s]3d_pose_estimation_aeroplane:  27%|██▋       | 261/964 [00:16<00:10, 69.39it/s]3d_pose_estimation_aeroplane:  28%|██▊       | 269/964 [00:16<00:09, 69.62it/s]3d_pose_estimation_aeroplane:  29%|██▊       | 276/964 [00:17<00:09, 69.69it/s]3d_pose_estimation_aeroplane:  29%|██▉       | 283/964 [00:17<00:09, 69.73it/s]3d_pose_estimation_aeroplane:  30%|███       | 290/964 [00:17<00:09, 69.67it/s]3d_pose_estimation_aeroplane:  31%|███       | 297/964 [00:17<00:09, 69.60it/s]3d_pose_estimation_aeroplane:  32%|███▏      | 305/964 [00:17<00:09, 69.75it/s]3d_pose_estimation_aeroplane:  32%|███▏      | 312/964 [00:17<00:09, 69.62it/s]3d_pose_estimation_aeroplane:  33%|███▎      | 320/964 [00:17<00:09, 69.75it/s]3d_pose_estimation_aeroplane:  34%|███▍      | 328/964 [00:17<00:09, 69.89it/s]3d_pose_estimation_aeroplane:  35%|███▍      | 335/964 [00:17<00:08, 69.90it/s]3d_pose_estimation_aeroplane:  35%|███▌      | 342/964 [00:17<00:08, 69.90it/s]3d_pose_estimation_aeroplane:  36%|███▌      | 349/964 [00:18<00:08, 69.89it/s]3d_pose_estimation_aeroplane:  37%|███▋      | 356/964 [00:18<00:08, 69.80it/s]3d_pose_estimation_aeroplane:  38%|███▊      | 364/964 [00:18<00:08, 69.97it/s]3d_pose_estimation_aeroplane:  39%|███▊      | 372/964 [00:18<00:08, 70.00it/s]3d_pose_estimation_aeroplane:  39%|███▉      | 379/964 [00:18<00:08, 69.93it/s]3d_pose_estimation_aeroplane:  40%|████      | 386/964 [00:18<00:08, 69.81it/s]3d_pose_estimation_aeroplane:  41%|████      | 393/964 [00:18<00:08, 69.63it/s]3d_pose_estimation_aeroplane:  42%|████▏     | 401/964 [00:18<00:08, 69.84it/s]3d_pose_estimation_aeroplane:  42%|████▏     | 409/964 [00:18<00:07, 70.05it/s]3d_pose_estimation_aeroplane:  43%|████▎     | 417/964 [00:19<00:07, 70.08it/s]3d_pose_estimation_aeroplane:  44%|████▍     | 425/964 [00:19<00:07, 69.66it/s]3d_pose_estimation_aeroplane:  45%|████▍     | 433/964 [00:19<00:07, 69.78it/s]3d_pose_estimation_aeroplane:  46%|████▌     | 440/964 [00:19<00:07, 69.69it/s]3d_pose_estimation_aeroplane:  46%|████▋     | 447/964 [00:19<00:07, 69.62it/s]3d_pose_estimation_aeroplane:  47%|████▋     | 454/964 [00:19<00:07, 69.60it/s]3d_pose_estimation_aeroplane:  48%|████▊     | 461/964 [00:19<00:07, 69.46it/s]3d_pose_estimation_aeroplane:  49%|████▊     | 469/964 [00:19<00:07, 69.68it/s]3d_pose_estimation_aeroplane:  49%|████▉     | 477/964 [00:19<00:06, 69.84it/s]3d_pose_estimation_aeroplane:  50%|█████     | 484/964 [00:20<00:06, 69.72it/s]3d_pose_estimation_aeroplane:  51%|█████     | 492/964 [00:20<00:06, 69.90it/s]3d_pose_estimation_aeroplane:  52%|█████▏    | 499/964 [00:20<00:06, 69.79it/s]3d_pose_estimation_aeroplane:  52%|█████▏    | 506/964 [00:20<00:06, 69.76it/s]3d_pose_estimation_aeroplane:  53%|█████▎    | 513/964 [00:20<00:06, 69.78it/s]3d_pose_estimation_aeroplane:  54%|█████▍    | 521/964 [00:20<00:06, 69.83it/s]3d_pose_estimation_aeroplane:  55%|█████▍    | 529/964 [00:20<00:06, 69.95it/s]3d_pose_estimation_aeroplane:  56%|█████▌    | 536/964 [00:20<00:06, 69.85it/s]3d_pose_estimation_aeroplane:  56%|█████▋    | 543/964 [00:20<00:06, 69.71it/s]3d_pose_estimation_aeroplane:  57%|█████▋    | 550/964 [00:20<00:05, 69.56it/s]3d_pose_estimation_aeroplane:  58%|█████▊    | 557/964 [00:21<00:05, 69.37it/s]3d_pose_estimation_aeroplane:  59%|█████▊    | 564/964 [00:21<00:05, 66.85it/s]3d_pose_estimation_aeroplane:  59%|█████▉    | 571/964 [00:21<00:05, 67.66it/s]3d_pose_estimation_aeroplane:  60%|█████▉    | 578/964 [00:21<00:05, 68.32it/s]3d_pose_estimation_aeroplane:  61%|██████    | 586/964 [00:21<00:05, 68.84it/s]3d_pose_estimation_aeroplane:  62%|██████▏   | 593/964 [00:21<00:05, 68.16it/s]3d_pose_estimation_aeroplane:  62%|██████▏   | 600/964 [00:21<00:05, 68.55it/s]3d_pose_estimation_aeroplane:  63%|██████▎   | 607/964 [00:21<00:05, 68.90it/s]3d_pose_estimation_aeroplane:  64%|██████▎   | 614/964 [00:21<00:05, 69.22it/s]3d_pose_estimation_aeroplane:  64%|██████▍   | 621/964 [00:21<00:04, 69.38it/s]3d_pose_estimation_aeroplane:  65%|██████▌   | 628/964 [00:22<00:05, 66.32it/s]3d_pose_estimation_aeroplane:  66%|██████▌   | 636/964 [00:22<00:04, 67.58it/s]3d_pose_estimation_aeroplane:  67%|██████▋   | 643/964 [00:22<00:04, 67.92it/s]3d_pose_estimation_aeroplane:  68%|██████▊   | 651/964 [00:22<00:04, 68.63it/s]3d_pose_estimation_aeroplane:  68%|██████▊   | 658/964 [00:22<00:04, 68.87it/s]3d_pose_estimation_aeroplane:  69%|██████▉   | 665/964 [00:22<00:04, 68.81it/s]3d_pose_estimation_aeroplane:  70%|██████▉   | 672/964 [00:22<00:04, 68.89it/s]3d_pose_estimation_aeroplane:  70%|███████   | 679/964 [00:22<00:04, 69.20it/s]3d_pose_estimation_aeroplane:  71%|███████   | 686/964 [00:22<00:04, 69.30it/s]3d_pose_estimation_aeroplane:  72%|███████▏  | 693/964 [00:23<00:03, 69.22it/s]3d_pose_estimation_aeroplane:  73%|███████▎  | 700/964 [00:23<00:03, 69.29it/s]3d_pose_estimation_aeroplane:  73%|███████▎  | 707/964 [00:23<00:03, 69.45it/s]3d_pose_estimation_aeroplane:  74%|███████▍  | 715/964 [00:23<00:03, 69.64it/s]3d_pose_estimation_aeroplane:  75%|███████▍  | 722/964 [00:23<00:03, 66.99it/s]3d_pose_estimation_aeroplane:  76%|███████▌  | 729/964 [00:23<00:03, 67.43it/s]3d_pose_estimation_aeroplane:  76%|███████▋  | 736/964 [00:23<00:03, 67.89it/s]3d_pose_estimation_aeroplane:  77%|███████▋  | 743/964 [00:23<00:03, 61.23it/s]3d_pose_estimation_aeroplane:  78%|███████▊  | 750/964 [00:23<00:03, 63.47it/s]3d_pose_estimation_aeroplane:  79%|███████▊  | 757/964 [00:24<00:03, 64.99it/s]3d_pose_estimation_aeroplane:  79%|███████▉  | 764/964 [00:24<00:03, 66.17it/s]3d_pose_estimation_aeroplane:  80%|███████▉  | 771/964 [00:24<00:02, 66.83it/s]3d_pose_estimation_aeroplane:  81%|████████  | 778/964 [00:24<00:03, 54.12it/s]3d_pose_estimation_aeroplane:  81%|████████▏ | 784/964 [00:24<00:03, 51.40it/s]3d_pose_estimation_aeroplane:  82%|████████▏ | 791/964 [00:24<00:03, 55.73it/s]3d_pose_estimation_aeroplane:  83%|████████▎ | 798/964 [00:24<00:03, 51.65it/s]3d_pose_estimation_aeroplane:  84%|████████▎ | 805/964 [00:24<00:02, 55.77it/s]3d_pose_estimation_aeroplane:  84%|████████▍ | 812/964 [00:25<00:02, 59.04it/s]3d_pose_estimation_aeroplane:  85%|████████▍ | 819/964 [00:25<00:02, 61.52it/s]3d_pose_estimation_aeroplane:  86%|████████▌ | 826/964 [00:25<00:02, 63.51it/s]3d_pose_estimation_aeroplane:  86%|████████▋ | 833/964 [00:25<00:02, 65.08it/s]3d_pose_estimation_aeroplane:  87%|████████▋ | 840/964 [00:25<00:01, 66.18it/s]3d_pose_estimation_aeroplane:  88%|████████▊ | 847/964 [00:25<00:01, 66.94it/s]3d_pose_estimation_aeroplane:  89%|████████▊ | 854/964 [00:25<00:01, 67.38it/s]3d_pose_estimation_aeroplane:  89%|████████▉ | 861/964 [00:25<00:01, 67.64it/s]3d_pose_estimation_aeroplane:  90%|█████████ | 868/964 [00:25<00:01, 63.63it/s]3d_pose_estimation_aeroplane:  91%|█████████ | 875/964 [00:25<00:01, 64.99it/s]3d_pose_estimation_aeroplane:  91%|█████████▏| 882/964 [00:26<00:01, 65.84it/s]3d_pose_estimation_aeroplane:  92%|█████████▏| 889/964 [00:26<00:01, 66.62it/s]3d_pose_estimation_aeroplane:  93%|█████████▎| 896/964 [00:26<00:01, 67.24it/s]3d_pose_estimation_aeroplane:  94%|█████████▎| 903/964 [00:26<00:00, 67.61it/s]3d_pose_estimation_aeroplane:  94%|█████████▍| 910/964 [00:26<00:00, 67.90it/s]3d_pose_estimation_aeroplane:  95%|█████████▌| 917/964 [00:26<00:00, 68.04it/s]3d_pose_estimation_aeroplane:  96%|█████████▌| 924/964 [00:26<00:00, 68.25it/s]3d_pose_estimation_aeroplane:  97%|█████████▋| 931/964 [00:26<00:00, 68.41it/s]3d_pose_estimation_aeroplane:  97%|█████████▋| 938/964 [00:26<00:00, 68.27it/s]3d_pose_estimation_aeroplane:  98%|█████████▊| 945/964 [00:26<00:00, 68.31it/s]3d_pose_estimation_aeroplane:  99%|█████████▉| 952/964 [00:27<00:00, 68.19it/s]3d_pose_estimation_aeroplane:  99%|█████████▉| 959/964 [00:27<00:00, 68.14it/s]3d_pose_estimation_aeroplane: 100%|██████████| 964/964 [00:27<00:00, 35.37it/s]
+2023-01-16 10:46:17,768 - INFO - 
+3D Pose Estimation Results:
+2023-01-16 10:46:17,768 - INFO - Dataset:     pascal3d (root=/misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo)
+2023-01-16 10:46:17,768 - INFO - Category:    ['aeroplane']
+2023-01-16 10:46:17,768 - INFO - # samples:   964
+2023-01-16 10:46:17,768 - INFO - Model:       resnet50general (ckpt=exp/pose_estimation_3d_resnet50_general_aeroplane/ckpts/model_200.pth)
+2023-01-16 10:46:17,769 - INFO - 
+              aeropl    mean
+pi/6 acc:      67.3%   67.3%
+pi/18 acc:     24.6%   24.6%
+Median err:    18.57   18.57
+Training for category bicycle
+2023-01-16 10:46:23,517 - INFO - Namespace(cate='bicycle', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_bicycle', checkpoint='exp/pose_estimation_3d_resnet50_general_bicycle/ckpts/model_200.pth', opts=None)
+2023-01-16 10:46:23,531 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-16 10:46:23,664 - INFO - Set random seed to 0
+2023-01-16 10:46:45,481 - INFO - Number of inference images: 645
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+3d_pose_estimation_bicycle:   0%|          | 0/645 [00:00<?, ?it/s]3d_pose_estimation_bicycle:   0%|          | 1/645 [00:01<17:48,  1.66s/it]3d_pose_estimation_bicycle:   1%|          | 8/645 [00:01<01:45,  6.05it/s]3d_pose_estimation_bicycle:   2%|▏         | 15/645 [00:01<00:50, 12.36it/s]3d_pose_estimation_bicycle:   3%|▎         | 22/645 [00:01<00:32, 19.35it/s]3d_pose_estimation_bicycle:   4%|▍         | 29/645 [00:02<00:23, 26.64it/s]3d_pose_estimation_bicycle:   6%|▌         | 36/645 [00:02<00:18, 33.80it/s]3d_pose_estimation_bicycle:   7%|▋         | 43/645 [00:02<00:14, 40.33it/s]3d_pose_estimation_bicycle:   8%|▊         | 50/645 [00:02<00:12, 46.04it/s]3d_pose_estimation_bicycle:   9%|▉         | 57/645 [00:02<00:11, 50.76it/s]3d_pose_estimation_bicycle:  10%|▉         | 64/645 [00:02<00:12, 47.39it/s]3d_pose_estimation_bicycle:  11%|█         | 71/645 [00:02<00:11, 51.53it/s]3d_pose_estimation_bicycle:  12%|█▏        | 78/645 [00:02<00:10, 54.70it/s]3d_pose_estimation_bicycle:  13%|█▎        | 85/645 [00:03<00:09, 57.45it/s]3d_pose_estimation_bicycle:  14%|█▍        | 92/645 [00:03<00:09, 59.35it/s]3d_pose_estimation_bicycle:  15%|█▌        | 99/645 [00:03<00:09, 60.59it/s]3d_pose_estimation_bicycle:  16%|█▋        | 106/645 [00:03<00:08, 61.66it/s]3d_pose_estimation_bicycle:  18%|█▊        | 113/645 [00:03<00:08, 62.11it/s]3d_pose_estimation_bicycle:  19%|█▊        | 120/645 [00:03<00:08, 62.94it/s]3d_pose_estimation_bicycle:  20%|█▉        | 127/645 [00:03<00:08, 63.36it/s]3d_pose_estimation_bicycle:  21%|██        | 134/645 [00:03<00:08, 63.55it/s]3d_pose_estimation_bicycle:  22%|██▏       | 141/645 [00:03<00:07, 64.10it/s]3d_pose_estimation_bicycle:  23%|██▎       | 148/645 [00:04<00:07, 64.06it/s]3d_pose_estimation_bicycle:  24%|██▍       | 155/645 [00:04<00:07, 61.60it/s]3d_pose_estimation_bicycle:  25%|██▌       | 162/645 [00:04<00:07, 62.21it/s]3d_pose_estimation_bicycle:  26%|██▌       | 169/645 [00:04<00:07, 62.77it/s]3d_pose_estimation_bicycle:  27%|██▋       | 176/645 [00:04<00:07, 63.11it/s]3d_pose_estimation_bicycle:  28%|██▊       | 183/645 [00:04<00:07, 63.73it/s]3d_pose_estimation_bicycle:  29%|██▉       | 190/645 [00:04<00:07, 63.95it/s]3d_pose_estimation_bicycle:  31%|███       | 197/645 [00:04<00:06, 64.36it/s]3d_pose_estimation_bicycle:  32%|███▏      | 204/645 [00:04<00:06, 64.29it/s]3d_pose_estimation_bicycle:  33%|███▎      | 211/645 [00:05<00:06, 64.13it/s]3d_pose_estimation_bicycle:  34%|███▍      | 218/645 [00:05<00:06, 64.40it/s]3d_pose_estimation_bicycle:  35%|███▍      | 225/645 [00:05<00:06, 64.46it/s]3d_pose_estimation_bicycle:  36%|███▌      | 232/645 [00:05<00:06, 64.46it/s]3d_pose_estimation_bicycle:  37%|███▋      | 239/645 [00:05<00:06, 64.48it/s]3d_pose_estimation_bicycle:  38%|███▊      | 246/645 [00:05<00:06, 64.72it/s]3d_pose_estimation_bicycle:  39%|███▉      | 253/645 [00:05<00:06, 64.69it/s]3d_pose_estimation_bicycle:  40%|████      | 260/645 [00:05<00:05, 64.28it/s]3d_pose_estimation_bicycle:  41%|████▏     | 267/645 [00:05<00:05, 64.06it/s]3d_pose_estimation_bicycle:  42%|████▏     | 274/645 [00:05<00:05, 64.03it/s]3d_pose_estimation_bicycle:  44%|████▎     | 281/645 [00:06<00:05, 64.11it/s]3d_pose_estimation_bicycle:  45%|████▍     | 288/645 [00:06<00:05, 64.10it/s]3d_pose_estimation_bicycle:  46%|████▌     | 295/645 [00:06<00:05, 64.27it/s]3d_pose_estimation_bicycle:  47%|████▋     | 302/645 [00:06<00:05, 64.36it/s]3d_pose_estimation_bicycle:  48%|████▊     | 309/645 [00:06<00:05, 64.32it/s]3d_pose_estimation_bicycle:  49%|████▉     | 316/645 [00:06<00:05, 63.71it/s]3d_pose_estimation_bicycle:  50%|█████     | 323/645 [00:06<00:05, 63.73it/s]3d_pose_estimation_bicycle:  51%|█████     | 330/645 [00:06<00:04, 63.84it/s]3d_pose_estimation_bicycle:  52%|█████▏    | 337/645 [00:06<00:04, 63.92it/s]3d_pose_estimation_bicycle:  53%|█████▎    | 344/645 [00:07<00:04, 64.10it/s]3d_pose_estimation_bicycle:  54%|█████▍    | 351/645 [00:07<00:04, 64.47it/s]3d_pose_estimation_bicycle:  56%|█████▌    | 358/645 [00:07<00:04, 64.54it/s]3d_pose_estimation_bicycle:  57%|█████▋    | 365/645 [00:07<00:04, 64.17it/s]3d_pose_estimation_bicycle:  58%|█████▊    | 372/645 [00:07<00:04, 64.41it/s]3d_pose_estimation_bicycle:  59%|█████▉    | 379/645 [00:07<00:04, 64.47it/s]3d_pose_estimation_bicycle:  60%|█████▉    | 386/645 [00:07<00:04, 64.57it/s]3d_pose_estimation_bicycle:  61%|██████    | 393/645 [00:07<00:03, 64.47it/s]3d_pose_estimation_bicycle:  62%|██████▏   | 400/645 [00:07<00:03, 64.35it/s]3d_pose_estimation_bicycle:  63%|██████▎   | 407/645 [00:08<00:03, 64.10it/s]3d_pose_estimation_bicycle:  64%|██████▍   | 414/645 [00:08<00:03, 63.56it/s]3d_pose_estimation_bicycle:  65%|██████▌   | 421/645 [00:08<00:03, 63.88it/s]3d_pose_estimation_bicycle:  66%|██████▋   | 428/645 [00:08<00:03, 64.16it/s]3d_pose_estimation_bicycle:  67%|██████▋   | 435/645 [00:08<00:03, 64.18it/s]3d_pose_estimation_bicycle:  69%|██████▊   | 442/645 [00:08<00:03, 64.07it/s]3d_pose_estimation_bicycle:  70%|██████▉   | 449/645 [00:08<00:03, 64.27it/s]3d_pose_estimation_bicycle:  71%|███████   | 456/645 [00:08<00:02, 64.43it/s]3d_pose_estimation_bicycle:  72%|███████▏  | 463/645 [00:08<00:02, 63.85it/s]3d_pose_estimation_bicycle:  73%|███████▎  | 470/645 [00:09<00:02, 63.63it/s]3d_pose_estimation_bicycle:  74%|███████▍  | 477/645 [00:09<00:02, 63.54it/s]3d_pose_estimation_bicycle:  75%|███████▌  | 484/645 [00:09<00:02, 64.04it/s]3d_pose_estimation_bicycle:  76%|███████▌  | 491/645 [00:09<00:02, 63.92it/s]3d_pose_estimation_bicycle:  77%|███████▋  | 498/645 [00:09<00:02, 63.92it/s]3d_pose_estimation_bicycle:  78%|███████▊  | 505/645 [00:09<00:02, 64.17it/s]3d_pose_estimation_bicycle:  79%|███████▉  | 512/645 [00:09<00:02, 64.14it/s]3d_pose_estimation_bicycle:  80%|████████  | 519/645 [00:09<00:01, 63.88it/s]3d_pose_estimation_bicycle:  82%|████████▏ | 526/645 [00:09<00:01, 63.96it/s]3d_pose_estimation_bicycle:  83%|████████▎ | 533/645 [00:10<00:01, 64.19it/s]3d_pose_estimation_bicycle:  84%|████████▎ | 540/645 [00:10<00:01, 64.10it/s]3d_pose_estimation_bicycle:  85%|████████▍ | 547/645 [00:10<00:01, 64.46it/s]3d_pose_estimation_bicycle:  86%|████████▌ | 554/645 [00:10<00:01, 64.59it/s]3d_pose_estimation_bicycle:  87%|████████▋ | 561/645 [00:10<00:01, 64.55it/s]3d_pose_estimation_bicycle:  88%|████████▊ | 568/645 [00:10<00:01, 64.20it/s]3d_pose_estimation_bicycle:  89%|████████▉ | 575/645 [00:10<00:01, 64.32it/s]3d_pose_estimation_bicycle:  90%|█████████ | 582/645 [00:10<00:00, 64.29it/s]3d_pose_estimation_bicycle:  91%|█████████▏| 589/645 [00:10<00:00, 64.33it/s]3d_pose_estimation_bicycle:  92%|█████████▏| 596/645 [00:10<00:00, 64.42it/s]3d_pose_estimation_bicycle:  93%|█████████▎| 603/645 [00:11<00:00, 64.50it/s]3d_pose_estimation_bicycle:  95%|█████████▍| 610/645 [00:11<00:00, 64.60it/s]3d_pose_estimation_bicycle:  96%|█████████▌| 617/645 [00:11<00:00, 64.32it/s]3d_pose_estimation_bicycle:  97%|█████████▋| 624/645 [00:11<00:00, 64.67it/s]3d_pose_estimation_bicycle:  98%|█████████▊| 631/645 [00:11<00:00, 64.69it/s]3d_pose_estimation_bicycle:  99%|█████████▉| 638/645 [00:11<00:00, 64.87it/s]3d_pose_estimation_bicycle: 100%|██████████| 645/645 [00:11<00:00, 64.93it/s]3d_pose_estimation_bicycle: 100%|██████████| 645/645 [00:11<00:00, 54.88it/s]
+2023-01-16 10:47:00,089 - INFO - 
+3D Pose Estimation Results:
+2023-01-16 10:47:00,090 - INFO - Dataset:     pascal3d (root=/misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo)
+2023-01-16 10:47:00,090 - INFO - Category:    ['bicycle']
+2023-01-16 10:47:00,090 - INFO - # samples:   645
+2023-01-16 10:47:00,090 - INFO - Model:       resnet50general (ckpt=exp/pose_estimation_3d_resnet50_general_bicycle/ckpts/model_200.pth)
+2023-01-16 10:47:00,090 - INFO - 
+              bicycl    mean
+pi/6 acc:      66.8%   66.8%
+pi/18 acc:     13.3%   13.3%
+Median err:    22.12   22.12
+Training for category boat
+2023-01-16 10:47:02,267 - INFO - Namespace(cate='boat', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_boat', checkpoint='exp/pose_estimation_3d_resnet50_general_boat/ckpts/model_200.pth', opts=None)
+2023-01-16 10:47:02,284 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-16 10:47:02,377 - INFO - Set random seed to 0
+2023-01-16 10:47:29,189 - INFO - Number of inference images: 1058
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+3d_pose_estimation_boat:   0%|          | 0/1058 [00:00<?, ?it/s]3d_pose_estimation_boat:   0%|          | 1/1058 [00:01<29:34,  1.68s/it]3d_pose_estimation_boat:   1%|          | 8/1058 [00:01<02:54,  6.02it/s]3d_pose_estimation_boat:   1%|▏         | 15/1058 [00:01<01:24, 12.40it/s]3d_pose_estimation_boat:   2%|▏         | 22/1058 [00:01<00:53, 19.53it/s]3d_pose_estimation_boat:   3%|▎         | 29/1058 [00:02<00:38, 27.05it/s]3d_pose_estimation_boat:   3%|▎         | 36/1058 [00:02<00:29, 34.44it/s]3d_pose_estimation_boat:   4%|▍         | 43/1058 [00:02<00:24, 41.05it/s]3d_pose_estimation_boat:   5%|▍         | 50/1058 [00:02<00:21, 47.13it/s]3d_pose_estimation_boat:   5%|▌         | 57/1058 [00:02<00:19, 51.97it/s]3d_pose_estimation_boat:   6%|▌         | 64/1058 [00:02<00:17, 56.01it/s]3d_pose_estimation_boat:   7%|▋         | 71/1058 [00:02<00:16, 59.15it/s]3d_pose_estimation_boat:   7%|▋         | 78/1058 [00:02<00:15, 61.57it/s]3d_pose_estimation_boat:   8%|▊         | 85/1058 [00:02<00:15, 63.35it/s]3d_pose_estimation_boat:   9%|▊         | 92/1058 [00:03<00:14, 64.57it/s]3d_pose_estimation_boat:   9%|▉         | 99/1058 [00:03<00:14, 65.24it/s]3d_pose_estimation_boat:  10%|█         | 106/1058 [00:03<00:14, 65.86it/s]3d_pose_estimation_boat:  11%|█         | 113/1058 [00:03<00:14, 66.45it/s]3d_pose_estimation_boat:  11%|█▏        | 120/1058 [00:03<00:14, 66.84it/s]3d_pose_estimation_boat:  12%|█▏        | 127/1058 [00:03<00:13, 67.15it/s]3d_pose_estimation_boat:  13%|█▎        | 134/1058 [00:03<00:13, 67.35it/s]3d_pose_estimation_boat:  13%|█▎        | 141/1058 [00:03<00:13, 67.25it/s]3d_pose_estimation_boat:  14%|█▍        | 148/1058 [00:03<00:13, 67.39it/s]3d_pose_estimation_boat:  15%|█▍        | 155/1058 [00:03<00:13, 67.03it/s]3d_pose_estimation_boat:  15%|█▌        | 162/1058 [00:04<00:13, 67.01it/s]3d_pose_estimation_boat:  16%|█▌        | 169/1058 [00:04<00:13, 67.18it/s]3d_pose_estimation_boat:  17%|█▋        | 176/1058 [00:04<00:13, 67.09it/s]3d_pose_estimation_boat:  17%|█▋        | 183/1058 [00:04<00:12, 67.37it/s]3d_pose_estimation_boat:  18%|█▊        | 190/1058 [00:04<00:12, 67.44it/s]3d_pose_estimation_boat:  19%|█▊        | 197/1058 [00:04<00:12, 67.53it/s]3d_pose_estimation_boat:  19%|█▉        | 204/1058 [00:04<00:12, 67.18it/s]3d_pose_estimation_boat:  20%|█▉        | 211/1058 [00:04<00:12, 67.35it/s]3d_pose_estimation_boat:  21%|██        | 218/1058 [00:04<00:12, 67.01it/s]3d_pose_estimation_boat:  21%|██▏       | 225/1058 [00:05<00:12, 67.20it/s]3d_pose_estimation_boat:  22%|██▏       | 232/1058 [00:05<00:12, 66.11it/s]3d_pose_estimation_boat:  23%|██▎       | 239/1058 [00:05<00:12, 66.55it/s]3d_pose_estimation_boat:  23%|██▎       | 246/1058 [00:05<00:12, 66.98it/s]3d_pose_estimation_boat:  24%|██▍       | 253/1058 [00:05<00:12, 66.98it/s]3d_pose_estimation_boat:  25%|██▍       | 260/1058 [00:05<00:11, 66.92it/s]3d_pose_estimation_boat:  25%|██▌       | 267/1058 [00:05<00:12, 65.25it/s]3d_pose_estimation_boat:  26%|██▌       | 274/1058 [00:05<00:11, 65.90it/s]3d_pose_estimation_boat:  27%|██▋       | 281/1058 [00:05<00:12, 63.85it/s]3d_pose_estimation_boat:  27%|██▋       | 288/1058 [00:05<00:11, 65.06it/s]3d_pose_estimation_boat:  28%|██▊       | 295/1058 [00:06<00:11, 65.81it/s]3d_pose_estimation_boat:  29%|██▊       | 302/1058 [00:06<00:11, 66.42it/s]3d_pose_estimation_boat:  29%|██▉       | 309/1058 [00:06<00:11, 66.71it/s]3d_pose_estimation_boat:  30%|██▉       | 316/1058 [00:06<00:11, 67.00it/s]3d_pose_estimation_boat:  31%|███       | 323/1058 [00:06<00:10, 67.28it/s]3d_pose_estimation_boat:  31%|███       | 330/1058 [00:06<00:10, 67.45it/s]3d_pose_estimation_boat:  32%|███▏      | 337/1058 [00:06<00:10, 67.45it/s]3d_pose_estimation_boat:  33%|███▎      | 344/1058 [00:06<00:10, 67.54it/s]3d_pose_estimation_boat:  33%|███▎      | 351/1058 [00:06<00:10, 66.86it/s]3d_pose_estimation_boat:  34%|███▍      | 358/1058 [00:07<00:10, 67.06it/s]3d_pose_estimation_boat:  34%|███▍      | 365/1058 [00:07<00:10, 66.76it/s]3d_pose_estimation_boat:  35%|███▌      | 372/1058 [00:07<00:10, 67.06it/s]3d_pose_estimation_boat:  36%|███▌      | 379/1058 [00:07<00:10, 67.25it/s]3d_pose_estimation_boat:  36%|███▋      | 386/1058 [00:07<00:09, 67.41it/s]3d_pose_estimation_boat:  37%|███▋      | 393/1058 [00:07<00:09, 67.03it/s]3d_pose_estimation_boat:  38%|███▊      | 400/1058 [00:07<00:09, 67.21it/s]3d_pose_estimation_boat:  38%|███▊      | 407/1058 [00:07<00:09, 67.40it/s]3d_pose_estimation_boat:  39%|███▉      | 414/1058 [00:07<00:09, 67.07it/s]3d_pose_estimation_boat:  40%|███▉      | 421/1058 [00:07<00:09, 67.19it/s]3d_pose_estimation_boat:  40%|████      | 428/1058 [00:08<00:09, 64.56it/s]3d_pose_estimation_boat:  41%|████      | 435/1058 [00:08<00:09, 65.59it/s]3d_pose_estimation_boat:  42%|████▏     | 442/1058 [00:08<00:09, 66.19it/s]3d_pose_estimation_boat:  42%|████▏     | 449/1058 [00:08<00:09, 66.69it/s]3d_pose_estimation_boat:  43%|████▎     | 456/1058 [00:08<00:08, 67.14it/s]3d_pose_estimation_boat:  44%|████▍     | 463/1058 [00:08<00:08, 67.27it/s]3d_pose_estimation_boat:  44%|████▍     | 470/1058 [00:08<00:08, 66.94it/s]3d_pose_estimation_boat:  45%|████▌     | 477/1058 [00:08<00:08, 67.26it/s]3d_pose_estimation_boat:  46%|████▌     | 484/1058 [00:08<00:08, 67.31it/s]3d_pose_estimation_boat:  46%|████▋     | 491/1058 [00:08<00:08, 67.17it/s]3d_pose_estimation_boat:  47%|████▋     | 498/1058 [00:09<00:08, 67.17it/s]3d_pose_estimation_boat:  48%|████▊     | 505/1058 [00:09<00:08, 67.62it/s]3d_pose_estimation_boat:  48%|████▊     | 512/1058 [00:09<00:08, 67.58it/s]3d_pose_estimation_boat:  49%|████▉     | 519/1058 [00:09<00:08, 66.99it/s]3d_pose_estimation_boat:  50%|████▉     | 526/1058 [00:09<00:07, 67.20it/s]3d_pose_estimation_boat:  50%|█████     | 533/1058 [00:09<00:07, 67.23it/s]3d_pose_estimation_boat:  51%|█████     | 540/1058 [00:09<00:07, 67.43it/s]3d_pose_estimation_boat:  52%|█████▏    | 547/1058 [00:09<00:07, 67.56it/s]3d_pose_estimation_boat:  52%|█████▏    | 554/1058 [00:09<00:07, 67.61it/s]3d_pose_estimation_boat:  53%|█████▎    | 561/1058 [00:10<00:07, 67.66it/s]3d_pose_estimation_boat:  54%|█████▎    | 568/1058 [00:10<00:07, 67.71it/s]3d_pose_estimation_boat:  54%|█████▍    | 575/1058 [00:10<00:07, 66.56it/s]3d_pose_estimation_boat:  55%|█████▌    | 582/1058 [00:10<00:07, 66.95it/s]3d_pose_estimation_boat:  56%|█████▌    | 589/1058 [00:10<00:07, 64.54it/s]3d_pose_estimation_boat:  56%|█████▋    | 596/1058 [00:10<00:07, 65.49it/s]3d_pose_estimation_boat:  57%|█████▋    | 603/1058 [00:10<00:06, 66.05it/s]3d_pose_estimation_boat:  58%|█████▊    | 610/1058 [00:10<00:07, 63.88it/s]3d_pose_estimation_boat:  58%|█████▊    | 617/1058 [00:10<00:06, 65.02it/s]3d_pose_estimation_boat:  59%|█████▉    | 624/1058 [00:10<00:06, 66.02it/s]3d_pose_estimation_boat:  60%|█████▉    | 631/1058 [00:11<00:06, 66.49it/s]3d_pose_estimation_boat:  60%|██████    | 638/1058 [00:11<00:06, 66.24it/s]3d_pose_estimation_boat:  61%|██████    | 645/1058 [00:11<00:06, 66.37it/s]3d_pose_estimation_boat:  62%|██████▏   | 652/1058 [00:11<00:06, 66.61it/s]3d_pose_estimation_boat:  62%|██████▏   | 659/1058 [00:11<00:05, 66.88it/s]3d_pose_estimation_boat:  63%|██████▎   | 666/1058 [00:11<00:05, 67.05it/s]3d_pose_estimation_boat:  64%|██████▎   | 673/1058 [00:11<00:05, 64.97it/s]3d_pose_estimation_boat:  64%|██████▍   | 680/1058 [00:11<00:05, 65.64it/s]3d_pose_estimation_boat:  65%|██████▍   | 687/1058 [00:11<00:05, 66.23it/s]3d_pose_estimation_boat:  66%|██████▌   | 694/1058 [00:12<00:05, 66.72it/s]3d_pose_estimation_boat:  66%|██████▋   | 701/1058 [00:12<00:05, 65.93it/s]3d_pose_estimation_boat:  67%|██████▋   | 708/1058 [00:12<00:05, 66.23it/s]3d_pose_estimation_boat:  68%|██████▊   | 715/1058 [00:12<00:05, 66.38it/s]3d_pose_estimation_boat:  68%|██████▊   | 722/1058 [00:12<00:05, 66.58it/s]3d_pose_estimation_boat:  69%|██████▉   | 729/1058 [00:12<00:04, 66.36it/s]3d_pose_estimation_boat:  70%|██████▉   | 736/1058 [00:12<00:04, 66.81it/s]3d_pose_estimation_boat:  70%|███████   | 743/1058 [00:12<00:04, 67.02it/s]3d_pose_estimation_boat:  71%|███████   | 750/1058 [00:12<00:04, 67.29it/s]3d_pose_estimation_boat:  72%|███████▏  | 757/1058 [00:12<00:04, 65.78it/s]3d_pose_estimation_boat:  72%|███████▏  | 764/1058 [00:13<00:04, 65.44it/s]3d_pose_estimation_boat:  73%|███████▎  | 771/1058 [00:13<00:04, 65.71it/s]3d_pose_estimation_boat:  74%|███████▎  | 778/1058 [00:13<00:04, 66.27it/s]3d_pose_estimation_boat:  74%|███████▍  | 785/1058 [00:13<00:04, 66.48it/s]3d_pose_estimation_boat:  75%|███████▍  | 792/1058 [00:13<00:04, 66.50it/s]3d_pose_estimation_boat:  76%|███████▌  | 799/1058 [00:13<00:03, 66.74it/s]3d_pose_estimation_boat:  76%|███████▌  | 806/1058 [00:13<00:03, 66.83it/s]3d_pose_estimation_boat:  77%|███████▋  | 813/1058 [00:13<00:03, 66.99it/s]3d_pose_estimation_boat:  78%|███████▊  | 820/1058 [00:13<00:03, 67.34it/s]3d_pose_estimation_boat:  78%|███████▊  | 827/1058 [00:14<00:03, 67.43it/s]3d_pose_estimation_boat:  79%|███████▉  | 834/1058 [00:14<00:03, 66.81it/s]3d_pose_estimation_boat:  79%|███████▉  | 841/1058 [00:14<00:03, 67.14it/s]3d_pose_estimation_boat:  80%|████████  | 848/1058 [00:14<00:03, 67.08it/s]3d_pose_estimation_boat:  81%|████████  | 855/1058 [00:14<00:03, 67.13it/s]3d_pose_estimation_boat:  81%|████████▏ | 862/1058 [00:14<00:02, 66.89it/s]3d_pose_estimation_boat:  82%|████████▏ | 869/1058 [00:14<00:02, 66.90it/s]3d_pose_estimation_boat:  83%|████████▎ | 876/1058 [00:14<00:03, 58.23it/s]3d_pose_estimation_boat:  83%|████████▎ | 883/1058 [00:14<00:02, 60.51it/s]3d_pose_estimation_boat:  84%|████████▍ | 890/1058 [00:15<00:02, 61.88it/s]3d_pose_estimation_boat:  85%|████████▍ | 897/1058 [00:15<00:02, 63.26it/s]3d_pose_estimation_boat:  85%|████████▌ | 904/1058 [00:15<00:02, 52.34it/s]3d_pose_estimation_boat:  86%|████████▌ | 911/1058 [00:15<00:02, 56.02it/s]3d_pose_estimation_boat:  87%|████████▋ | 918/1058 [00:15<00:02, 58.99it/s]3d_pose_estimation_boat:  87%|████████▋ | 925/1058 [00:15<00:02, 61.45it/s]3d_pose_estimation_boat:  88%|████████▊ | 932/1058 [00:15<00:01, 63.15it/s]3d_pose_estimation_boat:  89%|████████▉ | 939/1058 [00:15<00:01, 62.77it/s]3d_pose_estimation_boat:  89%|████████▉ | 946/1058 [00:16<00:02, 53.94it/s]3d_pose_estimation_boat:  90%|████████▉ | 952/1058 [00:16<00:02, 52.17it/s]3d_pose_estimation_boat:  91%|█████████ | 958/1058 [00:16<00:01, 51.46it/s]3d_pose_estimation_boat:  91%|█████████ | 964/1058 [00:16<00:01, 51.41it/s]3d_pose_estimation_boat:  92%|█████████▏| 970/1058 [00:16<00:01, 51.75it/s]3d_pose_estimation_boat:  92%|█████████▏| 976/1058 [00:16<00:01, 51.90it/s]3d_pose_estimation_boat:  93%|█████████▎| 982/1058 [00:16<00:01, 52.26it/s]3d_pose_estimation_boat:  93%|█████████▎| 988/1058 [00:16<00:01, 52.56it/s]3d_pose_estimation_boat:  94%|█████████▍| 994/1058 [00:16<00:01, 53.29it/s]3d_pose_estimation_boat:  95%|█████████▍| 1000/1058 [00:17<00:01, 54.76it/s]3d_pose_estimation_boat:  95%|█████████▌| 1007/1058 [00:17<00:00, 57.65it/s]3d_pose_estimation_boat:  96%|█████████▌| 1014/1058 [00:17<00:00, 60.19it/s]3d_pose_estimation_boat:  97%|█████████▋| 1021/1058 [00:17<00:00, 62.04it/s]3d_pose_estimation_boat:  97%|█████████▋| 1028/1058 [00:17<00:00, 63.23it/s]3d_pose_estimation_boat:  98%|█████████▊| 1035/1058 [00:17<00:00, 64.33it/s]3d_pose_estimation_boat:  98%|█████████▊| 1042/1058 [00:17<00:00, 64.88it/s]3d_pose_estimation_boat:  99%|█████████▉| 1049/1058 [00:17<00:00, 65.41it/s]3d_pose_estimation_boat: 100%|█████████▉| 1056/1058 [00:17<00:00, 65.54it/s]3d_pose_estimation_boat: 100%|██████████| 1058/1058 [00:17<00:00, 58.98it/s]
+2023-01-16 10:47:51,438 - INFO - 
+3D Pose Estimation Results:
+2023-01-16 10:47:51,438 - INFO - Dataset:     pascal3d (root=/misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo)
+2023-01-16 10:47:51,438 - INFO - Category:    ['boat']
+2023-01-16 10:47:51,438 - INFO - # samples:   1058
+2023-01-16 10:47:51,438 - INFO - Model:       resnet50general (ckpt=exp/pose_estimation_3d_resnet50_general_boat/ckpts/model_200.pth)
+2023-01-16 10:47:51,439 - INFO - 
+                boat    mean
+pi/6 acc:      67.0%   67.0%
+pi/18 acc:     27.6%   27.6%
+Median err:    17.32   17.32
+Training for category bus
+2023-01-16 10:47:53,681 - INFO - Namespace(cate='bus', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_bus', checkpoint='exp/pose_estimation_3d_resnet50_general_bus/ckpts/model_200.pth', opts=None)
+2023-01-16 10:47:53,698 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-16 10:47:53,797 - INFO - Set random seed to 0
+2023-01-16 10:48:04,503 - INFO - Number of inference images: 532
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+3d_pose_estimation_bus:   0%|          | 0/532 [00:00<?, ?it/s]3d_pose_estimation_bus:   0%|          | 1/532 [00:01<14:48,  1.67s/it]3d_pose_estimation_bus:   2%|▏         | 8/532 [00:01<01:26,  6.04it/s]3d_pose_estimation_bus:   3%|▎         | 15/532 [00:01<00:41, 12.46it/s]3d_pose_estimation_bus:   4%|▍         | 22/532 [00:01<00:25, 19.63it/s]3d_pose_estimation_bus:   5%|▌         | 29/532 [00:02<00:18, 27.25it/s]3d_pose_estimation_bus:   7%|▋         | 36/532 [00:02<00:14, 34.60it/s]3d_pose_estimation_bus:   8%|▊         | 43/532 [00:02<00:11, 41.58it/s]3d_pose_estimation_bus:   9%|▉         | 50/532 [00:02<00:10, 44.87it/s]3d_pose_estimation_bus:  11%|█         | 57/532 [00:02<00:09, 50.47it/s]3d_pose_estimation_bus:  12%|█▏        | 64/532 [00:02<00:08, 55.02it/s]3d_pose_estimation_bus:  13%|█▎        | 71/532 [00:02<00:08, 55.22it/s]3d_pose_estimation_bus:  15%|█▍        | 78/532 [00:02<00:07, 58.61it/s]3d_pose_estimation_bus:  16%|█▌        | 85/532 [00:02<00:07, 61.22it/s]3d_pose_estimation_bus:  17%|█▋        | 92/532 [00:03<00:06, 63.23it/s]3d_pose_estimation_bus:  19%|█▊        | 99/532 [00:03<00:06, 64.91it/s]3d_pose_estimation_bus:  20%|█▉        | 106/532 [00:03<00:06, 66.12it/s]3d_pose_estimation_bus:  21%|██        | 113/532 [00:03<00:06, 67.06it/s]3d_pose_estimation_bus:  23%|██▎       | 120/532 [00:03<00:06, 67.18it/s]3d_pose_estimation_bus:  24%|██▍       | 127/532 [00:03<00:05, 67.70it/s]3d_pose_estimation_bus:  25%|██▌       | 134/532 [00:03<00:05, 67.97it/s]3d_pose_estimation_bus:  27%|██▋       | 141/532 [00:03<00:05, 68.39it/s]3d_pose_estimation_bus:  28%|██▊       | 148/532 [00:03<00:05, 68.14it/s]3d_pose_estimation_bus:  29%|██▉       | 155/532 [00:03<00:05, 68.37it/s]3d_pose_estimation_bus:  30%|███       | 162/532 [00:04<00:05, 68.67it/s]3d_pose_estimation_bus:  32%|███▏      | 169/532 [00:04<00:05, 68.43it/s]3d_pose_estimation_bus:  33%|███▎      | 176/532 [00:04<00:05, 68.64it/s]3d_pose_estimation_bus:  34%|███▍      | 183/532 [00:04<00:05, 68.76it/s]3d_pose_estimation_bus:  36%|███▌      | 190/532 [00:04<00:04, 69.05it/s]3d_pose_estimation_bus:  37%|███▋      | 197/532 [00:04<00:04, 69.05it/s]3d_pose_estimation_bus:  38%|███▊      | 204/532 [00:04<00:04, 67.98it/s]3d_pose_estimation_bus:  40%|███▉      | 211/532 [00:04<00:04, 64.71it/s]3d_pose_estimation_bus:  41%|████      | 218/532 [00:04<00:04, 65.75it/s]3d_pose_estimation_bus:  42%|████▏     | 225/532 [00:05<00:04, 66.56it/s]3d_pose_estimation_bus:  44%|████▎     | 232/532 [00:05<00:04, 67.39it/s]3d_pose_estimation_bus:  45%|████▍     | 239/532 [00:05<00:04, 67.94it/s]3d_pose_estimation_bus:  46%|████▌     | 246/532 [00:05<00:04, 65.56it/s]3d_pose_estimation_bus:  48%|████▊     | 253/532 [00:05<00:04, 66.07it/s]3d_pose_estimation_bus:  49%|████▉     | 260/532 [00:05<00:04, 67.07it/s]3d_pose_estimation_bus:  50%|█████     | 267/532 [00:05<00:03, 67.78it/s]3d_pose_estimation_bus:  52%|█████▏    | 274/532 [00:05<00:03, 68.26it/s]3d_pose_estimation_bus:  53%|█████▎    | 281/532 [00:05<00:03, 68.50it/s]3d_pose_estimation_bus:  54%|█████▍    | 288/532 [00:05<00:03, 68.67it/s]3d_pose_estimation_bus:  55%|█████▌    | 295/532 [00:06<00:03, 68.77it/s]3d_pose_estimation_bus:  57%|█████▋    | 302/532 [00:06<00:03, 68.65it/s]3d_pose_estimation_bus:  58%|█████▊    | 309/532 [00:06<00:03, 68.76it/s]3d_pose_estimation_bus:  59%|█████▉    | 316/532 [00:06<00:03, 68.77it/s]3d_pose_estimation_bus:  61%|██████    | 323/532 [00:06<00:03, 68.95it/s]3d_pose_estimation_bus:  62%|██████▏   | 330/532 [00:06<00:02, 69.14it/s]3d_pose_estimation_bus:  63%|██████▎   | 337/532 [00:06<00:02, 69.18it/s]3d_pose_estimation_bus:  65%|██████▍   | 344/532 [00:06<00:02, 68.21it/s]3d_pose_estimation_bus:  66%|██████▌   | 351/532 [00:06<00:02, 68.21it/s]3d_pose_estimation_bus:  67%|██████▋   | 358/532 [00:06<00:02, 68.32it/s]3d_pose_estimation_bus:  69%|██████▊   | 365/532 [00:07<00:02, 68.46it/s]3d_pose_estimation_bus:  70%|██████▉   | 372/532 [00:07<00:02, 68.75it/s]3d_pose_estimation_bus:  71%|███████   | 379/532 [00:07<00:02, 68.79it/s]3d_pose_estimation_bus:  73%|███████▎  | 386/532 [00:07<00:02, 68.92it/s]3d_pose_estimation_bus:  74%|███████▍  | 393/532 [00:07<00:02, 68.29it/s]3d_pose_estimation_bus:  75%|███████▌  | 400/532 [00:07<00:01, 68.38it/s]3d_pose_estimation_bus:  77%|███████▋  | 407/532 [00:07<00:01, 68.45it/s]3d_pose_estimation_bus:  78%|███████▊  | 414/532 [00:07<00:01, 68.56it/s]3d_pose_estimation_bus:  79%|███████▉  | 421/532 [00:07<00:01, 68.62it/s]3d_pose_estimation_bus:  80%|████████  | 428/532 [00:07<00:01, 66.04it/s]3d_pose_estimation_bus:  82%|████████▏ | 435/532 [00:08<00:01, 66.54it/s]3d_pose_estimation_bus:  83%|████████▎ | 442/532 [00:08<00:01, 67.39it/s]3d_pose_estimation_bus:  84%|████████▍ | 449/532 [00:08<00:01, 67.99it/s]3d_pose_estimation_bus:  86%|████████▌ | 456/532 [00:08<00:01, 68.37it/s]3d_pose_estimation_bus:  87%|████████▋ | 463/532 [00:08<00:01, 68.62it/s]3d_pose_estimation_bus:  88%|████████▊ | 470/532 [00:08<00:00, 68.53it/s]3d_pose_estimation_bus:  90%|████████▉ | 477/532 [00:08<00:00, 68.70it/s]3d_pose_estimation_bus:  91%|█████████ | 484/532 [00:08<00:00, 68.85it/s]3d_pose_estimation_bus:  92%|█████████▏| 491/532 [00:08<00:00, 68.69it/s]3d_pose_estimation_bus:  94%|█████████▎| 498/532 [00:09<00:00, 68.78it/s]3d_pose_estimation_bus:  95%|█████████▍| 505/532 [00:09<00:00, 68.89it/s]3d_pose_estimation_bus:  96%|█████████▌| 512/532 [00:09<00:00, 68.74it/s]3d_pose_estimation_bus:  98%|█████████▊| 519/532 [00:09<00:00, 68.72it/s]3d_pose_estimation_bus:  99%|█████████▉| 526/532 [00:09<00:00, 68.64it/s]3d_pose_estimation_bus: 100%|██████████| 532/532 [00:09<00:00, 55.98it/s]
+2023-01-16 10:48:16,914 - INFO - 
+3D Pose Estimation Results:
+2023-01-16 10:48:16,915 - INFO - Dataset:     pascal3d (root=/misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo)
+2023-01-16 10:48:16,915 - INFO - Category:    ['bus']
+2023-01-16 10:48:16,915 - INFO - # samples:   532
+2023-01-16 10:48:16,915 - INFO - Model:       resnet50general (ckpt=exp/pose_estimation_3d_resnet50_general_bus/ckpts/model_200.pth)
+2023-01-16 10:48:16,915 - INFO - 
+                 bus    mean
+pi/6 acc:      89.5%   89.5%
+pi/18 acc:     68.6%   68.6%
+Median err:     8.05    8.05
+Training for category car
+2023-01-16 10:48:19,022 - INFO - Namespace(cate='car', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_car', checkpoint='exp/pose_estimation_3d_resnet50_general_car/ckpts/model_200.pth', opts=None)
+2023-01-16 10:48:19,037 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-16 10:48:19,130 - INFO - Set random seed to 0
+2023-01-16 10:49:36,437 - INFO - Number of inference images: 2710
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+3d_pose_estimation_car:   0%|          | 0/2710 [00:00<?, ?it/s]3d_pose_estimation_car:   0%|          | 1/2710 [00:01<1:11:44,  1.59s/it]3d_pose_estimation_car:   0%|          | 8/2710 [00:01<07:06,  6.33it/s]  3d_pose_estimation_car:   1%|          | 16/2710 [00:01<03:13, 13.90it/s]3d_pose_estimation_car:   1%|          | 24/2710 [00:01<02:01, 22.09it/s]3d_pose_estimation_car:   1%|          | 32/2710 [00:02<01:28, 30.42it/s]3d_pose_estimation_car:   1%|▏         | 40/2710 [00:02<01:09, 38.36it/s]3d_pose_estimation_car:   2%|▏         | 48/2710 [00:02<00:58, 45.46it/s]3d_pose_estimation_car:   2%|▏         | 56/2710 [00:02<00:51, 51.43it/s]3d_pose_estimation_car:   2%|▏         | 64/2710 [00:02<00:46, 56.60it/s]3d_pose_estimation_car:   3%|▎         | 72/2710 [00:02<00:43, 60.44it/s]3d_pose_estimation_car:   3%|▎         | 80/2710 [00:02<00:41, 63.11it/s]3d_pose_estimation_car:   3%|▎         | 88/2710 [00:02<00:40, 65.50it/s]3d_pose_estimation_car:   4%|▎         | 96/2710 [00:02<00:38, 67.23it/s]3d_pose_estimation_car:   4%|▍         | 104/2710 [00:03<00:37, 68.63it/s]3d_pose_estimation_car:   4%|▍         | 112/2710 [00:03<00:37, 69.23it/s]3d_pose_estimation_car:   4%|▍         | 120/2710 [00:03<00:37, 69.42it/s]3d_pose_estimation_car:   5%|▍         | 128/2710 [00:03<00:36, 70.06it/s]3d_pose_estimation_car:   5%|▌         | 136/2710 [00:03<00:36, 70.42it/s]3d_pose_estimation_car:   5%|▌         | 144/2710 [00:03<00:36, 70.46it/s]3d_pose_estimation_car:   6%|▌         | 152/2710 [00:03<00:36, 70.84it/s]3d_pose_estimation_car:   6%|▌         | 160/2710 [00:03<00:36, 70.73it/s]3d_pose_estimation_car:   6%|▌         | 168/2710 [00:03<00:35, 70.93it/s]3d_pose_estimation_car:   6%|▋         | 176/2710 [00:04<00:35, 71.08it/s]3d_pose_estimation_car:   7%|▋         | 184/2710 [00:04<00:35, 71.32it/s]3d_pose_estimation_car:   7%|▋         | 192/2710 [00:04<00:35, 71.27it/s]3d_pose_estimation_car:   7%|▋         | 200/2710 [00:04<00:35, 70.97it/s]3d_pose_estimation_car:   8%|▊         | 208/2710 [00:04<00:35, 70.78it/s]3d_pose_estimation_car:   8%|▊         | 216/2710 [00:04<00:35, 70.80it/s]3d_pose_estimation_car:   8%|▊         | 224/2710 [00:04<00:35, 70.64it/s]3d_pose_estimation_car:   9%|▊         | 232/2710 [00:04<00:35, 70.64it/s]3d_pose_estimation_car:   9%|▉         | 240/2710 [00:04<00:35, 70.52it/s]3d_pose_estimation_car:   9%|▉         | 248/2710 [00:05<00:34, 70.61it/s]3d_pose_estimation_car:   9%|▉         | 256/2710 [00:05<00:34, 70.59it/s]3d_pose_estimation_car:  10%|▉         | 264/2710 [00:05<00:34, 70.49it/s]3d_pose_estimation_car:  10%|█         | 272/2710 [00:05<00:34, 70.49it/s]3d_pose_estimation_car:  10%|█         | 280/2710 [00:05<00:34, 70.74it/s]3d_pose_estimation_car:  11%|█         | 288/2710 [00:05<00:34, 70.63it/s]3d_pose_estimation_car:  11%|█         | 296/2710 [00:05<00:34, 70.95it/s]3d_pose_estimation_car:  11%|█         | 304/2710 [00:05<00:33, 71.14it/s]3d_pose_estimation_car:  12%|█▏        | 312/2710 [00:05<00:33, 71.12it/s]3d_pose_estimation_car:  12%|█▏        | 320/2710 [00:06<00:33, 71.33it/s]3d_pose_estimation_car:  12%|█▏        | 328/2710 [00:06<00:33, 71.12it/s]3d_pose_estimation_car:  12%|█▏        | 336/2710 [00:06<00:33, 71.15it/s]3d_pose_estimation_car:  13%|█▎        | 344/2710 [00:06<00:33, 71.26it/s]3d_pose_estimation_car:  13%|█▎        | 352/2710 [00:06<00:33, 70.88it/s]3d_pose_estimation_car:  13%|█▎        | 360/2710 [00:06<00:33, 70.76it/s]3d_pose_estimation_car:  14%|█▎        | 368/2710 [00:06<00:33, 70.36it/s]3d_pose_estimation_car:  14%|█▍        | 376/2710 [00:06<00:33, 70.60it/s]3d_pose_estimation_car:  14%|█▍        | 384/2710 [00:06<00:32, 70.59it/s]3d_pose_estimation_car:  14%|█▍        | 392/2710 [00:07<00:32, 70.78it/s]3d_pose_estimation_car:  15%|█▍        | 400/2710 [00:07<00:32, 70.88it/s]3d_pose_estimation_car:  15%|█▌        | 408/2710 [00:07<00:32, 70.83it/s]3d_pose_estimation_car:  15%|█▌        | 416/2710 [00:07<00:32, 70.73it/s]3d_pose_estimation_car:  16%|█▌        | 424/2710 [00:07<00:32, 70.47it/s]3d_pose_estimation_car:  16%|█▌        | 432/2710 [00:07<00:32, 70.19it/s]3d_pose_estimation_car:  16%|█▌        | 440/2710 [00:07<00:32, 70.03it/s]3d_pose_estimation_car:  17%|█▋        | 448/2710 [00:07<00:32, 70.43it/s]3d_pose_estimation_car:  17%|█▋        | 456/2710 [00:08<00:31, 70.71it/s]3d_pose_estimation_car:  17%|█▋        | 464/2710 [00:08<00:31, 70.92it/s]3d_pose_estimation_car:  17%|█▋        | 472/2710 [00:08<00:32, 69.40it/s]3d_pose_estimation_car:  18%|█▊        | 480/2710 [00:08<00:31, 69.95it/s]3d_pose_estimation_car:  18%|█▊        | 488/2710 [00:08<00:31, 70.01it/s]3d_pose_estimation_car:  18%|█▊        | 496/2710 [00:08<00:31, 70.19it/s]3d_pose_estimation_car:  19%|█▊        | 504/2710 [00:08<00:31, 70.46it/s]3d_pose_estimation_car:  19%|█▉        | 512/2710 [00:08<00:31, 69.95it/s]3d_pose_estimation_car:  19%|█▉        | 520/2710 [00:08<00:31, 70.42it/s]3d_pose_estimation_car:  19%|█▉        | 528/2710 [00:09<00:31, 70.21it/s]3d_pose_estimation_car:  20%|█▉        | 536/2710 [00:09<00:30, 70.50it/s]3d_pose_estimation_car:  20%|██        | 544/2710 [00:09<00:30, 70.65it/s]3d_pose_estimation_car:  20%|██        | 552/2710 [00:09<00:31, 68.14it/s]3d_pose_estimation_car:  21%|██        | 560/2710 [00:09<00:31, 69.06it/s]3d_pose_estimation_car:  21%|██        | 568/2710 [00:09<00:30, 69.65it/s]3d_pose_estimation_car:  21%|██▏       | 576/2710 [00:09<00:30, 69.85it/s]3d_pose_estimation_car:  22%|██▏       | 584/2710 [00:09<00:30, 70.09it/s]3d_pose_estimation_car:  22%|██▏       | 592/2710 [00:09<00:30, 70.01it/s]3d_pose_estimation_car:  22%|██▏       | 600/2710 [00:10<00:29, 70.37it/s]3d_pose_estimation_car:  22%|██▏       | 608/2710 [00:10<00:29, 70.54it/s]3d_pose_estimation_car:  23%|██▎       | 616/2710 [00:10<00:29, 70.83it/s]3d_pose_estimation_car:  23%|██▎       | 624/2710 [00:10<00:29, 71.08it/s]3d_pose_estimation_car:  23%|██▎       | 632/2710 [00:10<00:29, 70.87it/s]3d_pose_estimation_car:  24%|██▎       | 640/2710 [00:10<00:29, 71.05it/s]3d_pose_estimation_car:  24%|██▍       | 648/2710 [00:10<00:29, 70.87it/s]3d_pose_estimation_car:  24%|██▍       | 656/2710 [00:10<00:28, 71.17it/s]3d_pose_estimation_car:  25%|██▍       | 664/2710 [00:10<00:28, 71.13it/s]3d_pose_estimation_car:  25%|██▍       | 672/2710 [00:11<00:28, 71.12it/s]3d_pose_estimation_car:  25%|██▌       | 680/2710 [00:11<00:28, 70.72it/s]3d_pose_estimation_car:  25%|██▌       | 688/2710 [00:11<00:28, 70.97it/s]3d_pose_estimation_car:  26%|██▌       | 696/2710 [00:11<00:28, 70.89it/s]3d_pose_estimation_car:  26%|██▌       | 704/2710 [00:11<00:28, 70.92it/s]3d_pose_estimation_car:  26%|██▋       | 712/2710 [00:11<00:28, 70.94it/s]3d_pose_estimation_car:  27%|██▋       | 720/2710 [00:11<00:28, 70.99it/s]3d_pose_estimation_car:  27%|██▋       | 728/2710 [00:11<00:27, 71.25it/s]3d_pose_estimation_car:  27%|██▋       | 736/2710 [00:11<00:27, 71.39it/s]3d_pose_estimation_car:  27%|██▋       | 744/2710 [00:12<00:27, 71.54it/s]3d_pose_estimation_car:  28%|██▊       | 752/2710 [00:12<00:27, 71.15it/s]3d_pose_estimation_car:  28%|██▊       | 760/2710 [00:12<00:27, 71.27it/s]3d_pose_estimation_car:  28%|██▊       | 768/2710 [00:12<00:27, 70.35it/s]3d_pose_estimation_car:  29%|██▊       | 776/2710 [00:12<00:27, 70.51it/s]3d_pose_estimation_car:  29%|██▉       | 784/2710 [00:12<00:27, 70.24it/s]3d_pose_estimation_car:  29%|██▉       | 792/2710 [00:12<00:27, 70.57it/s]3d_pose_estimation_car:  30%|██▉       | 800/2710 [00:12<00:26, 70.79it/s]3d_pose_estimation_car:  30%|██▉       | 808/2710 [00:13<00:26, 71.01it/s]3d_pose_estimation_car:  30%|███       | 816/2710 [00:13<00:26, 71.14it/s]3d_pose_estimation_car:  30%|███       | 824/2710 [00:13<00:26, 71.27it/s]3d_pose_estimation_car:  31%|███       | 832/2710 [00:13<00:26, 71.07it/s]3d_pose_estimation_car:  31%|███       | 840/2710 [00:13<00:26, 70.84it/s]3d_pose_estimation_car:  31%|███▏      | 848/2710 [00:13<00:26, 70.92it/s]3d_pose_estimation_car:  32%|███▏      | 856/2710 [00:13<00:26, 70.80it/s]3d_pose_estimation_car:  32%|███▏      | 864/2710 [00:13<00:26, 70.74it/s]3d_pose_estimation_car:  32%|███▏      | 872/2710 [00:13<00:26, 70.60it/s]3d_pose_estimation_car:  32%|███▏      | 880/2710 [00:14<00:25, 70.56it/s]3d_pose_estimation_car:  33%|███▎      | 888/2710 [00:14<00:25, 70.68it/s]3d_pose_estimation_car:  33%|███▎      | 896/2710 [00:14<00:25, 70.46it/s]3d_pose_estimation_car:  33%|███▎      | 904/2710 [00:14<00:25, 70.63it/s]3d_pose_estimation_car:  34%|███▎      | 912/2710 [00:14<00:25, 70.84it/s]3d_pose_estimation_car:  34%|███▍      | 920/2710 [00:14<00:25, 70.50it/s]3d_pose_estimation_car:  34%|███▍      | 928/2710 [00:14<00:25, 70.59it/s]3d_pose_estimation_car:  35%|███▍      | 936/2710 [00:14<00:25, 70.62it/s]3d_pose_estimation_car:  35%|███▍      | 944/2710 [00:14<00:25, 70.60it/s]3d_pose_estimation_car:  35%|███▌      | 952/2710 [00:15<00:24, 70.42it/s]3d_pose_estimation_car:  35%|███▌      | 960/2710 [00:15<00:24, 70.53it/s]3d_pose_estimation_car:  36%|███▌      | 968/2710 [00:15<00:24, 70.55it/s]3d_pose_estimation_car:  36%|███▌      | 976/2710 [00:15<00:24, 70.64it/s]3d_pose_estimation_car:  36%|███▋      | 984/2710 [00:15<00:24, 70.48it/s]3d_pose_estimation_car:  37%|███▋      | 992/2710 [00:15<00:24, 70.72it/s]3d_pose_estimation_car:  37%|███▋      | 1000/2710 [00:15<00:24, 70.87it/s]3d_pose_estimation_car:  37%|███▋      | 1008/2710 [00:15<00:23, 70.92it/s]3d_pose_estimation_car:  37%|███▋      | 1016/2710 [00:15<00:23, 70.60it/s]3d_pose_estimation_car:  38%|███▊      | 1024/2710 [00:16<00:23, 70.86it/s]3d_pose_estimation_car:  38%|███▊      | 1032/2710 [00:16<00:23, 70.69it/s]3d_pose_estimation_car:  38%|███▊      | 1040/2710 [00:16<00:23, 70.75it/s]3d_pose_estimation_car:  39%|███▊      | 1048/2710 [00:16<00:23, 70.95it/s]3d_pose_estimation_car:  39%|███▉      | 1056/2710 [00:16<00:23, 71.02it/s]3d_pose_estimation_car:  39%|███▉      | 1064/2710 [00:16<00:23, 70.99it/s]3d_pose_estimation_car:  40%|███▉      | 1072/2710 [00:16<00:23, 70.96it/s]3d_pose_estimation_car:  40%|███▉      | 1080/2710 [00:16<00:22, 70.91it/s]3d_pose_estimation_car:  40%|████      | 1088/2710 [00:16<00:22, 70.83it/s]3d_pose_estimation_car:  40%|████      | 1096/2710 [00:17<00:22, 70.74it/s]3d_pose_estimation_car:  41%|████      | 1104/2710 [00:17<00:22, 70.91it/s]3d_pose_estimation_car:  41%|████      | 1112/2710 [00:17<00:22, 70.55it/s]3d_pose_estimation_car:  41%|████▏     | 1120/2710 [00:17<00:22, 70.68it/s]3d_pose_estimation_car:  42%|████▏     | 1128/2710 [00:17<00:22, 70.66it/s]3d_pose_estimation_car:  42%|████▏     | 1136/2710 [00:17<00:22, 70.59it/s]3d_pose_estimation_car:  42%|████▏     | 1144/2710 [00:17<00:22, 70.80it/s]3d_pose_estimation_car:  43%|████▎     | 1152/2710 [00:17<00:22, 70.78it/s]3d_pose_estimation_car:  43%|████▎     | 1160/2710 [00:17<00:21, 70.85it/s]3d_pose_estimation_car:  43%|████▎     | 1168/2710 [00:18<00:21, 70.69it/s]3d_pose_estimation_car:  43%|████▎     | 1176/2710 [00:18<00:21, 70.88it/s]3d_pose_estimation_car:  44%|████▎     | 1184/2710 [00:18<00:21, 70.75it/s]3d_pose_estimation_car:  44%|████▍     | 1192/2710 [00:18<00:21, 70.41it/s]3d_pose_estimation_car:  44%|████▍     | 1200/2710 [00:18<00:22, 66.64it/s]3d_pose_estimation_car:  45%|████▍     | 1208/2710 [00:18<00:22, 67.88it/s]3d_pose_estimation_car:  45%|████▍     | 1216/2710 [00:18<00:21, 68.66it/s]3d_pose_estimation_car:  45%|████▌     | 1224/2710 [00:18<00:21, 69.32it/s]3d_pose_estimation_car:  45%|████▌     | 1231/2710 [00:19<00:21, 69.43it/s]3d_pose_estimation_car:  46%|████▌     | 1239/2710 [00:19<00:21, 69.89it/s]3d_pose_estimation_car:  46%|████▌     | 1247/2710 [00:19<00:21, 68.69it/s]3d_pose_estimation_car:  46%|████▋     | 1255/2710 [00:19<00:21, 69.14it/s]3d_pose_estimation_car:  47%|████▋     | 1263/2710 [00:19<00:20, 69.21it/s]3d_pose_estimation_car:  47%|████▋     | 1271/2710 [00:19<00:20, 69.61it/s]3d_pose_estimation_car:  47%|████▋     | 1279/2710 [00:19<00:20, 69.93it/s]3d_pose_estimation_car:  47%|████▋     | 1287/2710 [00:19<00:20, 70.22it/s]3d_pose_estimation_car:  48%|████▊     | 1295/2710 [00:19<00:20, 70.50it/s]3d_pose_estimation_car:  48%|████▊     | 1303/2710 [00:20<00:19, 70.40it/s]3d_pose_estimation_car:  48%|████▊     | 1311/2710 [00:20<00:19, 70.50it/s]3d_pose_estimation_car:  49%|████▊     | 1319/2710 [00:20<00:19, 70.61it/s]3d_pose_estimation_car:  49%|████▉     | 1327/2710 [00:20<00:19, 70.48it/s]3d_pose_estimation_car:  49%|████▉     | 1335/2710 [00:20<00:19, 70.62it/s]3d_pose_estimation_car:  50%|████▉     | 1343/2710 [00:20<00:19, 70.45it/s]3d_pose_estimation_car:  50%|████▉     | 1351/2710 [00:20<00:19, 69.16it/s]3d_pose_estimation_car:  50%|█████     | 1359/2710 [00:20<00:19, 69.63it/s]3d_pose_estimation_car:  50%|█████     | 1367/2710 [00:20<00:19, 70.06it/s]3d_pose_estimation_car:  51%|█████     | 1375/2710 [00:21<00:18, 70.36it/s]3d_pose_estimation_car:  51%|█████     | 1383/2710 [00:21<00:18, 70.53it/s]3d_pose_estimation_car:  51%|█████▏    | 1391/2710 [00:21<00:18, 70.48it/s]3d_pose_estimation_car:  52%|█████▏    | 1399/2710 [00:21<00:18, 70.53it/s]3d_pose_estimation_car:  52%|█████▏    | 1407/2710 [00:21<00:18, 70.42it/s]3d_pose_estimation_car:  52%|█████▏    | 1415/2710 [00:21<00:18, 70.65it/s]3d_pose_estimation_car:  53%|█████▎    | 1423/2710 [00:21<00:18, 70.67it/s]3d_pose_estimation_car:  53%|█████▎    | 1431/2710 [00:21<00:18, 70.55it/s]3d_pose_estimation_car:  53%|█████▎    | 1439/2710 [00:21<00:18, 70.56it/s]3d_pose_estimation_car:  53%|█████▎    | 1447/2710 [00:22<00:17, 70.77it/s]3d_pose_estimation_car:  54%|█████▎    | 1455/2710 [00:22<00:17, 70.97it/s]3d_pose_estimation_car:  54%|█████▍    | 1463/2710 [00:22<00:17, 71.07it/s]3d_pose_estimation_car:  54%|█████▍    | 1471/2710 [00:22<00:17, 71.10it/s]3d_pose_estimation_car:  55%|█████▍    | 1479/2710 [00:22<00:17, 70.83it/s]3d_pose_estimation_car:  55%|█████▍    | 1487/2710 [00:22<00:17, 70.94it/s]3d_pose_estimation_car:  55%|█████▌    | 1495/2710 [00:22<00:17, 70.94it/s]3d_pose_estimation_car:  55%|█████▌    | 1503/2710 [00:22<00:17, 70.85it/s]3d_pose_estimation_car:  56%|█████▌    | 1511/2710 [00:22<00:16, 70.99it/s]3d_pose_estimation_car:  56%|█████▌    | 1519/2710 [00:23<00:16, 70.85it/s]3d_pose_estimation_car:  56%|█████▋    | 1527/2710 [00:23<00:17, 67.46it/s]3d_pose_estimation_car:  57%|█████▋    | 1535/2710 [00:23<00:17, 68.31it/s]3d_pose_estimation_car:  57%|█████▋    | 1543/2710 [00:23<00:16, 69.00it/s]3d_pose_estimation_car:  57%|█████▋    | 1551/2710 [00:23<00:16, 69.64it/s]3d_pose_estimation_car:  57%|█████▋    | 1558/2710 [00:23<00:17, 66.36it/s]3d_pose_estimation_car:  58%|█████▊    | 1566/2710 [00:23<00:16, 67.67it/s]3d_pose_estimation_car:  58%|█████▊    | 1574/2710 [00:23<00:16, 68.71it/s]3d_pose_estimation_car:  58%|█████▊    | 1582/2710 [00:24<00:16, 69.56it/s]3d_pose_estimation_car:  59%|█████▊    | 1590/2710 [00:24<00:16, 69.79it/s]3d_pose_estimation_car:  59%|█████▉    | 1598/2710 [00:24<00:15, 70.12it/s]3d_pose_estimation_car:  59%|█████▉    | 1606/2710 [00:24<00:17, 63.60it/s]3d_pose_estimation_car:  60%|█████▉    | 1614/2710 [00:24<00:16, 65.56it/s]3d_pose_estimation_car:  60%|█████▉    | 1621/2710 [00:24<00:16, 65.50it/s]3d_pose_estimation_car:  60%|██████    | 1629/2710 [00:24<00:16, 67.06it/s]3d_pose_estimation_car:  60%|██████    | 1637/2710 [00:24<00:15, 68.15it/s]3d_pose_estimation_car:  61%|██████    | 1645/2710 [00:24<00:15, 68.90it/s]3d_pose_estimation_car:  61%|██████    | 1653/2710 [00:25<00:15, 69.53it/s]3d_pose_estimation_car:  61%|██████▏   | 1661/2710 [00:25<00:15, 69.93it/s]3d_pose_estimation_car:  62%|██████▏   | 1669/2710 [00:25<00:15, 68.39it/s]3d_pose_estimation_car:  62%|██████▏   | 1677/2710 [00:25<00:14, 69.17it/s]3d_pose_estimation_car:  62%|██████▏   | 1685/2710 [00:25<00:14, 69.44it/s]3d_pose_estimation_car:  62%|██████▏   | 1693/2710 [00:25<00:14, 69.94it/s]3d_pose_estimation_car:  63%|██████▎   | 1701/2710 [00:25<00:14, 70.05it/s]3d_pose_estimation_car:  63%|██████▎   | 1709/2710 [00:25<00:14, 70.24it/s]3d_pose_estimation_car:  63%|██████▎   | 1717/2710 [00:25<00:14, 70.34it/s]3d_pose_estimation_car:  64%|██████▎   | 1725/2710 [00:26<00:13, 70.55it/s]3d_pose_estimation_car:  64%|██████▍   | 1733/2710 [00:26<00:13, 70.82it/s]3d_pose_estimation_car:  64%|██████▍   | 1741/2710 [00:26<00:14, 67.33it/s]3d_pose_estimation_car:  65%|██████▍   | 1749/2710 [00:26<00:14, 68.14it/s]3d_pose_estimation_car:  65%|██████▍   | 1757/2710 [00:26<00:13, 68.91it/s]3d_pose_estimation_car:  65%|██████▌   | 1765/2710 [00:26<00:13, 69.50it/s]3d_pose_estimation_car:  65%|██████▌   | 1773/2710 [00:26<00:13, 69.93it/s]3d_pose_estimation_car:  66%|██████▌   | 1781/2710 [00:26<00:13, 70.03it/s]3d_pose_estimation_car:  66%|██████▌   | 1789/2710 [00:27<00:13, 70.24it/s]3d_pose_estimation_car:  66%|██████▋   | 1797/2710 [00:27<00:12, 70.33it/s]3d_pose_estimation_car:  67%|██████▋   | 1805/2710 [00:27<00:12, 70.34it/s]3d_pose_estimation_car:  67%|██████▋   | 1813/2710 [00:27<00:12, 70.53it/s]3d_pose_estimation_car:  67%|██████▋   | 1821/2710 [00:27<00:12, 70.58it/s]3d_pose_estimation_car:  67%|██████▋   | 1829/2710 [00:27<00:12, 70.56it/s]3d_pose_estimation_car:  68%|██████▊   | 1837/2710 [00:27<00:12, 70.45it/s]3d_pose_estimation_car:  68%|██████▊   | 1845/2710 [00:27<00:12, 70.20it/s]3d_pose_estimation_car:  68%|██████▊   | 1853/2710 [00:27<00:12, 70.32it/s]3d_pose_estimation_car:  69%|██████▊   | 1861/2710 [00:28<00:12, 70.12it/s]3d_pose_estimation_car:  69%|██████▉   | 1869/2710 [00:28<00:11, 70.27it/s]3d_pose_estimation_car:  69%|██████▉   | 1877/2710 [00:28<00:11, 70.26it/s]3d_pose_estimation_car:  70%|██████▉   | 1885/2710 [00:28<00:11, 70.44it/s]3d_pose_estimation_car:  70%|██████▉   | 1893/2710 [00:28<00:11, 70.48it/s]3d_pose_estimation_car:  70%|███████   | 1901/2710 [00:28<00:11, 70.49it/s]3d_pose_estimation_car:  70%|███████   | 1909/2710 [00:28<00:11, 70.52it/s]3d_pose_estimation_car:  71%|███████   | 1917/2710 [00:28<00:11, 70.61it/s]3d_pose_estimation_car:  71%|███████   | 1925/2710 [00:28<00:11, 70.61it/s]3d_pose_estimation_car:  71%|███████▏  | 1933/2710 [00:29<00:11, 70.48it/s]3d_pose_estimation_car:  72%|███████▏  | 1941/2710 [00:29<00:10, 70.59it/s]3d_pose_estimation_car:  72%|███████▏  | 1949/2710 [00:29<00:10, 69.52it/s]3d_pose_estimation_car:  72%|███████▏  | 1957/2710 [00:29<00:10, 69.99it/s]3d_pose_estimation_car:  73%|███████▎  | 1965/2710 [00:29<00:10, 70.16it/s]3d_pose_estimation_car:  73%|███████▎  | 1973/2710 [00:29<00:10, 70.27it/s]3d_pose_estimation_car:  73%|███████▎  | 1981/2710 [00:29<00:10, 70.34it/s]3d_pose_estimation_car:  73%|███████▎  | 1989/2710 [00:29<00:10, 70.31it/s]3d_pose_estimation_car:  74%|███████▎  | 1997/2710 [00:29<00:10, 70.35it/s]3d_pose_estimation_car:  74%|███████▍  | 2005/2710 [00:30<00:10, 70.08it/s]3d_pose_estimation_car:  74%|███████▍  | 2013/2710 [00:30<00:09, 70.06it/s]3d_pose_estimation_car:  75%|███████▍  | 2021/2710 [00:30<00:09, 69.17it/s]3d_pose_estimation_car:  75%|███████▍  | 2029/2710 [00:30<00:09, 69.70it/s]3d_pose_estimation_car:  75%|███████▌  | 2036/2710 [00:30<00:09, 69.74it/s]3d_pose_estimation_car:  75%|███████▌  | 2044/2710 [00:30<00:09, 69.92it/s]3d_pose_estimation_car:  76%|███████▌  | 2052/2710 [00:30<00:09, 70.08it/s]3d_pose_estimation_car:  76%|███████▌  | 2060/2710 [00:30<00:09, 70.37it/s]3d_pose_estimation_car:  76%|███████▋  | 2068/2710 [00:30<00:09, 70.54it/s]3d_pose_estimation_car:  77%|███████▋  | 2076/2710 [00:31<00:08, 70.70it/s]3d_pose_estimation_car:  77%|███████▋  | 2084/2710 [00:31<00:14, 42.57it/s]3d_pose_estimation_car:  77%|███████▋  | 2092/2710 [00:31<00:12, 48.33it/s]3d_pose_estimation_car:  77%|███████▋  | 2100/2710 [00:31<00:11, 53.56it/s]3d_pose_estimation_car:  78%|███████▊  | 2108/2710 [00:31<00:10, 57.77it/s]3d_pose_estimation_car:  78%|███████▊  | 2116/2710 [00:31<00:09, 61.09it/s]3d_pose_estimation_car:  78%|███████▊  | 2124/2710 [00:32<00:09, 63.67it/s]3d_pose_estimation_car:  79%|███████▊  | 2131/2710 [00:32<00:08, 65.19it/s]3d_pose_estimation_car:  79%|███████▉  | 2139/2710 [00:32<00:08, 66.90it/s]3d_pose_estimation_car:  79%|███████▉  | 2147/2710 [00:32<00:08, 68.07it/s]3d_pose_estimation_car:  80%|███████▉  | 2155/2710 [00:32<00:08, 68.93it/s]3d_pose_estimation_car:  80%|███████▉  | 2163/2710 [00:32<00:07, 69.50it/s]3d_pose_estimation_car:  80%|████████  | 2171/2710 [00:32<00:07, 69.84it/s]3d_pose_estimation_car:  80%|████████  | 2179/2710 [00:32<00:07, 69.92it/s]3d_pose_estimation_car:  81%|████████  | 2187/2710 [00:32<00:07, 70.03it/s]3d_pose_estimation_car:  81%|████████  | 2195/2710 [00:33<00:07, 70.09it/s]3d_pose_estimation_car:  81%|████████▏ | 2203/2710 [00:33<00:07, 70.15it/s]3d_pose_estimation_car:  82%|████████▏ | 2211/2710 [00:33<00:07, 70.26it/s]3d_pose_estimation_car:  82%|████████▏ | 2219/2710 [00:33<00:06, 70.36it/s]3d_pose_estimation_car:  82%|████████▏ | 2227/2710 [00:33<00:06, 70.47it/s]3d_pose_estimation_car:  82%|████████▏ | 2235/2710 [00:33<00:06, 70.53it/s]3d_pose_estimation_car:  83%|████████▎ | 2243/2710 [00:33<00:06, 70.68it/s]3d_pose_estimation_car:  83%|████████▎ | 2251/2710 [00:33<00:06, 70.91it/s]3d_pose_estimation_car:  83%|████████▎ | 2259/2710 [00:33<00:06, 70.88it/s]3d_pose_estimation_car:  84%|████████▎ | 2267/2710 [00:34<00:06, 71.01it/s]3d_pose_estimation_car:  84%|████████▍ | 2275/2710 [00:34<00:06, 70.73it/s]3d_pose_estimation_car:  84%|████████▍ | 2283/2710 [00:34<00:07, 60.10it/s]3d_pose_estimation_car:  85%|████████▍ | 2291/2710 [00:34<00:06, 62.75it/s]3d_pose_estimation_car:  85%|████████▍ | 2298/2710 [00:34<00:06, 64.43it/s]3d_pose_estimation_car:  85%|████████▌ | 2306/2710 [00:34<00:06, 66.09it/s]3d_pose_estimation_car:  85%|████████▌ | 2313/2710 [00:34<00:06, 65.81it/s]3d_pose_estimation_car:  86%|████████▌ | 2320/2710 [00:34<00:05, 66.85it/s]3d_pose_estimation_car:  86%|████████▌ | 2327/2710 [00:34<00:05, 67.66it/s]3d_pose_estimation_car:  86%|████████▌ | 2334/2710 [00:35<00:05, 67.75it/s]3d_pose_estimation_car:  86%|████████▋ | 2341/2710 [00:35<00:05, 68.19it/s]3d_pose_estimation_car:  87%|████████▋ | 2348/2710 [00:35<00:05, 68.56it/s]3d_pose_estimation_car:  87%|████████▋ | 2355/2710 [00:35<00:05, 68.82it/s]3d_pose_estimation_car:  87%|████████▋ | 2362/2710 [00:35<00:06, 51.24it/s]3d_pose_estimation_car:  87%|████████▋ | 2369/2710 [00:35<00:06, 55.66it/s]3d_pose_estimation_car:  88%|████████▊ | 2376/2710 [00:35<00:05, 57.16it/s]3d_pose_estimation_car:  88%|████████▊ | 2383/2710 [00:36<00:06, 49.69it/s]3d_pose_estimation_car:  88%|████████▊ | 2391/2710 [00:36<00:05, 55.22it/s]3d_pose_estimation_car:  89%|████████▊ | 2399/2710 [00:36<00:05, 59.29it/s]3d_pose_estimation_car:  89%|████████▉ | 2407/2710 [00:36<00:04, 62.47it/s]3d_pose_estimation_car:  89%|████████▉ | 2414/2710 [00:36<00:04, 64.05it/s]3d_pose_estimation_car:  89%|████████▉ | 2422/2710 [00:36<00:04, 65.92it/s]3d_pose_estimation_car:  90%|████████▉ | 2430/2710 [00:36<00:04, 67.29it/s]3d_pose_estimation_car:  90%|████████▉ | 2438/2710 [00:36<00:03, 68.28it/s]3d_pose_estimation_car:  90%|█████████ | 2445/2710 [00:36<00:03, 68.63it/s]3d_pose_estimation_car:  91%|█████████ | 2453/2710 [00:37<00:03, 69.33it/s]3d_pose_estimation_car:  91%|█████████ | 2461/2710 [00:37<00:03, 69.67it/s]3d_pose_estimation_car:  91%|█████████ | 2469/2710 [00:37<00:03, 70.06it/s]3d_pose_estimation_car:  91%|█████████▏| 2477/2710 [00:37<00:03, 70.36it/s]3d_pose_estimation_car:  92%|█████████▏| 2485/2710 [00:37<00:03, 70.17it/s]3d_pose_estimation_car:  92%|█████████▏| 2493/2710 [00:37<00:03, 68.14it/s]3d_pose_estimation_car:  92%|█████████▏| 2501/2710 [00:37<00:03, 68.92it/s]3d_pose_estimation_car:  93%|█████████▎| 2508/2710 [00:37<00:02, 69.07it/s]3d_pose_estimation_car:  93%|█████████▎| 2516/2710 [00:37<00:02, 69.75it/s]3d_pose_estimation_car:  93%|█████████▎| 2524/2710 [00:38<00:02, 69.97it/s]3d_pose_estimation_car:  93%|█████████▎| 2532/2710 [00:38<00:02, 70.31it/s]3d_pose_estimation_car:  94%|█████████▎| 2540/2710 [00:38<00:02, 70.33it/s]3d_pose_estimation_car:  94%|█████████▍| 2548/2710 [00:38<00:02, 70.46it/s]3d_pose_estimation_car:  94%|█████████▍| 2556/2710 [00:38<00:02, 70.55it/s]3d_pose_estimation_car:  95%|█████████▍| 2564/2710 [00:38<00:02, 70.61it/s]3d_pose_estimation_car:  95%|█████████▍| 2572/2710 [00:38<00:01, 70.53it/s]3d_pose_estimation_car:  95%|█████████▌| 2580/2710 [00:38<00:01, 70.55it/s]3d_pose_estimation_car:  95%|█████████▌| 2588/2710 [00:38<00:01, 70.60it/s]3d_pose_estimation_car:  96%|█████████▌| 2596/2710 [00:39<00:01, 70.86it/s]3d_pose_estimation_car:  96%|█████████▌| 2604/2710 [00:39<00:01, 70.01it/s]3d_pose_estimation_car:  96%|█████████▋| 2612/2710 [00:39<00:01, 70.26it/s]3d_pose_estimation_car:  97%|█████████▋| 2620/2710 [00:39<00:01, 70.41it/s]3d_pose_estimation_car:  97%|█████████▋| 2628/2710 [00:39<00:01, 70.72it/s]3d_pose_estimation_car:  97%|█████████▋| 2636/2710 [00:39<00:01, 70.80it/s]3d_pose_estimation_car:  98%|█████████▊| 2644/2710 [00:39<00:00, 70.33it/s]3d_pose_estimation_car:  98%|█████████▊| 2652/2710 [00:39<00:00, 70.43it/s]3d_pose_estimation_car:  98%|█████████▊| 2660/2710 [00:39<00:00, 70.38it/s]3d_pose_estimation_car:  98%|█████████▊| 2668/2710 [00:40<00:00, 70.34it/s]3d_pose_estimation_car:  99%|█████████▊| 2676/2710 [00:40<00:00, 70.40it/s]3d_pose_estimation_car:  99%|█████████▉| 2684/2710 [00:40<00:00, 70.51it/s]3d_pose_estimation_car:  99%|█████████▉| 2692/2710 [00:40<00:00, 70.75it/s]3d_pose_estimation_car: 100%|█████████▉| 2700/2710 [00:40<00:00, 70.23it/s]3d_pose_estimation_car: 100%|█████████▉| 2708/2710 [00:40<00:00, 63.89it/s]3d_pose_estimation_car: 100%|██████████| 2710/2710 [00:40<00:00, 66.58it/s]
+2023-01-16 10:50:21,552 - INFO - 
+3D Pose Estimation Results:
+2023-01-16 10:50:21,552 - INFO - Dataset:     pascal3d (root=/misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo)
+2023-01-16 10:50:21,552 - INFO - Category:    ['car']
+2023-01-16 10:50:21,553 - INFO - # samples:   2710
+2023-01-16 10:50:21,553 - INFO - Model:       resnet50general (ckpt=exp/pose_estimation_3d_resnet50_general_car/ckpts/model_200.pth)
+2023-01-16 10:50:21,555 - INFO - 
+                 car    mean
+pi/6 acc:      96.5%   96.5%
+pi/18 acc:     68.9%   68.9%
+Median err:     8.28    8.28
+Training for category chair
+2023-01-16 10:50:25,857 - INFO - Namespace(cate='chair', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_chair', checkpoint='exp/pose_estimation_3d_resnet50_general_chair/ckpts/model_200.pth', opts=None)
+2023-01-16 10:50:25,870 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-16 10:50:26,242 - INFO - Set random seed to 0
+2023-01-16 10:50:44,357 - INFO - Number of inference images: 506
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+3d_pose_estimation_chair:   0%|          | 0/506 [00:00<?, ?it/s]3d_pose_estimation_chair:   0%|          | 1/506 [00:01<14:11,  1.69s/it]3d_pose_estimation_chair:   2%|▏         | 8/506 [00:01<01:23,  5.99it/s]3d_pose_estimation_chair:   3%|▎         | 15/506 [00:01<00:39, 12.36it/s]3d_pose_estimation_chair:   4%|▍         | 22/506 [00:01<00:24, 19.50it/s]3d_pose_estimation_chair:   6%|▌         | 29/506 [00:02<00:17, 26.97it/s]3d_pose_estimation_chair:   7%|▋         | 36/506 [00:02<00:13, 34.35it/s]3d_pose_estimation_chair:   8%|▊         | 43/506 [00:02<00:11, 41.15it/s]3d_pose_estimation_chair:  10%|▉         | 50/506 [00:02<00:09, 47.17it/s]3d_pose_estimation_chair:  11%|█▏        | 57/506 [00:02<00:08, 52.23it/s]3d_pose_estimation_chair:  13%|█▎        | 64/506 [00:02<00:07, 56.18it/s]3d_pose_estimation_chair:  14%|█▍        | 71/506 [00:02<00:07, 59.06it/s]3d_pose_estimation_chair:  15%|█▌        | 78/506 [00:02<00:06, 61.47it/s]3d_pose_estimation_chair:  17%|█▋        | 85/506 [00:02<00:06, 62.98it/s]3d_pose_estimation_chair:  18%|█▊        | 92/506 [00:03<00:06, 64.47it/s]3d_pose_estimation_chair:  20%|█▉        | 99/506 [00:03<00:06, 65.24it/s]3d_pose_estimation_chair:  21%|██        | 106/506 [00:03<00:06, 65.79it/s]3d_pose_estimation_chair:  22%|██▏       | 113/506 [00:03<00:05, 66.46it/s]3d_pose_estimation_chair:  24%|██▎       | 120/506 [00:03<00:05, 66.81it/s]3d_pose_estimation_chair:  25%|██▌       | 127/506 [00:03<00:05, 67.23it/s]3d_pose_estimation_chair:  26%|██▋       | 134/506 [00:03<00:05, 67.01it/s]3d_pose_estimation_chair:  28%|██▊       | 141/506 [00:03<00:05, 67.01it/s]3d_pose_estimation_chair:  29%|██▉       | 148/506 [00:03<00:05, 66.70it/s]3d_pose_estimation_chair:  31%|███       | 155/506 [00:03<00:05, 67.06it/s]3d_pose_estimation_chair:  32%|███▏      | 162/506 [00:04<00:06, 51.94it/s]3d_pose_estimation_chair:  33%|███▎      | 169/506 [00:04<00:06, 55.51it/s]3d_pose_estimation_chair:  35%|███▍      | 176/506 [00:04<00:05, 58.58it/s]3d_pose_estimation_chair:  36%|███▌      | 183/506 [00:04<00:05, 60.82it/s]3d_pose_estimation_chair:  38%|███▊      | 190/506 [00:04<00:05, 61.27it/s]3d_pose_estimation_chair:  39%|███▉      | 197/506 [00:04<00:04, 63.26it/s]3d_pose_estimation_chair:  40%|████      | 204/506 [00:04<00:04, 64.38it/s]3d_pose_estimation_chair:  42%|████▏     | 211/506 [00:04<00:04, 64.28it/s]3d_pose_estimation_chair:  43%|████▎     | 218/506 [00:05<00:04, 65.43it/s]3d_pose_estimation_chair:  44%|████▍     | 225/506 [00:05<00:04, 66.07it/s]3d_pose_estimation_chair:  46%|████▌     | 232/506 [00:05<00:04, 66.65it/s]3d_pose_estimation_chair:  47%|████▋     | 239/506 [00:05<00:04, 66.64it/s]3d_pose_estimation_chair:  49%|████▊     | 246/506 [00:05<00:03, 66.96it/s]3d_pose_estimation_chair:  50%|█████     | 253/506 [00:05<00:03, 67.07it/s]3d_pose_estimation_chair:  51%|█████▏    | 260/506 [00:05<00:03, 67.29it/s]3d_pose_estimation_chair:  53%|█████▎    | 267/506 [00:05<00:03, 66.98it/s]3d_pose_estimation_chair:  54%|█████▍    | 274/506 [00:05<00:03, 67.12it/s]3d_pose_estimation_chair:  56%|█████▌    | 281/506 [00:05<00:03, 67.29it/s]3d_pose_estimation_chair:  57%|█████▋    | 288/506 [00:06<00:03, 67.52it/s]3d_pose_estimation_chair:  58%|█████▊    | 295/506 [00:06<00:03, 67.76it/s]3d_pose_estimation_chair:  60%|█████▉    | 302/506 [00:06<00:03, 67.97it/s]3d_pose_estimation_chair:  61%|██████    | 309/506 [00:06<00:02, 67.94it/s]3d_pose_estimation_chair:  62%|██████▏   | 316/506 [00:06<00:02, 68.10it/s]3d_pose_estimation_chair:  64%|██████▍   | 323/506 [00:06<00:02, 67.70it/s]3d_pose_estimation_chair:  65%|██████▌   | 330/506 [00:06<00:02, 67.45it/s]3d_pose_estimation_chair:  67%|██████▋   | 337/506 [00:06<00:02, 67.66it/s]3d_pose_estimation_chair:  68%|██████▊   | 344/506 [00:06<00:02, 67.49it/s]3d_pose_estimation_chair:  69%|██████▉   | 351/506 [00:06<00:02, 67.45it/s]3d_pose_estimation_chair:  71%|███████   | 358/506 [00:07<00:02, 67.53it/s]3d_pose_estimation_chair:  72%|███████▏  | 365/506 [00:07<00:02, 67.29it/s]3d_pose_estimation_chair:  74%|███████▎  | 372/506 [00:07<00:01, 67.52it/s]3d_pose_estimation_chair:  75%|███████▍  | 379/506 [00:07<00:01, 64.77it/s]3d_pose_estimation_chair:  76%|███████▋  | 386/506 [00:07<00:01, 62.83it/s]3d_pose_estimation_chair:  78%|███████▊  | 393/506 [00:07<00:01, 64.16it/s]3d_pose_estimation_chair:  79%|███████▉  | 400/506 [00:07<00:01, 64.93it/s]3d_pose_estimation_chair:  80%|████████  | 407/506 [00:07<00:01, 65.82it/s]3d_pose_estimation_chair:  82%|████████▏ | 414/506 [00:07<00:01, 66.12it/s]3d_pose_estimation_chair:  83%|████████▎ | 421/506 [00:08<00:01, 66.44it/s]3d_pose_estimation_chair:  85%|████████▍ | 428/506 [00:08<00:01, 66.66it/s]3d_pose_estimation_chair:  86%|████████▌ | 435/506 [00:08<00:01, 66.45it/s]3d_pose_estimation_chair:  87%|████████▋ | 442/506 [00:08<00:00, 66.90it/s]3d_pose_estimation_chair:  89%|████████▊ | 449/506 [00:08<00:00, 66.84it/s]3d_pose_estimation_chair:  90%|█████████ | 456/506 [00:08<00:00, 66.97it/s]3d_pose_estimation_chair:  92%|█████████▏| 463/506 [00:08<00:00, 67.22it/s]3d_pose_estimation_chair:  93%|█████████▎| 470/506 [00:08<00:00, 67.52it/s]3d_pose_estimation_chair:  94%|█████████▍| 477/506 [00:08<00:00, 67.57it/s]3d_pose_estimation_chair:  96%|█████████▌| 484/506 [00:08<00:00, 67.51it/s]3d_pose_estimation_chair:  97%|█████████▋| 491/506 [00:09<00:00, 67.45it/s]3d_pose_estimation_chair:  98%|█████████▊| 498/506 [00:09<00:00, 67.25it/s]3d_pose_estimation_chair: 100%|█████████▉| 505/506 [00:09<00:00, 67.05it/s]3d_pose_estimation_chair: 100%|██████████| 506/506 [00:09<00:00, 54.28it/s]
+2023-01-16 10:50:58,909 - INFO - 
+3D Pose Estimation Results:
+2023-01-16 10:50:58,910 - INFO - Dataset:     pascal3d (root=/misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo)
+2023-01-16 10:50:58,910 - INFO - Category:    ['chair']
+2023-01-16 10:50:58,910 - INFO - # samples:   506
+2023-01-16 10:50:58,910 - INFO - Model:       resnet50general (ckpt=exp/pose_estimation_3d_resnet50_general_chair/ckpts/model_200.pth)
+2023-01-16 10:50:58,910 - INFO - 
+               chair    mean
+pi/6 acc:      79.8%   79.8%
+pi/18 acc:     26.5%   26.5%
+Median err:    15.66   15.66
+Training for category diningtable
+2023-01-16 10:51:01,566 - INFO - Namespace(cate='diningtable', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_diningtable', checkpoint='exp/pose_estimation_3d_resnet50_general_diningtable/ckpts/model_200.pth', opts=None)
+2023-01-16 10:51:01,661 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-16 10:51:01,760 - INFO - Set random seed to 0
+2023-01-16 10:51:49,959 - INFO - Number of inference images: 1153
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+3d_pose_estimation_diningtable:   0%|          | 0/1153 [00:00<?, ?it/s]3d_pose_estimation_diningtable:   0%|          | 1/1153 [00:01<31:57,  1.66s/it]3d_pose_estimation_diningtable:   1%|          | 8/1153 [00:01<03:09,  6.04it/s]3d_pose_estimation_diningtable:   1%|▏         | 15/1153 [00:01<01:31, 12.41it/s]3d_pose_estimation_diningtable:   2%|▏         | 22/1153 [00:01<00:57, 19.50it/s]3d_pose_estimation_diningtable:   3%|▎         | 29/1153 [00:02<00:41, 26.89it/s]3d_pose_estimation_diningtable:   3%|▎         | 36/1153 [00:02<00:32, 33.98it/s]3d_pose_estimation_diningtable:   4%|▎         | 43/1153 [00:02<00:27, 40.64it/s]3d_pose_estimation_diningtable:   4%|▍         | 50/1153 [00:02<00:23, 46.38it/s]3d_pose_estimation_diningtable:   5%|▍         | 57/1153 [00:02<00:21, 51.19it/s]3d_pose_estimation_diningtable:   6%|▌         | 64/1153 [00:02<00:19, 54.85it/s]3d_pose_estimation_diningtable:   6%|▌         | 71/1153 [00:02<00:18, 57.79it/s]3d_pose_estimation_diningtable:   7%|▋         | 78/1153 [00:02<00:17, 60.18it/s]3d_pose_estimation_diningtable:   7%|▋         | 85/1153 [00:02<00:17, 61.80it/s]3d_pose_estimation_diningtable:   8%|▊         | 92/1153 [00:03<00:16, 62.91it/s]3d_pose_estimation_diningtable:   9%|▊         | 99/1153 [00:03<00:16, 63.51it/s]3d_pose_estimation_diningtable:   9%|▉         | 106/1153 [00:03<00:16, 64.24it/s]3d_pose_estimation_diningtable:  10%|▉         | 113/1153 [00:03<00:16, 64.68it/s]3d_pose_estimation_diningtable:  10%|█         | 120/1153 [00:03<00:15, 64.92it/s]3d_pose_estimation_diningtable:  11%|█         | 127/1153 [00:03<00:15, 65.18it/s]3d_pose_estimation_diningtable:  12%|█▏        | 134/1153 [00:03<00:15, 65.31it/s]3d_pose_estimation_diningtable:  12%|█▏        | 141/1153 [00:03<00:15, 65.39it/s]3d_pose_estimation_diningtable:  13%|█▎        | 148/1153 [00:03<00:15, 65.27it/s]3d_pose_estimation_diningtable:  13%|█▎        | 155/1153 [00:04<00:15, 65.48it/s]3d_pose_estimation_diningtable:  14%|█▍        | 162/1153 [00:04<00:15, 65.26it/s]3d_pose_estimation_diningtable:  15%|█▍        | 169/1153 [00:04<00:15, 65.07it/s]3d_pose_estimation_diningtable:  15%|█▌        | 176/1153 [00:04<00:15, 63.84it/s]3d_pose_estimation_diningtable:  16%|█▌        | 183/1153 [00:04<00:15, 64.55it/s]3d_pose_estimation_diningtable:  16%|█▋        | 190/1153 [00:04<00:14, 64.99it/s]3d_pose_estimation_diningtable:  17%|█▋        | 197/1153 [00:04<00:14, 65.01it/s]3d_pose_estimation_diningtable:  18%|█▊        | 204/1153 [00:04<00:14, 65.26it/s]3d_pose_estimation_diningtable:  18%|█▊        | 211/1153 [00:04<00:14, 65.26it/s]3d_pose_estimation_diningtable:  19%|█▉        | 218/1153 [00:04<00:14, 65.56it/s]3d_pose_estimation_diningtable:  20%|█▉        | 225/1153 [00:05<00:14, 65.09it/s]3d_pose_estimation_diningtable:  20%|██        | 232/1153 [00:05<00:14, 65.27it/s]3d_pose_estimation_diningtable:  21%|██        | 239/1153 [00:05<00:13, 65.31it/s]3d_pose_estimation_diningtable:  21%|██▏       | 246/1153 [00:05<00:13, 65.05it/s]3d_pose_estimation_diningtable:  22%|██▏       | 253/1153 [00:05<00:13, 65.00it/s]3d_pose_estimation_diningtable:  23%|██▎       | 260/1153 [00:05<00:13, 64.89it/s]3d_pose_estimation_diningtable:  23%|██▎       | 267/1153 [00:05<00:13, 65.28it/s]3d_pose_estimation_diningtable:  24%|██▍       | 274/1153 [00:05<00:13, 65.39it/s]3d_pose_estimation_diningtable:  24%|██▍       | 281/1153 [00:05<00:13, 65.15it/s]3d_pose_estimation_diningtable:  25%|██▍       | 288/1153 [00:06<00:13, 64.68it/s]3d_pose_estimation_diningtable:  26%|██▌       | 295/1153 [00:06<00:13, 63.58it/s]3d_pose_estimation_diningtable:  26%|██▌       | 302/1153 [00:06<00:13, 64.04it/s]3d_pose_estimation_diningtable:  27%|██▋       | 309/1153 [00:06<00:13, 64.29it/s]3d_pose_estimation_diningtable:  27%|██▋       | 316/1153 [00:06<00:12, 64.87it/s]3d_pose_estimation_diningtable:  28%|██▊       | 323/1153 [00:06<00:12, 64.91it/s]3d_pose_estimation_diningtable:  29%|██▊       | 330/1153 [00:06<00:12, 64.99it/s]3d_pose_estimation_diningtable:  29%|██▉       | 337/1153 [00:06<00:12, 65.17it/s]3d_pose_estimation_diningtable:  30%|██▉       | 344/1153 [00:06<00:12, 64.52it/s]3d_pose_estimation_diningtable:  30%|███       | 351/1153 [00:07<00:12, 64.65it/s]3d_pose_estimation_diningtable:  31%|███       | 358/1153 [00:07<00:12, 64.93it/s]3d_pose_estimation_diningtable:  32%|███▏      | 365/1153 [00:07<00:12, 65.10it/s]3d_pose_estimation_diningtable:  32%|███▏      | 372/1153 [00:07<00:11, 65.26it/s]3d_pose_estimation_diningtable:  33%|███▎      | 379/1153 [00:07<00:12, 63.75it/s]3d_pose_estimation_diningtable:  33%|███▎      | 386/1153 [00:07<00:11, 64.10it/s]3d_pose_estimation_diningtable:  34%|███▍      | 393/1153 [00:07<00:11, 64.33it/s]3d_pose_estimation_diningtable:  35%|███▍      | 400/1153 [00:07<00:11, 64.54it/s]3d_pose_estimation_diningtable:  35%|███▌      | 407/1153 [00:07<00:11, 64.66it/s]3d_pose_estimation_diningtable:  36%|███▌      | 414/1153 [00:08<00:11, 64.68it/s]3d_pose_estimation_diningtable:  37%|███▋      | 421/1153 [00:08<00:11, 64.67it/s]3d_pose_estimation_diningtable:  37%|███▋      | 428/1153 [00:08<00:11, 64.92it/s]3d_pose_estimation_diningtable:  38%|███▊      | 435/1153 [00:08<00:11, 64.89it/s]3d_pose_estimation_diningtable:  38%|███▊      | 442/1153 [00:08<00:10, 64.98it/s]3d_pose_estimation_diningtable:  39%|███▉      | 449/1153 [00:08<00:10, 64.98it/s]3d_pose_estimation_diningtable:  40%|███▉      | 456/1153 [00:08<00:10, 64.99it/s]3d_pose_estimation_diningtable:  40%|████      | 463/1153 [00:08<00:10, 64.65it/s]3d_pose_estimation_diningtable:  41%|████      | 470/1153 [00:08<00:10, 64.05it/s]3d_pose_estimation_diningtable:  41%|████▏     | 477/1153 [00:08<00:10, 64.22it/s]3d_pose_estimation_diningtable:  42%|████▏     | 484/1153 [00:09<00:10, 64.32it/s]3d_pose_estimation_diningtable:  43%|████▎     | 491/1153 [00:09<00:10, 64.35it/s]3d_pose_estimation_diningtable:  43%|████▎     | 498/1153 [00:09<00:10, 64.30it/s]3d_pose_estimation_diningtable:  44%|████▍     | 505/1153 [00:09<00:10, 64.47it/s]3d_pose_estimation_diningtable:  44%|████▍     | 512/1153 [00:09<00:09, 64.77it/s]3d_pose_estimation_diningtable:  45%|████▌     | 519/1153 [00:09<00:09, 64.94it/s]3d_pose_estimation_diningtable:  46%|████▌     | 526/1153 [00:09<00:09, 64.35it/s]3d_pose_estimation_diningtable:  46%|████▌     | 533/1153 [00:09<00:09, 64.25it/s]3d_pose_estimation_diningtable:  47%|████▋     | 540/1153 [00:09<00:09, 64.53it/s]3d_pose_estimation_diningtable:  47%|████▋     | 547/1153 [00:10<00:09, 64.73it/s]3d_pose_estimation_diningtable:  48%|████▊     | 554/1153 [00:10<00:09, 64.70it/s]3d_pose_estimation_diningtable:  49%|████▊     | 561/1153 [00:10<00:09, 64.82it/s]3d_pose_estimation_diningtable:  49%|████▉     | 568/1153 [00:10<00:09, 64.67it/s]3d_pose_estimation_diningtable:  50%|████▉     | 575/1153 [00:10<00:08, 64.28it/s]3d_pose_estimation_diningtable:  50%|█████     | 582/1153 [00:10<00:08, 64.61it/s]3d_pose_estimation_diningtable:  51%|█████     | 589/1153 [00:10<00:08, 64.53it/s]3d_pose_estimation_diningtable:  52%|█████▏    | 596/1153 [00:10<00:08, 64.47it/s]3d_pose_estimation_diningtable:  52%|█████▏    | 603/1153 [00:10<00:08, 64.53it/s]3d_pose_estimation_diningtable:  53%|█████▎    | 610/1153 [00:11<00:08, 64.59it/s]3d_pose_estimation_diningtable:  54%|█████▎    | 617/1153 [00:11<00:08, 64.55it/s]3d_pose_estimation_diningtable:  54%|█████▍    | 624/1153 [00:11<00:08, 64.59it/s]3d_pose_estimation_diningtable:  55%|█████▍    | 631/1153 [00:11<00:08, 64.25it/s]3d_pose_estimation_diningtable:  55%|█████▌    | 638/1153 [00:11<00:08, 64.25it/s]3d_pose_estimation_diningtable:  56%|█████▌    | 645/1153 [00:11<00:07, 64.15it/s]3d_pose_estimation_diningtable:  57%|█████▋    | 652/1153 [00:11<00:07, 64.28it/s]3d_pose_estimation_diningtable:  57%|█████▋    | 659/1153 [00:11<00:07, 63.09it/s]3d_pose_estimation_diningtable:  58%|█████▊    | 666/1153 [00:11<00:07, 63.71it/s]3d_pose_estimation_diningtable:  58%|█████▊    | 673/1153 [00:12<00:07, 63.97it/s]3d_pose_estimation_diningtable:  59%|█████▉    | 680/1153 [00:12<00:07, 64.00it/s]3d_pose_estimation_diningtable:  60%|█████▉    | 687/1153 [00:12<00:07, 64.27it/s]3d_pose_estimation_diningtable:  60%|██████    | 694/1153 [00:12<00:07, 64.14it/s]3d_pose_estimation_diningtable:  61%|██████    | 701/1153 [00:12<00:07, 64.24it/s]3d_pose_estimation_diningtable:  61%|██████▏   | 708/1153 [00:12<00:06, 64.15it/s]3d_pose_estimation_diningtable:  62%|██████▏   | 715/1153 [00:12<00:06, 64.21it/s]3d_pose_estimation_diningtable:  63%|██████▎   | 722/1153 [00:12<00:06, 64.24it/s]3d_pose_estimation_diningtable:  63%|██████▎   | 729/1153 [00:12<00:06, 64.22it/s]3d_pose_estimation_diningtable:  64%|██████▍   | 736/1153 [00:13<00:06, 64.28it/s]3d_pose_estimation_diningtable:  64%|██████▍   | 743/1153 [00:13<00:06, 64.29it/s]3d_pose_estimation_diningtable:  65%|██████▌   | 750/1153 [00:13<00:06, 64.78it/s]3d_pose_estimation_diningtable:  66%|██████▌   | 757/1153 [00:13<00:06, 64.88it/s]3d_pose_estimation_diningtable:  66%|██████▋   | 764/1153 [00:13<00:06, 64.81it/s]3d_pose_estimation_diningtable:  67%|██████▋   | 771/1153 [00:13<00:05, 64.47it/s]3d_pose_estimation_diningtable:  67%|██████▋   | 778/1153 [00:13<00:07, 51.06it/s]3d_pose_estimation_diningtable:  68%|██████▊   | 784/1153 [00:13<00:08, 44.68it/s]3d_pose_estimation_diningtable:  69%|██████▊   | 791/1153 [00:14<00:07, 49.41it/s]3d_pose_estimation_diningtable:  69%|██████▉   | 798/1153 [00:14<00:06, 53.12it/s]3d_pose_estimation_diningtable:  70%|██████▉   | 805/1153 [00:14<00:06, 56.12it/s]3d_pose_estimation_diningtable:  70%|███████   | 812/1153 [00:14<00:05, 58.49it/s]3d_pose_estimation_diningtable:  71%|███████   | 819/1153 [00:14<00:05, 60.49it/s]3d_pose_estimation_diningtable:  72%|███████▏  | 826/1153 [00:14<00:05, 61.76it/s]3d_pose_estimation_diningtable:  72%|███████▏  | 833/1153 [00:14<00:05, 62.58it/s]3d_pose_estimation_diningtable:  73%|███████▎  | 840/1153 [00:14<00:04, 63.23it/s]3d_pose_estimation_diningtable:  73%|███████▎  | 847/1153 [00:14<00:04, 63.55it/s]3d_pose_estimation_diningtable:  74%|███████▍  | 854/1153 [00:15<00:04, 63.88it/s]3d_pose_estimation_diningtable:  75%|███████▍  | 861/1153 [00:15<00:04, 64.16it/s]3d_pose_estimation_diningtable:  75%|███████▌  | 868/1153 [00:15<00:04, 64.25it/s]3d_pose_estimation_diningtable:  76%|███████▌  | 875/1153 [00:15<00:04, 64.44it/s]3d_pose_estimation_diningtable:  76%|███████▋  | 882/1153 [00:15<00:04, 64.68it/s]3d_pose_estimation_diningtable:  77%|███████▋  | 889/1153 [00:15<00:04, 64.54it/s]3d_pose_estimation_diningtable:  78%|███████▊  | 896/1153 [00:15<00:03, 64.34it/s]3d_pose_estimation_diningtable:  78%|███████▊  | 903/1153 [00:15<00:03, 64.33it/s]3d_pose_estimation_diningtable:  79%|███████▉  | 910/1153 [00:15<00:03, 64.29it/s]3d_pose_estimation_diningtable:  80%|███████▉  | 917/1153 [00:16<00:04, 57.16it/s]3d_pose_estimation_diningtable:  80%|████████  | 924/1153 [00:16<00:03, 59.24it/s]3d_pose_estimation_diningtable:  81%|████████  | 931/1153 [00:16<00:03, 60.87it/s]3d_pose_estimation_diningtable:  81%|████████▏ | 938/1153 [00:16<00:03, 61.93it/s]3d_pose_estimation_diningtable:  82%|████████▏ | 945/1153 [00:16<00:03, 62.96it/s]3d_pose_estimation_diningtable:  83%|████████▎ | 952/1153 [00:16<00:03, 63.53it/s]3d_pose_estimation_diningtable:  83%|████████▎ | 959/1153 [00:16<00:03, 63.97it/s]3d_pose_estimation_diningtable:  84%|████████▍ | 966/1153 [00:16<00:02, 63.03it/s]3d_pose_estimation_diningtable:  84%|████████▍ | 973/1153 [00:16<00:02, 63.85it/s]3d_pose_estimation_diningtable:  85%|████████▍ | 980/1153 [00:17<00:02, 64.42it/s]3d_pose_estimation_diningtable:  86%|████████▌ | 987/1153 [00:17<00:02, 64.93it/s]3d_pose_estimation_diningtable:  86%|████████▌ | 994/1153 [00:17<00:02, 65.13it/s]3d_pose_estimation_diningtable:  87%|████████▋ | 1001/1153 [00:17<00:02, 65.09it/s]3d_pose_estimation_diningtable:  87%|████████▋ | 1008/1153 [00:17<00:02, 65.07it/s]3d_pose_estimation_diningtable:  88%|████████▊ | 1015/1153 [00:17<00:02, 65.39it/s]3d_pose_estimation_diningtable:  89%|████████▊ | 1022/1153 [00:17<00:01, 65.58it/s]3d_pose_estimation_diningtable:  89%|████████▉ | 1029/1153 [00:17<00:01, 65.64it/s]3d_pose_estimation_diningtable:  90%|████████▉ | 1036/1153 [00:17<00:01, 65.47it/s]3d_pose_estimation_diningtable:  90%|█████████ | 1043/1153 [00:17<00:01, 65.48it/s]3d_pose_estimation_diningtable:  91%|█████████ | 1050/1153 [00:18<00:01, 65.54it/s]3d_pose_estimation_diningtable:  92%|█████████▏| 1057/1153 [00:18<00:01, 65.65it/s]3d_pose_estimation_diningtable:  92%|█████████▏| 1064/1153 [00:18<00:01, 65.81it/s]3d_pose_estimation_diningtable:  93%|█████████▎| 1071/1153 [00:18<00:01, 65.77it/s]3d_pose_estimation_diningtable:  93%|█████████▎| 1078/1153 [00:18<00:01, 65.40it/s]3d_pose_estimation_diningtable:  94%|█████████▍| 1085/1153 [00:18<00:01, 65.34it/s]3d_pose_estimation_diningtable:  95%|█████████▍| 1092/1153 [00:18<00:00, 65.66it/s]3d_pose_estimation_diningtable:  95%|█████████▌| 1099/1153 [00:18<00:00, 65.54it/s]3d_pose_estimation_diningtable:  96%|█████████▌| 1106/1153 [00:18<00:00, 65.16it/s]3d_pose_estimation_diningtable:  97%|█████████▋| 1113/1153 [00:19<00:00, 65.34it/s]3d_pose_estimation_diningtable:  97%|█████████▋| 1120/1153 [00:19<00:00, 65.45it/s]3d_pose_estimation_diningtable:  98%|█████████▊| 1127/1153 [00:19<00:00, 65.95it/s]3d_pose_estimation_diningtable:  98%|█████████▊| 1134/1153 [00:19<00:00, 65.82it/s]3d_pose_estimation_diningtable:  99%|█████████▉| 1141/1153 [00:19<00:00, 65.78it/s]3d_pose_estimation_diningtable: 100%|█████████▉| 1148/1153 [00:19<00:00, 65.72it/s]3d_pose_estimation_diningtable: 100%|██████████| 1153/1153 [00:19<00:00, 58.67it/s]
+2023-01-16 10:52:14,092 - INFO - 
+3D Pose Estimation Results:
+2023-01-16 10:52:14,092 - INFO - Dataset:     pascal3d (root=/misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo)
+2023-01-16 10:52:14,093 - INFO - Category:    ['diningtable']
+2023-01-16 10:52:14,093 - INFO - # samples:   1153
+2023-01-16 10:52:14,093 - INFO - Model:       resnet50general (ckpt=exp/pose_estimation_3d_resnet50_general_diningtable/ckpts/model_200.pth)
+2023-01-16 10:52:14,094 - INFO - 
+              dining    mean
+pi/6 acc:      80.1%   80.1%
+pi/18 acc:     35.2%   35.2%
+Median err:    12.51   12.51
+Training for category motorbike
+2023-01-16 10:52:18,218 - INFO - Namespace(cate='motorbike', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_motorbike', checkpoint='exp/pose_estimation_3d_resnet50_general_motorbike/ckpts/model_200.pth', opts=None)
+2023-01-16 10:52:18,234 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-16 10:52:18,609 - INFO - Set random seed to 0
+2023-01-16 10:52:41,908 - INFO - Number of inference images: 594
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+3d_pose_estimation_motorbike:   0%|          | 0/594 [00:00<?, ?it/s]3d_pose_estimation_motorbike:   0%|          | 1/594 [00:01<16:39,  1.68s/it]3d_pose_estimation_motorbike:   1%|▏         | 8/594 [00:01<01:37,  5.99it/s]3d_pose_estimation_motorbike:   3%|▎         | 15/594 [00:01<00:46, 12.36it/s]3d_pose_estimation_motorbike:   4%|▎         | 22/594 [00:01<00:29, 19.47it/s]3d_pose_estimation_motorbike:   5%|▍         | 29/594 [00:02<00:20, 27.00it/s]3d_pose_estimation_motorbike:   6%|▌         | 36/594 [00:02<00:16, 34.52it/s]3d_pose_estimation_motorbike:   7%|▋         | 43/594 [00:02<00:13, 41.34it/s]3d_pose_estimation_motorbike:   8%|▊         | 50/594 [00:02<00:11, 47.44it/s]3d_pose_estimation_motorbike:  10%|▉         | 57/594 [00:02<00:10, 51.14it/s]3d_pose_estimation_motorbike:  11%|█         | 64/594 [00:02<00:09, 55.37it/s]3d_pose_estimation_motorbike:  12%|█▏        | 71/594 [00:02<00:08, 58.99it/s]3d_pose_estimation_motorbike:  13%|█▎        | 78/594 [00:02<00:08, 61.58it/s]3d_pose_estimation_motorbike:  14%|█▍        | 85/594 [00:02<00:08, 63.35it/s]3d_pose_estimation_motorbike:  15%|█▌        | 92/594 [00:03<00:07, 64.78it/s]3d_pose_estimation_motorbike:  17%|█▋        | 99/594 [00:03<00:07, 65.63it/s]3d_pose_estimation_motorbike:  18%|█▊        | 106/594 [00:03<00:07, 66.34it/s]3d_pose_estimation_motorbike:  19%|█▉        | 113/594 [00:03<00:07, 67.05it/s]3d_pose_estimation_motorbike:  20%|██        | 120/594 [00:03<00:07, 67.30it/s]3d_pose_estimation_motorbike:  21%|██▏       | 127/594 [00:03<00:06, 67.36it/s]3d_pose_estimation_motorbike:  23%|██▎       | 134/594 [00:03<00:06, 67.57it/s]3d_pose_estimation_motorbike:  24%|██▎       | 141/594 [00:03<00:06, 67.45it/s]3d_pose_estimation_motorbike:  25%|██▍       | 148/594 [00:03<00:06, 67.62it/s]3d_pose_estimation_motorbike:  26%|██▌       | 155/594 [00:03<00:06, 67.70it/s]3d_pose_estimation_motorbike:  27%|██▋       | 162/594 [00:04<00:06, 67.75it/s]3d_pose_estimation_motorbike:  28%|██▊       | 169/594 [00:04<00:06, 68.13it/s]3d_pose_estimation_motorbike:  30%|██▉       | 176/594 [00:04<00:06, 67.90it/s]3d_pose_estimation_motorbike:  31%|███       | 183/594 [00:04<00:06, 67.99it/s]3d_pose_estimation_motorbike:  32%|███▏      | 190/594 [00:04<00:05, 68.13it/s]3d_pose_estimation_motorbike:  33%|███▎      | 197/594 [00:04<00:05, 68.05it/s]3d_pose_estimation_motorbike:  34%|███▍      | 204/594 [00:04<00:05, 68.42it/s]3d_pose_estimation_motorbike:  36%|███▌      | 211/594 [00:04<00:05, 68.56it/s]3d_pose_estimation_motorbike:  37%|███▋      | 218/594 [00:04<00:05, 68.17it/s]3d_pose_estimation_motorbike:  38%|███▊      | 225/594 [00:04<00:05, 68.20it/s]3d_pose_estimation_motorbike:  39%|███▉      | 232/594 [00:05<00:05, 68.29it/s]3d_pose_estimation_motorbike:  40%|████      | 239/594 [00:05<00:05, 68.47it/s]3d_pose_estimation_motorbike:  41%|████▏     | 246/594 [00:05<00:05, 68.39it/s]3d_pose_estimation_motorbike:  43%|████▎     | 253/594 [00:05<00:05, 68.04it/s]3d_pose_estimation_motorbike:  44%|████▍     | 260/594 [00:05<00:04, 67.93it/s]3d_pose_estimation_motorbike:  45%|████▍     | 267/594 [00:05<00:04, 68.14it/s]3d_pose_estimation_motorbike:  46%|████▌     | 274/594 [00:05<00:04, 68.28it/s]3d_pose_estimation_motorbike:  47%|████▋     | 281/594 [00:05<00:04, 68.46it/s]3d_pose_estimation_motorbike:  48%|████▊     | 288/594 [00:05<00:04, 68.04it/s]3d_pose_estimation_motorbike:  50%|████▉     | 295/594 [00:06<00:04, 68.02it/s]3d_pose_estimation_motorbike:  51%|█████     | 302/594 [00:06<00:04, 67.96it/s]3d_pose_estimation_motorbike:  52%|█████▏    | 309/594 [00:06<00:04, 68.14it/s]3d_pose_estimation_motorbike:  53%|█████▎    | 316/594 [00:06<00:04, 68.13it/s]3d_pose_estimation_motorbike:  54%|█████▍    | 323/594 [00:06<00:03, 67.87it/s]3d_pose_estimation_motorbike:  56%|█████▌    | 330/594 [00:06<00:03, 67.89it/s]3d_pose_estimation_motorbike:  57%|█████▋    | 337/594 [00:06<00:03, 67.86it/s]3d_pose_estimation_motorbike:  58%|█████▊    | 344/594 [00:06<00:03, 67.93it/s]3d_pose_estimation_motorbike:  59%|█████▉    | 351/594 [00:06<00:03, 67.88it/s]3d_pose_estimation_motorbike:  60%|██████    | 358/594 [00:06<00:03, 67.98it/s]3d_pose_estimation_motorbike:  61%|██████▏   | 365/594 [00:07<00:03, 68.00it/s]3d_pose_estimation_motorbike:  63%|██████▎   | 372/594 [00:07<00:03, 68.14it/s]3d_pose_estimation_motorbike:  64%|██████▍   | 379/594 [00:07<00:03, 68.05it/s]3d_pose_estimation_motorbike:  65%|██████▍   | 386/594 [00:07<00:03, 68.08it/s]3d_pose_estimation_motorbike:  66%|██████▌   | 393/594 [00:07<00:02, 68.13it/s]3d_pose_estimation_motorbike:  67%|██████▋   | 400/594 [00:07<00:02, 68.00it/s]3d_pose_estimation_motorbike:  69%|██████▊   | 407/594 [00:07<00:02, 68.03it/s]3d_pose_estimation_motorbike:  70%|██████▉   | 414/594 [00:07<00:02, 67.69it/s]3d_pose_estimation_motorbike:  71%|███████   | 421/594 [00:07<00:02, 67.84it/s]3d_pose_estimation_motorbike:  72%|███████▏  | 428/594 [00:07<00:02, 67.95it/s]3d_pose_estimation_motorbike:  73%|███████▎  | 435/594 [00:08<00:02, 67.71it/s]3d_pose_estimation_motorbike:  74%|███████▍  | 442/594 [00:08<00:02, 67.71it/s]3d_pose_estimation_motorbike:  76%|███████▌  | 449/594 [00:08<00:02, 64.86it/s]3d_pose_estimation_motorbike:  77%|███████▋  | 456/594 [00:08<00:02, 65.26it/s]3d_pose_estimation_motorbike:  78%|███████▊  | 463/594 [00:08<00:01, 65.98it/s]3d_pose_estimation_motorbike:  79%|███████▉  | 470/594 [00:08<00:01, 66.66it/s]3d_pose_estimation_motorbike:  80%|████████  | 477/594 [00:08<00:01, 67.02it/s]3d_pose_estimation_motorbike:  81%|████████▏ | 484/594 [00:08<00:01, 67.41it/s]3d_pose_estimation_motorbike:  83%|████████▎ | 491/594 [00:08<00:01, 67.49it/s]3d_pose_estimation_motorbike:  84%|████████▍ | 498/594 [00:09<00:01, 67.81it/s]3d_pose_estimation_motorbike:  85%|████████▌ | 505/594 [00:09<00:01, 67.77it/s]3d_pose_estimation_motorbike:  86%|████████▌ | 512/594 [00:09<00:01, 67.73it/s]3d_pose_estimation_motorbike:  87%|████████▋ | 519/594 [00:09<00:01, 67.09it/s]3d_pose_estimation_motorbike:  89%|████████▊ | 526/594 [00:09<00:01, 67.08it/s]3d_pose_estimation_motorbike:  90%|████████▉ | 533/594 [00:09<00:00, 66.98it/s]3d_pose_estimation_motorbike:  91%|█████████ | 540/594 [00:09<00:00, 67.20it/s]3d_pose_estimation_motorbike:  92%|█████████▏| 547/594 [00:09<00:00, 67.36it/s]3d_pose_estimation_motorbike:  93%|█████████▎| 554/594 [00:09<00:00, 67.46it/s]3d_pose_estimation_motorbike:  94%|█████████▍| 561/594 [00:09<00:00, 67.44it/s]3d_pose_estimation_motorbike:  96%|█████████▌| 568/594 [00:10<00:00, 67.51it/s]3d_pose_estimation_motorbike:  97%|█████████▋| 575/594 [00:10<00:00, 67.71it/s]3d_pose_estimation_motorbike:  98%|█████████▊| 582/594 [00:10<00:00, 67.78it/s]3d_pose_estimation_motorbike:  99%|█████████▉| 589/594 [00:10<00:00, 68.08it/s]3d_pose_estimation_motorbike: 100%|██████████| 594/594 [00:10<00:00, 56.90it/s]
+2023-01-16 10:52:56,846 - INFO - 
+3D Pose Estimation Results:
+2023-01-16 10:52:56,846 - INFO - Dataset:     pascal3d (root=/misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo)
+2023-01-16 10:52:56,846 - INFO - Category:    ['motorbike']
+2023-01-16 10:52:56,846 - INFO - # samples:   594
+2023-01-16 10:52:56,847 - INFO - Model:       resnet50general (ckpt=exp/pose_estimation_3d_resnet50_general_motorbike/ckpts/model_200.pth)
+2023-01-16 10:52:56,847 - INFO - 
+              motorb    mean
+pi/6 acc:      59.9%   59.9%
+pi/18 acc:     11.4%   11.4%
+Median err:    24.62   24.62
+Training for category sofa
+2023-01-16 10:52:58,913 - INFO - Namespace(cate='sofa', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_sofa', checkpoint='exp/pose_estimation_3d_resnet50_general_sofa/ckpts/model_200.pth', opts=None)
+2023-01-16 10:52:58,929 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-16 10:52:59,018 - INFO - Set random seed to 0
+2023-01-16 10:53:18,601 - INFO - Number of inference images: 624
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+3d_pose_estimation_sofa:   0%|          | 0/624 [00:00<?, ?it/s]3d_pose_estimation_sofa:   0%|          | 1/624 [00:01<17:24,  1.68s/it]3d_pose_estimation_sofa:   1%|▏         | 8/624 [00:01<01:42,  6.00it/s]3d_pose_estimation_sofa:   2%|▏         | 15/624 [00:01<00:49, 12.38it/s]3d_pose_estimation_sofa:   4%|▎         | 22/624 [00:01<00:30, 19.46it/s]3d_pose_estimation_sofa:   5%|▍         | 29/624 [00:02<00:22, 26.95it/s]3d_pose_estimation_sofa:   6%|▌         | 36/624 [00:02<00:17, 34.36it/s]3d_pose_estimation_sofa:   7%|▋         | 43/624 [00:02<00:14, 41.26it/s]3d_pose_estimation_sofa:   8%|▊         | 50/624 [00:02<00:12, 47.40it/s]3d_pose_estimation_sofa:   9%|▉         | 57/624 [00:02<00:10, 52.36it/s]3d_pose_estimation_sofa:  10%|█         | 64/624 [00:02<00:09, 56.43it/s]3d_pose_estimation_sofa:  11%|█▏        | 71/624 [00:02<00:09, 59.34it/s]3d_pose_estimation_sofa:  12%|█▎        | 78/624 [00:02<00:08, 61.31it/s]3d_pose_estimation_sofa:  14%|█▎        | 85/624 [00:02<00:08, 63.04it/s]3d_pose_estimation_sofa:  15%|█▍        | 92/624 [00:03<00:08, 64.03it/s]3d_pose_estimation_sofa:  16%|█▌        | 99/624 [00:03<00:08, 65.21it/s]3d_pose_estimation_sofa:  17%|█▋        | 106/624 [00:03<00:07, 66.01it/s]3d_pose_estimation_sofa:  18%|█▊        | 113/624 [00:03<00:07, 66.21it/s]3d_pose_estimation_sofa:  19%|█▉        | 120/624 [00:03<00:07, 66.38it/s]3d_pose_estimation_sofa:  20%|██        | 127/624 [00:03<00:07, 66.55it/s]3d_pose_estimation_sofa:  21%|██▏       | 134/624 [00:03<00:07, 66.80it/s]3d_pose_estimation_sofa:  23%|██▎       | 141/624 [00:03<00:07, 67.04it/s]3d_pose_estimation_sofa:  24%|██▎       | 148/624 [00:03<00:07, 67.16it/s]3d_pose_estimation_sofa:  25%|██▍       | 155/624 [00:03<00:06, 67.54it/s]3d_pose_estimation_sofa:  26%|██▌       | 162/624 [00:04<00:06, 67.37it/s]3d_pose_estimation_sofa:  27%|██▋       | 169/624 [00:04<00:06, 67.40it/s]3d_pose_estimation_sofa:  28%|██▊       | 176/624 [00:04<00:06, 67.48it/s]3d_pose_estimation_sofa:  29%|██▉       | 183/624 [00:04<00:06, 67.16it/s]3d_pose_estimation_sofa:  30%|███       | 190/624 [00:04<00:06, 67.48it/s]3d_pose_estimation_sofa:  32%|███▏      | 197/624 [00:04<00:06, 67.66it/s]3d_pose_estimation_sofa:  33%|███▎      | 204/624 [00:04<00:06, 67.79it/s]3d_pose_estimation_sofa:  34%|███▍      | 211/624 [00:04<00:06, 67.04it/s]3d_pose_estimation_sofa:  35%|███▍      | 218/624 [00:04<00:06, 64.82it/s]3d_pose_estimation_sofa:  36%|███▌      | 225/624 [00:05<00:06, 65.86it/s]3d_pose_estimation_sofa:  37%|███▋      | 232/624 [00:05<00:05, 66.15it/s]3d_pose_estimation_sofa:  38%|███▊      | 239/624 [00:05<00:05, 66.84it/s]3d_pose_estimation_sofa:  39%|███▉      | 246/624 [00:05<00:05, 67.10it/s]3d_pose_estimation_sofa:  41%|████      | 253/624 [00:05<00:05, 66.94it/s]3d_pose_estimation_sofa:  42%|████▏     | 260/624 [00:05<00:05, 66.84it/s]3d_pose_estimation_sofa:  43%|████▎     | 267/624 [00:05<00:05, 67.14it/s]3d_pose_estimation_sofa:  44%|████▍     | 274/624 [00:05<00:05, 67.38it/s]3d_pose_estimation_sofa:  45%|████▌     | 281/624 [00:05<00:05, 67.61it/s]3d_pose_estimation_sofa:  46%|████▌     | 288/624 [00:05<00:04, 67.42it/s]3d_pose_estimation_sofa:  47%|████▋     | 295/624 [00:06<00:04, 67.42it/s]3d_pose_estimation_sofa:  48%|████▊     | 302/624 [00:06<00:04, 67.42it/s]3d_pose_estimation_sofa:  50%|████▉     | 309/624 [00:06<00:04, 67.56it/s]3d_pose_estimation_sofa:  51%|█████     | 316/624 [00:06<00:04, 67.72it/s]3d_pose_estimation_sofa:  52%|█████▏    | 323/624 [00:06<00:04, 67.54it/s]3d_pose_estimation_sofa:  53%|█████▎    | 330/624 [00:06<00:04, 67.44it/s]3d_pose_estimation_sofa:  54%|█████▍    | 337/624 [00:06<00:04, 67.32it/s]3d_pose_estimation_sofa:  55%|█████▌    | 344/624 [00:06<00:04, 67.07it/s]3d_pose_estimation_sofa:  56%|█████▋    | 351/624 [00:06<00:04, 67.40it/s]3d_pose_estimation_sofa:  57%|█████▋    | 358/624 [00:06<00:04, 65.27it/s]3d_pose_estimation_sofa:  58%|█████▊    | 365/624 [00:07<00:03, 66.21it/s]3d_pose_estimation_sofa:  60%|█████▉    | 372/624 [00:07<00:03, 66.77it/s]3d_pose_estimation_sofa:  61%|██████    | 379/624 [00:07<00:03, 67.12it/s]3d_pose_estimation_sofa:  62%|██████▏   | 386/624 [00:07<00:03, 67.43it/s]3d_pose_estimation_sofa:  63%|██████▎   | 393/624 [00:07<00:03, 67.23it/s]3d_pose_estimation_sofa:  64%|██████▍   | 400/624 [00:07<00:03, 67.36it/s]3d_pose_estimation_sofa:  65%|██████▌   | 407/624 [00:07<00:03, 67.47it/s]3d_pose_estimation_sofa:  66%|██████▋   | 414/624 [00:07<00:03, 67.32it/s]3d_pose_estimation_sofa:  67%|██████▋   | 421/624 [00:07<00:03, 67.57it/s]3d_pose_estimation_sofa:  69%|██████▊   | 428/624 [00:08<00:02, 67.66it/s]3d_pose_estimation_sofa:  70%|██████▉   | 435/624 [00:08<00:02, 67.67it/s]3d_pose_estimation_sofa:  71%|███████   | 442/624 [00:08<00:02, 67.62it/s]3d_pose_estimation_sofa:  72%|███████▏  | 449/624 [00:08<00:02, 67.28it/s]3d_pose_estimation_sofa:  73%|███████▎  | 456/624 [00:08<00:02, 67.52it/s]3d_pose_estimation_sofa:  74%|███████▍  | 463/624 [00:08<00:02, 67.64it/s]3d_pose_estimation_sofa:  75%|███████▌  | 470/624 [00:08<00:02, 61.37it/s]3d_pose_estimation_sofa:  76%|███████▋  | 477/624 [00:08<00:02, 63.23it/s]3d_pose_estimation_sofa:  78%|███████▊  | 484/624 [00:08<00:02, 64.59it/s]3d_pose_estimation_sofa:  79%|███████▊  | 491/624 [00:08<00:02, 65.51it/s]3d_pose_estimation_sofa:  80%|███████▉  | 498/624 [00:09<00:01, 66.36it/s]3d_pose_estimation_sofa:  81%|████████  | 505/624 [00:09<00:01, 66.77it/s]3d_pose_estimation_sofa:  82%|████████▏ | 512/624 [00:09<00:01, 66.93it/s]3d_pose_estimation_sofa:  83%|████████▎ | 519/624 [00:09<00:01, 67.00it/s]3d_pose_estimation_sofa:  84%|████████▍ | 526/624 [00:09<00:01, 67.24it/s]3d_pose_estimation_sofa:  85%|████████▌ | 533/624 [00:09<00:01, 67.32it/s]3d_pose_estimation_sofa:  87%|████████▋ | 540/624 [00:09<00:01, 67.71it/s]3d_pose_estimation_sofa:  88%|████████▊ | 547/624 [00:09<00:01, 67.88it/s]3d_pose_estimation_sofa:  89%|████████▉ | 554/624 [00:09<00:01, 68.12it/s]3d_pose_estimation_sofa:  90%|████████▉ | 561/624 [00:10<00:00, 68.20it/s]3d_pose_estimation_sofa:  91%|█████████ | 568/624 [00:10<00:00, 68.05it/s]3d_pose_estimation_sofa:  92%|█████████▏| 575/624 [00:10<00:00, 67.27it/s]3d_pose_estimation_sofa:  93%|█████████▎| 582/624 [00:10<00:00, 67.33it/s]3d_pose_estimation_sofa:  94%|█████████▍| 589/624 [00:10<00:00, 67.36it/s]3d_pose_estimation_sofa:  96%|█████████▌| 596/624 [00:10<00:00, 66.70it/s]3d_pose_estimation_sofa:  97%|█████████▋| 603/624 [00:10<00:00, 67.21it/s]3d_pose_estimation_sofa:  98%|█████████▊| 610/624 [00:10<00:00, 67.57it/s]3d_pose_estimation_sofa:  99%|█████████▉| 617/624 [00:10<00:00, 67.56it/s]3d_pose_estimation_sofa: 100%|██████████| 624/624 [00:10<00:00, 67.42it/s]3d_pose_estimation_sofa: 100%|██████████| 624/624 [00:10<00:00, 56.91it/s]
+2023-01-16 10:53:33,585 - INFO - 
+3D Pose Estimation Results:
+2023-01-16 10:53:33,585 - INFO - Dataset:     pascal3d (root=/misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo)
+2023-01-16 10:53:33,585 - INFO - Category:    ['sofa']
+2023-01-16 10:53:33,585 - INFO - # samples:   624
+2023-01-16 10:53:33,585 - INFO - Model:       resnet50general (ckpt=exp/pose_estimation_3d_resnet50_general_sofa/ckpts/model_200.pth)
+2023-01-16 10:53:33,586 - INFO - 
+                sofa    mean
+pi/6 acc:      91.5%   91.5%
+pi/18 acc:     33.7%   33.7%
+Median err:    13.05   13.05
+Training for category train
+2023-01-16 10:53:36,232 - INFO - Namespace(cate='train', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_train', checkpoint='exp/pose_estimation_3d_resnet50_general_train/ckpts/model_200.pth', opts=None)
+2023-01-16 10:53:36,249 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-16 10:53:36,343 - INFO - Set random seed to 0
+2023-01-16 10:53:49,575 - INFO - Number of inference images: 644
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+3d_pose_estimation_train:   0%|          | 0/644 [00:00<?, ?it/s]3d_pose_estimation_train:   0%|          | 1/644 [00:01<17:56,  1.67s/it]3d_pose_estimation_train:   0%|          | 3/644 [00:01<05:05,  2.10it/s]3d_pose_estimation_train:   2%|▏         | 11/644 [00:01<01:04,  9.75it/s]3d_pose_estimation_train:   3%|▎         | 19/644 [00:02<00:34, 18.13it/s]3d_pose_estimation_train:   4%|▍         | 27/644 [00:02<00:23, 26.74it/s]3d_pose_estimation_train:   5%|▌         | 33/644 [00:02<00:19, 31.51it/s]3d_pose_estimation_train:   6%|▋         | 41/644 [00:02<00:15, 39.80it/s]3d_pose_estimation_train:   7%|▋         | 48/644 [00:02<00:12, 46.17it/s]3d_pose_estimation_train:   9%|▊         | 56/644 [00:02<00:11, 52.32it/s]3d_pose_estimation_train:  10%|▉         | 63/644 [00:02<00:10, 56.53it/s]3d_pose_estimation_train:  11%|█         | 70/644 [00:02<00:09, 59.85it/s]3d_pose_estimation_train:  12%|█▏        | 77/644 [00:02<00:09, 62.46it/s]3d_pose_estimation_train:  13%|█▎        | 85/644 [00:02<00:08, 64.78it/s]3d_pose_estimation_train:  14%|█▍        | 92/644 [00:03<00:08, 66.19it/s]3d_pose_estimation_train:  15%|█▌        | 99/644 [00:03<00:09, 55.08it/s]3d_pose_estimation_train:  16%|█▋        | 106/644 [00:03<00:09, 58.72it/s]3d_pose_estimation_train:  18%|█▊        | 114/644 [00:03<00:08, 61.91it/s]3d_pose_estimation_train:  19%|█▉        | 121/644 [00:03<00:08, 63.54it/s]3d_pose_estimation_train:  20%|█▉        | 128/644 [00:03<00:07, 65.12it/s]3d_pose_estimation_train:  21%|██        | 135/644 [00:03<00:07, 66.14it/s]3d_pose_estimation_train:  22%|██▏       | 142/644 [00:03<00:07, 67.22it/s]3d_pose_estimation_train:  23%|██▎       | 149/644 [00:03<00:07, 67.85it/s]3d_pose_estimation_train:  24%|██▍       | 156/644 [00:04<00:07, 68.35it/s]3d_pose_estimation_train:  25%|██▌       | 163/644 [00:04<00:12, 37.48it/s]3d_pose_estimation_train:  26%|██▋       | 170/644 [00:04<00:10, 43.47it/s]3d_pose_estimation_train:  28%|██▊       | 178/644 [00:04<00:09, 49.65it/s]3d_pose_estimation_train:  29%|██▊       | 185/644 [00:04<00:08, 54.10it/s]3d_pose_estimation_train:  30%|██▉       | 192/644 [00:04<00:07, 57.58it/s]3d_pose_estimation_train:  31%|███       | 199/644 [00:04<00:07, 60.54it/s]3d_pose_estimation_train:  32%|███▏      | 206/644 [00:05<00:07, 62.33it/s]3d_pose_estimation_train:  33%|███▎      | 213/644 [00:05<00:06, 64.04it/s]3d_pose_estimation_train:  34%|███▍      | 220/644 [00:05<00:06, 65.31it/s]3d_pose_estimation_train:  35%|███▌      | 227/644 [00:05<00:06, 66.53it/s]3d_pose_estimation_train:  36%|███▋      | 234/644 [00:05<00:06, 67.30it/s]3d_pose_estimation_train:  37%|███▋      | 241/644 [00:05<00:05, 67.86it/s]3d_pose_estimation_train:  39%|███▊      | 248/644 [00:05<00:05, 68.38it/s]3d_pose_estimation_train:  40%|███▉      | 255/644 [00:05<00:05, 68.64it/s]3d_pose_estimation_train:  41%|████      | 262/644 [00:05<00:05, 68.45it/s]3d_pose_estimation_train:  42%|████▏     | 269/644 [00:06<00:05, 68.55it/s]3d_pose_estimation_train:  43%|████▎     | 276/644 [00:06<00:05, 68.83it/s]3d_pose_estimation_train:  44%|████▍     | 283/644 [00:06<00:05, 69.15it/s]3d_pose_estimation_train:  45%|████▌     | 290/644 [00:06<00:05, 64.10it/s]3d_pose_estimation_train:  46%|████▌     | 297/644 [00:06<00:05, 65.58it/s]3d_pose_estimation_train:  47%|████▋     | 304/644 [00:06<00:05, 58.26it/s]3d_pose_estimation_train:  48%|████▊     | 311/644 [00:06<00:05, 59.93it/s]3d_pose_estimation_train:  49%|████▉     | 318/644 [00:06<00:05, 62.34it/s]3d_pose_estimation_train:  50%|█████     | 325/644 [00:06<00:05, 62.86it/s]3d_pose_estimation_train:  52%|█████▏    | 332/644 [00:07<00:04, 64.81it/s]3d_pose_estimation_train:  53%|█████▎    | 339/644 [00:07<00:04, 66.10it/s]3d_pose_estimation_train:  54%|█████▎    | 346/644 [00:07<00:04, 67.05it/s]3d_pose_estimation_train:  55%|█████▍    | 353/644 [00:07<00:04, 67.83it/s]3d_pose_estimation_train:  56%|█████▌    | 360/644 [00:07<00:04, 68.12it/s]3d_pose_estimation_train:  57%|█████▋    | 367/644 [00:07<00:04, 68.03it/s]3d_pose_estimation_train:  58%|█████▊    | 374/644 [00:07<00:03, 68.32it/s]3d_pose_estimation_train:  59%|█████▉    | 381/644 [00:07<00:03, 68.61it/s]3d_pose_estimation_train:  60%|██████    | 388/644 [00:07<00:03, 68.91it/s]3d_pose_estimation_train:  61%|██████▏   | 395/644 [00:07<00:03, 68.90it/s]3d_pose_estimation_train:  62%|██████▏   | 402/644 [00:08<00:03, 69.11it/s]3d_pose_estimation_train:  64%|██████▎   | 409/644 [00:08<00:03, 69.28it/s]3d_pose_estimation_train:  65%|██████▍   | 416/644 [00:08<00:03, 69.10it/s]3d_pose_estimation_train:  66%|██████▌   | 423/644 [00:08<00:03, 69.12it/s]3d_pose_estimation_train:  67%|██████▋   | 430/644 [00:08<00:03, 69.32it/s]3d_pose_estimation_train:  68%|██████▊   | 437/644 [00:08<00:02, 69.49it/s]3d_pose_estimation_train:  69%|██████▉   | 444/644 [00:08<00:02, 69.55it/s]3d_pose_estimation_train:  70%|███████   | 451/644 [00:08<00:02, 69.39it/s]3d_pose_estimation_train:  71%|███████   | 458/644 [00:08<00:02, 69.26it/s]3d_pose_estimation_train:  72%|███████▏  | 465/644 [00:08<00:02, 69.41it/s]3d_pose_estimation_train:  73%|███████▎  | 472/644 [00:09<00:02, 69.48it/s]3d_pose_estimation_train:  74%|███████▍  | 479/644 [00:09<00:02, 69.35it/s]3d_pose_estimation_train:  75%|███████▌  | 486/644 [00:09<00:02, 69.22it/s]3d_pose_estimation_train:  77%|███████▋  | 493/644 [00:09<00:02, 69.25it/s]3d_pose_estimation_train:  78%|███████▊  | 500/644 [00:09<00:02, 69.21it/s]3d_pose_estimation_train:  79%|███████▊  | 507/644 [00:09<00:01, 69.25it/s]3d_pose_estimation_train:  80%|███████▉  | 514/644 [00:09<00:02, 57.92it/s]3d_pose_estimation_train:  81%|████████  | 521/644 [00:09<00:02, 60.64it/s]3d_pose_estimation_train:  82%|████████▏ | 528/644 [00:09<00:01, 63.06it/s]3d_pose_estimation_train:  83%|████████▎ | 535/644 [00:10<00:01, 64.90it/s]3d_pose_estimation_train:  84%|████████▍ | 542/644 [00:10<00:01, 66.22it/s]3d_pose_estimation_train:  85%|████████▌ | 549/644 [00:10<00:01, 67.12it/s]3d_pose_estimation_train:  86%|████████▋ | 556/644 [00:10<00:01, 67.76it/s]3d_pose_estimation_train:  87%|████████▋ | 563/644 [00:10<00:01, 68.13it/s]3d_pose_estimation_train:  89%|████████▊ | 570/644 [00:10<00:01, 68.36it/s]3d_pose_estimation_train:  90%|████████▉ | 577/644 [00:10<00:00, 68.66it/s]3d_pose_estimation_train:  91%|█████████ | 584/644 [00:10<00:00, 68.74it/s]3d_pose_estimation_train:  92%|█████████▏| 591/644 [00:10<00:00, 68.92it/s]3d_pose_estimation_train:  93%|█████████▎| 598/644 [00:10<00:00, 68.93it/s]3d_pose_estimation_train:  94%|█████████▍| 605/644 [00:11<00:00, 69.12it/s]3d_pose_estimation_train:  95%|█████████▌| 612/644 [00:11<00:00, 69.19it/s]3d_pose_estimation_train:  96%|█████████▌| 619/644 [00:11<00:00, 69.25it/s]3d_pose_estimation_train:  97%|█████████▋| 626/644 [00:11<00:00, 69.18it/s]3d_pose_estimation_train:  98%|█████████▊| 633/644 [00:11<00:00, 68.61it/s]3d_pose_estimation_train:  99%|█████████▉| 640/644 [00:11<00:00, 68.68it/s]3d_pose_estimation_train: 100%|██████████| 644/644 [00:11<00:00, 55.56it/s]
+2023-01-16 10:54:04,495 - INFO - 
+3D Pose Estimation Results:
+2023-01-16 10:54:04,495 - INFO - Dataset:     pascal3d (root=/misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo)
+2023-01-16 10:54:04,495 - INFO - Category:    ['train']
+2023-01-16 10:54:04,495 - INFO - # samples:   644
+2023-01-16 10:54:04,495 - INFO - Model:       resnet50general (ckpt=exp/pose_estimation_3d_resnet50_general_train/ckpts/model_200.pth)
+2023-01-16 10:54:04,495 - INFO - 
+               train    mean
+pi/6 acc:      96.3%   96.3%
+pi/18 acc:     64.1%   64.1%
+Median err:     8.53    8.53
+End time: Mo 16. Jan 10:54:05 CET 2023
+date: ungültiges Datum »Mo 16. Jan 10:54:05 CET 2023“
+date: ungültiges Datum »Mo 16. Jan 10:45:00 CET 2023“
+/var/spool/torque/mom_priv/jobs/2483541.lmbtorque.informatik.uni-freiburg.de.SC: Zeile 31: ( - ) / 60: Syntaxfehler: Operator erwartet (fehlerverursachendes Zeichen ist ") / 60")

@@ -1,12 +1,12 @@
 name: ood-cv
 class_name: nemo.datasets.pascal3d.Pascal3DPlus
-root_path: data/OOD_CV_NeMo
+root_path: /misc/lmbraid21/jesslen/NeMo/data/OOD_CV_NeMo
 
-pascal3d_raw_path: data/PASCAL3D+_release1.1
+pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
 ood_cv_pose_url: https://drive.google.com/file/d/1WwoevPJGylRROW8fbsvCtr6EZo2Mtj8q/view?usp=share_link
-ood_cv_pose_data_path: data/ood_cv_pose
-dtd_raw_path: data/dtd
-mesh_path: data/PASCAL3D+_release1.1/CAD_single
+ood_cv_pose_data_path: /misc/lmbraid21/jesslen/NeMo/data/ood_cv
+dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
 
 pad_texture: false
 single_mesh: true

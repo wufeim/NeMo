@@ -1,0 +1,164 @@
+Start time: So 15. Jan 21:07:00 CET 2023
+2023-01-15 21:07:01,938 - INFO - Namespace(cate='chair', config='config/pose_estimation_3d_resnet50_general.yaml', save_dir='exp/pose_estimation_3d_resnet50_general_chair', dry_run=False, opts=None)
+2023-01-15 21:07:01,949 - INFO - 
+================
+Configurations
+================
+dataset:
+  augment_by_dist: False
+  class_name: nemo.datasets.pascal3d.Pascal3DPlus
+  dtd_raw_path: /misc/lmbraid21/jesslen/NeMo/data/dtd
+  enable_cache: True
+  image_sizes:
+    aeroplane:
+    - 320
+    - 672
+    bicycle:
+    - 608
+    - 608
+    boat:
+    - 384
+    - 672
+    bottle:
+    - 480
+    - 800
+    bus:
+    - 320
+    - 736
+    car:
+    - 256
+    - 672
+    chair:
+    - 608
+    - 384
+    diningtable:
+    - 384
+    - 800
+    motorbike:
+    - 512
+    - 512
+    sofa:
+    - 352
+    - 736
+    train:
+    - 256
+    - 608
+    tvmonitor:
+    - 480
+    - 448
+  image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+  mesh_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1/CAD_single
+  name: pascal3d
+  occ_level: 0
+  occ_levels:
+    train:
+    - 0
+    val:
+    - 0
+    - 1
+    - 2
+    - 3
+  pad_texture: False
+  pascal3d_occ_raw_path: /misc/lmbraid21/jesslen/NeMo/data/OccludedPASCAL3D
+  pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+  pascal3d_raw_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D+_release1.1
+  pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+  prepare_mode: first
+  remove_no_bg: 8
+  root_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_NeMo
+  sampler: None
+  seg_data_path: /misc/lmbraid21/jesslen/NeMo/data/PASCAL3D_segmentation
+  seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+  single_mesh: True
+  subtypes: None
+  training_only: False
+  transforms:
+  - class_name: nemo.datasets.pascal3d.ToTensor
+  weighted: True
+inference:
+  random_seed: 0
+  visualize_num_samples: 0
+model:
+  backbone: resnet50
+  class_name: nemo.models.resnet.ResNetGeneral
+  name: resnet50general
+  num_bins: 41
+  output_dim: 123
+  training:
+    loss:
+      class_name: torch.nn.CrossEntropyLoss
+      ignore_index: 41
+    optimizer:
+      class_name: torch.optim.SGD
+      lr: 0.01
+      momentum: 0.9
+      weight_decay: 0.0001
+    scheduler:
+      class_name: torch.optim.lr_scheduler.StepLR
+      gamma: 0.1
+      step_size: 20
+  transforms:
+  - class_name: nemo.datasets.pascal3d.Resize
+    height: 256
+    width: 256
+  - class_name: nemo.datasets.pascal3d.Normalize
+task: 3d_pose_estimation
+training:
+  batch_size: 32
+  ckpt_interval: 10
+  log_interval: 5
+  random_seed: 0
+  total_epochs: 200
+  visualize_training_data: False
+  workers: 8
+2023-01-15 21:07:02,114 - INFO - Set random seed to 0
+2023-01-15 21:07:10,722 - INFO - Number of training images: 520
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and will be removed in 0.15, please use 'weights' instead.
+  warnings.warn(
+/misc/lmbraid21/jesslen/miniconda3/envs/nemo/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and will be removed in 0.15. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+2023-01-15 21:07:12,149 - INFO - Start training
+2023-01-15 21:07:31,148 - INFO - [Epoch 5/200] lr=0.01000 loss=1.36764
+2023-01-15 21:07:46,870 - INFO - [Epoch 10/200] lr=0.01000 loss=0.28580
+2023-01-15 21:08:03,286 - INFO - [Epoch 15/200] lr=0.01000 loss=0.07024
+2023-01-15 21:08:19,157 - INFO - [Epoch 20/200] lr=0.01000 loss=0.02591
+2023-01-15 21:08:35,882 - INFO - [Epoch 25/200] lr=0.00100 loss=0.01756
+2023-01-15 21:08:51,731 - INFO - [Epoch 30/200] lr=0.00100 loss=0.01604
+2023-01-15 21:09:08,636 - INFO - [Epoch 35/200] lr=0.00100 loss=0.01571
+2023-01-15 21:09:24,389 - INFO - [Epoch 40/200] lr=0.00100 loss=0.01412
+2023-01-15 21:09:41,156 - INFO - [Epoch 45/200] lr=0.00010 loss=0.01446
+2023-01-15 21:09:56,847 - INFO - [Epoch 50/200] lr=0.00010 loss=0.01380
+2023-01-15 21:10:13,430 - INFO - [Epoch 55/200] lr=0.00010 loss=0.01207
+2023-01-15 21:10:29,632 - INFO - [Epoch 60/200] lr=0.00010 loss=0.01101
+2023-01-15 21:10:46,636 - INFO - [Epoch 65/200] lr=0.00001 loss=0.01356
+2023-01-15 21:11:02,512 - INFO - [Epoch 70/200] lr=0.00001 loss=0.01280
+2023-01-15 21:11:20,294 - INFO - [Epoch 75/200] lr=0.00001 loss=0.01381
+2023-01-15 21:11:37,283 - INFO - [Epoch 80/200] lr=0.00001 loss=0.01353
+2023-01-15 21:11:54,144 - INFO - [Epoch 85/200] lr=0.00000 loss=0.01491
+2023-01-15 21:12:10,371 - INFO - [Epoch 90/200] lr=0.00000 loss=0.01290
+2023-01-15 21:12:26,997 - INFO - [Epoch 95/200] lr=0.00000 loss=0.01400
+2023-01-15 21:12:43,492 - INFO - [Epoch 100/200] lr=0.00000 loss=0.01553
+2023-01-15 21:13:00,523 - INFO - [Epoch 105/200] lr=0.00000 loss=0.01238
+2023-01-15 21:13:16,455 - INFO - [Epoch 110/200] lr=0.00000 loss=0.01618
+2023-01-15 21:13:33,477 - INFO - [Epoch 115/200] lr=0.00000 loss=0.01321
+2023-01-15 21:13:49,623 - INFO - [Epoch 120/200] lr=0.00000 loss=0.01338
+2023-01-15 21:14:06,369 - INFO - [Epoch 125/200] lr=0.00000 loss=0.01118
+2023-01-15 21:14:22,383 - INFO - [Epoch 130/200] lr=0.00000 loss=0.01223
+2023-01-15 21:14:38,811 - INFO - [Epoch 135/200] lr=0.00000 loss=0.01182
+2023-01-15 21:14:54,775 - INFO - [Epoch 140/200] lr=0.00000 loss=0.01217
+2023-01-15 21:15:12,126 - INFO - [Epoch 145/200] lr=0.00000 loss=0.01427
+2023-01-15 21:15:28,156 - INFO - [Epoch 150/200] lr=0.00000 loss=0.01305
+2023-01-15 21:15:45,497 - INFO - [Epoch 155/200] lr=0.00000 loss=0.01188
+2023-01-15 21:16:01,538 - INFO - [Epoch 160/200] lr=0.00000 loss=0.01412
+2023-01-15 21:16:18,191 - INFO - [Epoch 165/200] lr=0.00000 loss=0.01421
+2023-01-15 21:16:33,858 - INFO - [Epoch 170/200] lr=0.00000 loss=0.01213
+2023-01-15 21:16:51,044 - INFO - [Epoch 175/200] lr=0.00000 loss=0.01310
+2023-01-15 21:17:06,963 - INFO - [Epoch 180/200] lr=0.00000 loss=0.01214
+2023-01-15 21:17:23,787 - INFO - [Epoch 185/200] lr=0.00000 loss=0.01294
+2023-01-15 21:17:39,882 - INFO - [Epoch 190/200] lr=0.00000 loss=0.01368
+2023-01-15 21:17:57,094 - INFO - [Epoch 195/200] lr=0.00000 loss=0.01454
+2023-01-15 21:18:12,723 - INFO - [Epoch 200/200] lr=0.00000 loss=0.01353
+End time: So 15. Jan 21:18:14 CET 2023
+date: ungültiges Datum »So 15. Jan 21:18:14 CET 2023“
+date: ungültiges Datum »So 15. Jan 21:07:00 CET 2023“
+/var/spool/torque/mom_priv/jobs/2483504.lmbtorque.informatik.uni-freiburg.de.SC: Zeile 27: ( - ) / 60: Syntaxfehler: Operator erwartet (fehlerverursachendes Zeichen ist ") / 60")
