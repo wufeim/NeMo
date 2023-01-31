@@ -5,6 +5,7 @@ import os
 import numpy as np
 import torch
 import torch.nn as nn
+import wandb
 
 from nemo.models.feature_banks import mask_remove_near
 from nemo.utils import construct_class_by_name
@@ -63,8 +64,13 @@ def train(cfg):
 
     logging.info("Start training")
     for epo in range(cfg.training.total_epochs):
+        num_iterations = int(cfg.training.scale_iterations_per_epoch * len(train_dataloader))
         for i, sample in enumerate(train_dataloader):
-            model.train(sample)
+            if i >= num_iterations:
+                break
+            loss_dict = model.train(sample)
+            if cfg.use_wandb:
+                wandb.log(loss_dict)
 
         if (epo + 1) % cfg.training.log_interval == 0:
             logging.info(
@@ -86,6 +92,10 @@ def main():
 
     set_seed(cfg.training.random_seed)
     save_src_files(args.save_dir, [args.config, __file__])
+
+    if cfg.use_wandb:
+        wandb.init(project=cfg.wandb_project_name, config=cfg.asdict())
+        wandb.run.name = f'{wandb.run.id}_{os.path.basename(args.save_dir)}'
 
     train(cfg)
 

@@ -1,5 +1,9 @@
+use_wandb: true
+wandb_project_name: NeMo
+
 training:
     random_seed: 0
+    scale_iterations_per_epoch: 1.0
 
 inference:
     random_seed: 0
