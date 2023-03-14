@@ -261,7 +261,6 @@ dependencies:
     - mdurl==0.1.2
     - more-itertools==9.0.0
     - nodeenv==1.7.0
-    - nvdiffrast==0.3.0
     - oauthlib==3.2.2
     - opencv-python==4.6.0.66
     - orjson==3.8.5
@@ -310,4 +309,3 @@ dependencies:
     - werkzeug==2.2.2
     - wget==3.2
     - xatlas==0.0.7
-prefix: /home/wufei/anaconda3/envs/nemo

@@ -38,8 +38,8 @@ Features
 Installation
 ------------
 
-Environment
-^^^^^^^^^^^
+Environment (manual setup)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. Create :code:`conda` environment:
 
@@ -76,6 +76,17 @@ Environment
 
 .. code::
 
+   pip install -e .
+
+Environment (from `yml`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In case the previous method failed, setup the environment from a compiled list of packages:
+
+.. code::
+
+   conda env create -f environment.yml
+   pip install git+https://github.com/NVlabs/nvdiffrast/
    pip install -e .
 
 Data Preparation
