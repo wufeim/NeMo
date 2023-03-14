@@ -356,7 +356,7 @@ pip install wget gdown BboxTools opencv-python</code></pre>
             </li>
             <li>
                 <b>Evaluation.</b> After training, evaluate the model by specifying the desired model checkpoint
-                <pre class="block-code"><code>CUDA_VISIBLE_DEVICES=0 python3 scripts/train.py \
+                <pre class="block-code"><code>CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
     --cate aeroplane \
     --config config/pose_estimation_3d.yaml \
     --save_dir exp/pose_estimation_3d_nemo_aeroplane \
