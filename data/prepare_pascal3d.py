@@ -302,6 +302,8 @@ def worker(params):
         anno_path = os.path.join(anno_dir, f"{img_name}.mat")
         if prepare_seg:
             seg_mask_path = os.path.join(seg_data_path, set_type, cate, f'{img_name}.npy')
+        else:
+            seg_mask_path=None
 
         prepared_sample_names = prepare_pascal3d_sample(
             cate,
