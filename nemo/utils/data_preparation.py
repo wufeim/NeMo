@@ -53,7 +53,9 @@ def prepare_pascal3d_sample(
     direction_dicts=None,
     obj_ids=None,
     extra_anno=None,
-    seg_mask_path=None
+    seg_mask_path=None,
+    center_and_resize=True,
+    skip_3d_anno=False
 ):
     """
     Prepare a sample for training and validation.
@@ -118,13 +120,17 @@ def prepare_pascal3d_sample(
         if get_anno(record, "distance", idx=obj_id) <= 0:
             continue
 
-        if augment_by_dist:
-            target_distances = get_target_distances()
-        else:
-            target_distances = [5.0]
+        if center_and_resize:
+            if augment_by_dist:
+                target_distances = get_target_distances()
+            else:
+                target_distances = [5.0]
 
-        dist = get_anno(record, "distance", idx=obj_id)
-        all_resize_rates = [float(dist / x) for x in target_distances]
+            dist = get_anno(record, "distance", idx=obj_id)
+            all_resize_rates = [float(dist / x) for x in target_distances]
+        else:
+            all_resize_rates = [
+                min(out_shape[0] / img.shape[0], out_shape[1] / img.shape[1])]
 
         for rr_idx, resize_rate in enumerate(all_resize_rates):
             if resize_rate <= 0.001:
@@ -149,9 +155,12 @@ def prepare_pascal3d_sample(
                 if texture_filenames is not None:
                     texture_name = np.random.choice(texture_filenames)
 
-                center = (
-                    get_anno(record, "principal", idx=obj_id)[::-1] * resize_rate
-                ).astype(int)
+                if center_and_resize:
+                    center = (
+                        get_anno(record, "principal", idx=obj_id)[::-1] * resize_rate
+                    ).astype(int)
+                else:
+                    center = np.array([img.shape[0]//2, img.shape[1]//2]).astype(np.int32)
                 box1 = bbt.box_by_shape(out_shape, center)
                 if (
                     out_shape[0] // 2 - center[0] > 0
@@ -304,7 +313,7 @@ def prepare_pascal3d_sample(
 
             try:
                 # Prepare 3D annotations for NeMo training
-                if mesh_manager is not None and direction_dicts is not None:
+                if not skip_3d_anno and (mesh_manager is not None and direction_dicts is not None):
 
                     save_parameters["true_cad_index"] = save_parameters["cad_index"]
                     if single_mesh:

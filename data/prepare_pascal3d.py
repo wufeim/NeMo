@@ -208,6 +208,8 @@ def prepare_pascal3d(cfg, workers=4):
 
     if cfg.training_only:
         all_set_types = ["train"]
+    elif cfg.evaluation_only:
+        all_set_types = ["val"]
     else:
         all_set_types = ["train", "val"]
 
@@ -324,7 +326,9 @@ def worker(params):
             single_mesh=cfg.single_mesh,
             mesh_manager=manager,
             direction_dicts=direction_dicts,
-            seg_mask_path=seg_mask_path
+            seg_mask_path=seg_mask_path,
+            center_and_resize=cfg.center_and_resize,
+            skip_3d_anno=cfg.skip_3d_anno
         )
         if prepared_sample_names is None:
             num_errors += 1

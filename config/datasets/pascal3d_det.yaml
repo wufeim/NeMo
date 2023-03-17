@@ -2,7 +2,7 @@ includes: config/datasets/pascal3d.yaml
 
 name: pascal3d_det
 class_name: nemo.datasets.pascal3d_det.Pascal3DPlusDet
-root_path: /mnt/sdc/wufei/data/PASCAL3D_NeMo_det
+root_path: data/PASCAL3D_NeMo_det
 
 occ_levels:
     train: [0]
