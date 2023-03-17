@@ -105,6 +105,8 @@ def prepare_ood_cv(cfg, workers=4):
 
     if cfg.training_only:
         all_set_types = ["train"]
+    elif cfg.evaluation_only:
+        all_set_types = ["val"]
     else:
         all_set_types = ["train", "val"]
 
@@ -167,25 +169,29 @@ def worker(params):
     os.makedirs(save_list_path, exist_ok=True)
 
     if set_type == 'train':
-        list_file = os.path.join(ood_cv_pose_data_path, 'train', f'{cate}.txt')
-        with open(list_file, 'r') as fp:
-            image_names = [x.strip() for x in fp.readlines() if x != '\n']
+        all_pascal3d_samples = ['.'.join(x.split('.')[:-1]) for x in os.listdir(os.path.join(pascal3d_raw_path, 'Images', f'{cate}_imagenet'))]
+        all_pascal3d_samples += ['.'.join(x.split('.')[:-1]) for x in os.listdir(os.path.join(pascal3d_raw_path, 'Images', f'{cate}_pascal'))]
+        with open(os.path.join(ood_cv_pose_data_path, 'lists', 'TrainSet.txt'), 'r') as fp:
+            all_samples = fp.read().strip().split('\n')
+        all_samples = [x for x in all_samples if x in all_pascal3d_samples]
     elif set_type == 'val':
         image_names = []
         nuisances = []
 
-        # iid
-        fnames = [x[:-4] for x in os.listdir(os.path.join(ood_cv_pose_data_path, 'phase-1', 'iid_test', 'annotations')) if x.endswith('.npz')]
-        fnames = [x for x in fnames if cate == x.split('_')[1]]
-        image_names += fnames
-        nuisances += ['iid'] * len(fnames)
-
-        # nuisances
         for n in cfg.nuisances:
-            fnames = [x[:-4] for x in os.listdir(os.path.join(ood_cv_pose_data_path, 'phase-1', 'nuisances', n, 'annotations')) if x.endswith('.npz')]
-            fnames = [x for x in fnames if cate == x.split('_')[1]]
+            if not os.path.isfile(os.path.join(ood_cv_pose_data_path, 'lists', f'{cate}_{n}.txt')):
+                continue
+            with open(os.path.join(ood_cv_pose_data_path, 'lists', f'{cate}_{n}.txt'), 'r') as fp:
+                fnames = fp.read().strip().split('\n')
             image_names += fnames
             nuisances += [n] * len(fnames)
+
+        with open(os.path.join(ood_cv_pose_data_path, 'lists', f'{cate}_all.txt'), 'r') as fp:
+            fnames = fp.read().strip().split('\n')
+        fnames = [x for x in fnames if x not in image_names]
+        image_names += fnames
+        nuisances += ['iid'] * len(fnames)
+        all_samples = [x.split(' ') for x in image_names]
     else:
         raise ValueError(f'Unknown set type: {set_type}')
 
@@ -194,8 +200,9 @@ def worker(params):
 
     num_errors = 0
     mesh_name_list = [[] for _ in range(MESH_LEN[cate])]
-    for idx, img_name in enumerate(image_names):
+    for idx, sample in enumerate(all_samples):
         if set_type == 'train':
+            img_name = sample
             if img_name.startswith('n'):
                 img_path = os.path.join(pascal3d_raw_path, 'Images', f'{cate}_imagenet', f'{img_name}.JPEG')
                 anno_path = os.path.join(pascal3d_raw_path, 'Annotations', f'{cate}_imagenet', f'{img_name}.mat')
@@ -204,18 +211,10 @@ def worker(params):
                 anno_path = os.path.join(pascal3d_raw_path, 'Annotations', f'{cate}_pascal', f'{img_name}.mat')
             obj_ids = None
         elif set_type == 'val':
-            _splits = img_name.split('_')
-            _src, _cate, _name, obj_id = _splits[0], _splits[1], '_'.join(_splits[2:-1]), int(_splits[-1])
-            obj_ids = [obj_id]
-            if _src == 'imagenet':
-                img_path = os.path.join(pascal3d_raw_path, 'Images', f'{cate}_imagenet', f'{_name}.JPEG')
-                anno_path = os.path.join(pascal3d_raw_path, 'Annotations', f'{cate}_imagenet', f'{_name}.mat')
-            elif _src == 'pascal':
-                img_path = os.path.join(pascal3d_raw_path, 'Images', f'{cate}_pascal', f'{_name}.jpg')
-                anno_path = os.path.join(pascal3d_raw_path, 'Annotations', f'{cate}_pascal', f'{_name}.mat')
-            elif _src == 'collection':
-                img_path = os.path.join(ood_cv_raw_path, 'images', _cate, f'{_name}.jpg')
-                anno_path = os.path.join(ood_cv_raw_path, 'annotations', _cate, f'{_name}.mat')
+            img_name, obj_id = sample
+            obj_ids = [int(obj_id)]
+            img_path = os.path.join(ood_cv_pose_data_path, 'images', cate, f'{img_name}.JPEG')
+            anno_path = os.path.join(ood_cv_pose_data_path, 'annotations', cate, f'{img_name}.mat')
         else:
             raise ValueError(f'Unknown image source: {_src} ({img_name})')
 
@@ -254,7 +253,7 @@ def worker(params):
         ) as fl:
             fl.write("\n".join(x))
 
-    return num_errors, len(image_names), set_type, cate
+    return num_errors, len(all_samples), set_type, cate
 
 
 def main():

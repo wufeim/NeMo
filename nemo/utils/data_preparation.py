@@ -365,7 +365,8 @@ def prepare_pascal3d_sample_det(
     direction_dicts=None,
     obj_ids=None,
     extra_anno=None,
-    seg_mask_path=None
+    seg_mask_path=None,
+    center_and_resize=True
 ):
     """
     Prepare a sample for training and validation.

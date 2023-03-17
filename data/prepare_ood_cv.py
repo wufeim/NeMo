@@ -105,6 +105,8 @@ def prepare_ood_cv(cfg, workers=4):
 
     if cfg.training_only:
         all_set_types = ["train"]
+    elif cfg.evaluation_only:
+        all_set_types = ["val"]
     else:
         all_set_types = ["train", "val"]
 
@@ -236,7 +238,9 @@ def worker(params):
             mesh_manager=manager,
             direction_dicts=direction_dicts,
             obj_ids=obj_ids,
-            extra_anno=None if set_type == 'train' else {'nuisance': nuisances[idx]}
+            extra_anno=None if set_type == 'train' else {'nuisance': nuisances[idx]},
+            center_and_resize=cfg.center_and_resize,
+            skip_3d_anno=cfg.skip_3d_anno
         )
         if prepared_sample_names is None:
             num_errors += 1
