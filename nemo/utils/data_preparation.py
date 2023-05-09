@@ -340,7 +340,8 @@ def prepare_pascal3d_sample(
                 save_image_names.append(
                     (get_anno(record, "cad_index", idx=obj_id), curr_img_name)
                 )
-            except:
+            except Exception as e:
+                print(e)
                 continue
 
     return save_image_names
