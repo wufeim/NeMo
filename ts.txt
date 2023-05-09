@@ -1,0 +1,77 @@
+Goal for end of mai:
+    3D Object Detection Benchmark
+        - Benchmarks:
+            3D Pose Estimation: PASCAL3D-Centered, PASCAL3D-Occluded-Centered, OOD-CV-Centered, ShapeNet-
+            6D Pose Estimation: PASCAL3D, PASCAL3D-Occluded, OOD-CV,
+            Object Classification: PASCAL3D
+        - Methods: NeMo, ResNet
+        - Metrics: Classification-Accuracy, Pose-Accuracy
+        - Tables: Single-Metric (Method/Benchmark), Single-Benchmark (Method/Metric), Single-Method (Benchmark/Metric)
+        - Runs on: Local, Torque, SLURM
+        - Saves Results: Local, WandbAI
+        - Debug Features:
+            Datasets insights: Number of Images, Modalities Available
+            Train/Test on Subset (for quick debug)
+            Pause/Continue Training
+            Visualize Single Inference: Overlay Pose Estimation, Feature Alignment Mask
+
+    how is multi-gpus exploited?
+        -> DataParallel
+    TODO Wufei's NeMo:
+        warnings while Dataset preparation:
+            ? Illegal Boundary Box with shape [(218, 262), (464, 329)] and boundary [292, 329]
+            ?
+        hierarchical configuration without
+        add documentation for datasets structure
+        extend for classification
+        extend for runnable on Torque/Slurm
+        setup without conda
+        remove NVidia Dependencies
+
+TODO:
+    create ticket for slurm account: kislurm group
+
+    setup PASCAL3D+
+    create PR for fixing PASCAL3D+ setup
+    setup OOD_CV
+    how to run on cluster?
+        -> CLI: generate script (forward config) and run with qsub
+    how to run on slurm?
+        -> CLI: generate script (forward config) and run with sbatch
+    how to use multi-GPU?
+        -> DistrbutedDataParallel
+    how to add new dataset?
+        -> add new class, add
+    how to sequential dataset with varying sequence length,
+        randomize sequences, randomize inside-sequences
+        load BxSxCxHxW, or BxCxHxW, or SxCxHxW ?? and fit on multi-GPUs?
+    how to fit pose with an efficient proposal/selection algorithm?
+        -> coarse-to-fine with re-weighting proposals
+
+python3 -m venv venv-nemo
+source venv-nemo/bin/activate
+pip install pip --upgrade
+pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu117
+pip install fvcore iopath
+pip install --no-index --no-cache-dir pytorch3d -f https://dl.fbaipublicfiles.com/pytorch3d/packaging/wheels/py310_cu117_pyt200/download.html
+pip install git+https://github.com/NVlabs/nvdiffrast/
+pip install -e .
+pip install wandb cython pycocotools bboxtools scipy scikit-image gdown
+
+unzip ~/datasets/PASCAL3D+_release1.1.zip -d /scratch/sommerl/repos/NeMo/data/
+
+python3 data/prepare_pascal3d.py --config config/datasets/pascal3d.yaml
+
+python3 data/prepare_pascal3d.py --config config/datasets/prepare_ood_cv.yaml
+
+
+CUDA_VISIBLE_DEVICES=0 python3 scripts/train.py \
+    --cate car \
+    --config config/pose_estimation_3d.yaml \
+    --save_dir exp/pose_estimation_3d_car
+
+CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
+   --cate car \
+   --config config/pose_estimation_3d.yaml \
+   --save_dir exp/pose_estimation_3d_car \
+   --checkpoint exp/pose_estimation_3d_car/ckpts/model_10.pth
