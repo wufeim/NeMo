@@ -79,7 +79,7 @@ def download_pascal3d(cfg):
         wget.download(cfg.image_subsets_url, "Image_subsets.zip")
         os.system("unzip Image_subsets.zip")
         os.system("rm Image_subsets.zip")
-        os.system("mv Image_subsets PASCAL3D+_release1.1")
+        os.system(f"mv Image_subsets {pascal3d_raw_path}")
 
     if max(cfg.occ_levels.train) == 0 and max(cfg.occ_levels.val) == 0:
         print("Skipping OccludedPASCAL3D+")
@@ -145,7 +145,8 @@ def download_pascal3d(cfg):
                     try:
                         mask = pycocotools.mask.decode(pycocotools.mask.merge(pycocotools.mask.frPyObjects(annotation['mask'].tolist(), sz[1], sz[0])))
                         np.save(os.path.join(save_path, fname[:-4]), mask_to_rle(mask))
-                    except:
+                    except Exception as e:
+                        print(e)
                         continue
 
             # Validation
@@ -167,7 +168,8 @@ def download_pascal3d(cfg):
                         try:
                             mask = pycocotools.mask.decode(pycocotools.mask.merge(pycocotools.mask.frPyObjects(annotation['mask'].tolist(), sz[1], sz[0])))
                             np.save(os.path.join(save_path, fname[:-4]), mask_to_rle(mask))
-                        except:
+                        except Exception as e:
+                            print(e)
                             continue
     else:
         print("Skipping segmentation data")
