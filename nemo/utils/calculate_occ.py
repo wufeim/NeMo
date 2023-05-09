@@ -62,7 +62,7 @@ def generate_mask_kernel(p0, p1, p2, mask_size, positions, eps=3):
 def generate_depth_map_one_triangle(points, depth):
     box = bbt.contain_points(points)
     if box.size < 3 or area_triangle(*points) < 1e-2:
-        return np.ones(box.shape, dtype=np.bool), None
+        return np.ones(box.shape, dtype=bool), None
     # box = box.pad(1)
     points -= np.array([box.lu])
 
