@@ -61,10 +61,6 @@ def download_ood_cv(cfg):
         gdown.download(cfg.ood_cv_pose_url, output="pose.zip", fuzzy=True)
         os.system(f"unzip pose.zip -d {ood_cv_pose_data_path}")
         os.system("rm pose.zip")
-        os.system(f"mv {os.path.join(ood_cv_pose_data_path, 'pose', 'train')} {os.path.join(ood_cv_pose_data_path, 'train')}")
-        os.system(f"mv {os.path.join(ood_cv_pose_data_path, 'pose', 'phase-1')} {os.path.join(ood_cv_pose_data_path, 'phase-1')}")
-        os.system(f"mv {os.path.join(ood_cv_pose_data_path, 'pose', 'phase2')} {os.path.join(ood_cv_pose_data_path, 'phase2')}")
-        os.system(f"rm -rf {os.path.join(ood_cv_pose_data_path, 'pose')}")
 
     if not cfg.pad_texture:
         print("Skipping Describable Textures Dataset")
