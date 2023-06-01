@@ -16,8 +16,8 @@ start=$(date)
 echo "Start time: $start"
 python scripts/train.py \
     --cate all \
-    --config config/3d_aware_cls_ood_nemo_cls.yaml \
-    --save_dir exp/3d_aware_cls_ood_nemo_cls
+    --config config/3d_aware_cls_ood_augmix_nemo_cls.yaml \
+    --save_dir exp/3d_aware_cls_ood_augmix_nemo_cls
 # Print end time
 end=$(date)
 echo "End time: $end" 

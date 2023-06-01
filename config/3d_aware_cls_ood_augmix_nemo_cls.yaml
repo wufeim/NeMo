@@ -1,18 +1,20 @@
-dataset: config/datasets/pascal3d.yaml
-model: config/models/nemo.yaml
+dataset: config/datasets/ood_cv_cls_augmix.yaml
+model: config/models/nemo_cls.yaml
 
 task: 3d_pose_estimation
 
 training:
-    batch_size: 108
+    random_seed: 0
+    batch_size: 36
     workers: 8
-    total_epochs: 800
-    log_interval: 3
-    ckpt_interval: 200
+    total_epochs: 200
+    log_interval: 5
+    ckpt_interval: 10
     visualize_training_data: false
     remove_no_bg: 8
 
 inference:
+    random_seed: 0
     loss: nemo.models.solve_pose.loss_fg_bg
 
     search_translation: false

@@ -12,7 +12,7 @@ from torch.utils.data import Dataset
 from nemo.utils import construct_class_by_name
 from nemo.utils import get_abs_path
 from nemo.utils import load_off
-from nemo.utils.pascal3d_utils import CATEGORIES
+from nemo.utils.pascal3d_utils import CATEGORIES, CATEGORIES_OODCV
 
 
 class Pascal3DPlus(Dataset):
@@ -30,6 +30,7 @@ class Pascal3DPlus(Dataset):
         remove_no_bg=None,
         skip_kp=False,
         segmentation_masks=[],
+        augmentation=False,
         **kwargs,
     ):
         self.data_type = data_type
@@ -46,9 +47,12 @@ class Pascal3DPlus(Dataset):
         self.transforms = torchvision.transforms.Compose(
             [construct_class_by_name(**t) for t in transforms]
         )
+        self.augmentation = augmentation
+        if self.augmentation:
+            self.augment = torchvision.transforms.AugMix()
 
         if self.category == 'all':
-            self.category = CATEGORIES
+            self.category = CATEGORIES_OODCV
         if not isinstance(self.category, list):
             self.category = [self.category]
         self.multi_cate = len(self.category) > 1
@@ -124,6 +128,8 @@ class Pascal3DPlus(Dataset):
             img = Image.open(os.path.join(self.image_path, f"{name_img}.JPEG"))
             if img.mode != "RGB":
                 img = img.convert("RGB")
+            if self.augmentation:
+                img = self.augment(img)
             annotation_file = np.load(
                 os.path.join(self.annotation_path, name_img.split(".")[0] + ".npz"),
                 allow_pickle=True,

@@ -16,7 +16,6 @@ from nemo.utils import pose_error
 from nemo.utils.pascal3d_utils import CATEGORIES
 from nemo.utils.pascal3d_utils import IMAGE_SIZES
 
-
 class NeMoClsCompo(BaseModel):
     def __init__(
         self,
@@ -34,6 +33,7 @@ class NeMoClsCompo(BaseModel):
         training,
         inference,
         checkpoint=None,
+        ffcheckpoint=None,
         transforms=[],
         device="cuda:0",
         **kwargs
@@ -41,6 +41,7 @@ class NeMoClsCompo(BaseModel):
         super().__init__(cfg, cate, mode, checkpoint, transforms, ['loss', 'loss_main', 'loss_reg'], device)
         self.net_params = backbone
         self.ffnet_params = ffnet
+        self.ffcheckpoint = ffcheckpoint
         self.memory_bank_params = memory_bank
         self.num_noise = num_noise
         self.max_group = max_group
@@ -123,7 +124,9 @@ class NeMoClsCompo(BaseModel):
         net = construct_class_by_name(**self.net_params)
         self.net = nn.DataParallel(net).to(self.device)
         self.net.load_state_dict(self.checkpoint["state"])
-
+        ffnet = construct_class_by_name(**self.ffnet_params)
+        self.ffnet = nn.DataParallel(ffnet).to(self.device)
+        self.ffnet.load_state_dict(self.ffcheckpoint["state"])
         self.memory_bank = construct_class_by_name(
             **self.memory_bank_params,
             output_size=len(CATEGORIES)*max(self.all_num_verts)+self.num_noise*self.max_group,
@@ -158,9 +161,10 @@ class NeMoClsCompo(BaseModel):
 
         self.inter_module, self.kp_features = {}, {}
         for idx, cate in enumerate(CATEGORIES):
-            memory = self.checkpoint["memory"][idx*max(self.all_num_verts):(idx+1)*max(self.all_num_verts)].detach().cpu().numpy()
-            feature_bank = torch.from_numpy(memory)
-            self.kp_features[cate] = self.checkpoint["memory"][idx*max(self.all_num_verts):(idx+1)*max(self.all_num_verts)].to(self.device)
+            memory = self.checkpoint["memory"][idx*max(self.all_num_verts):idx*max(self.all_num_verts)+self.all_num_verts[idx]]
+            # useless ?
+            feature_bank = torch.from_numpy(memory.detach().cpu().numpy())
+            self.kp_features[cate] = memory.to(self.device)
             xvert, xface = load_off(self.mesh_path.format(cate), to_torch=True)
             self.inter_module[cate] = MeshInterpolateModule(
                 xvert,
@@ -257,13 +261,23 @@ class NeMoClsCompo(BaseModel):
 
         sample = self.transforms(sample)
         img = sample["img"].to(self.device)
+        img_2hm = sample['img_2hm'].to(self.device)
         assert len(img) == 1, "The batch size during validation should be 1"
 
         with torch.no_grad():
             feature_map = self.net.module.forward_test(img)
-
-        scores, preds = [], []
-        for cate in CATEGORIES:
+            pose_output, class_output = self.ffnet(img_2hm)
+        scores = [1e5] * len(CATEGORIES) 
+        preds = [{"final": []}] * len(CATEGORIES) 
+        converged = False
+        TH1 = 7
+        TH2 = 0.8
+        if np.any(class_output > TH1):
+            sub_cate = np.argmax(class_output)
+        else:
+            sub_cate = np.argsort(class_output)[::-1][:3]
+        sub_cate = CATEGORIES[sub_cate]
+        for cate in sub_cate:
             self.inter_module[cate].to(self.device)
             pred = solve_pose(
                 self.cfg,
@@ -274,13 +288,36 @@ class NeMoClsCompo(BaseModel):
                 self.poses[cate],
                 self.kp_coords[cate],
                 self.kp_vis[cate],
+                pose_priors=TODO,
                 debug=debug,
                 device=self.device,
             )
+            current_score = pred['final'][0]['score']
             self.inter_module[cate].to('cpu')
             preds.append(pred)
-            scores.append(pred['final'][0]['score'])
-
+            if current_score < TH2:
+                converged = True
+            scores.append(current_score)
+        # If bad convergence, compute full method
+        if not converged:
+            scores, preds = [], []
+            for cate in CATEGORIES:
+                self.inter_module[cate].to(self.device)
+                pred = solve_pose(
+                    self.cfg,
+                    feature_map,
+                    self.inter_module[cate],
+                    self.kp_features[cate],
+                    self.clutter_bank,
+                    self.poses[cate],
+                    self.kp_coords[cate],
+                    self.kp_vis[cate],
+                    debug=debug,
+                    device=self.device,
+                )
+                self.inter_module[cate].to('cpu')
+                preds.append(pred)
+                scores.append(pred['final'][0]['score'])
         pred_cate = np.argmin(scores)
         pred = preds[pred_cate]
 

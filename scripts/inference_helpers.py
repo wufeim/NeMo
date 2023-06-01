@@ -47,7 +47,6 @@ def print_3d_pose_estimation(
     logging.info(f"Category:    {all_categories}")
     logging.info(f"# samples:   {len(running_results)}")
     logging.info(f"Model:       {cfg.model.name} (ckpt={cfg.args.checkpoint})")
-
     cate_line = f'            '
     pi_6_acc = f'pi/6 acc:   '
     pi_18_acc = f'pi/18 acc:  '

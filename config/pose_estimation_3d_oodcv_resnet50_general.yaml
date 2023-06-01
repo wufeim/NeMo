@@ -1,4 +1,6 @@
-dataset: config/datasets/pascal3d.yaml
+includes: config/pose_estimation_3d.yaml
+
+dataset: config/datasets/ood_cv.yaml
 model: config/models/resnet50_general.yaml
 
 training:

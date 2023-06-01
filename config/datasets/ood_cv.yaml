@@ -41,5 +41,5 @@ weighted: true
 remove_no_bg: 8
 transforms:
     - class_name: nemo.datasets.pascal3d.ToTensor
-
+augmentation: False
 sampler: None

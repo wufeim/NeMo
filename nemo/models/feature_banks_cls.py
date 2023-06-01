@@ -2,8 +2,9 @@ import torch
 from torch.autograd import Function
 import torch.nn.functional as F
 from torch import nn
+# from nemo.utils.pascal3d_utils import CATEGORIES as ALL_CLASSES
+from nemo.utils.pascal3d_utils import CATEGORIES_OODCV as ALL_CLASSES
 import math
-ALL_CLASSES=["aeroplane", "bicycle", "boat", "bottle", "bus", "car", "chair", "diningtable", "motorbike", "sofa", "train", "tvmonitor"]
 
 
 def one_hot(y, max_size=None):

@@ -13,7 +13,8 @@ from nemo.utils import get_param_samples
 from nemo.utils import load_off
 from nemo.utils import normalize_features
 from nemo.utils import pose_error
-from nemo.utils.pascal3d_utils import CATEGORIES
+# from nemo.utils.pascal3d_utils import CATEGORIES
+from nemo.utils.pascal3d_utils import CATEGORIES_OODCV as CATEGORIES
 from nemo.utils.pascal3d_utils import IMAGE_SIZES
 
 
@@ -156,9 +157,10 @@ class NeMoCls(BaseModel):
 
         self.inter_module, self.kp_features = {}, {}
         for idx, cate in enumerate(CATEGORIES):
-            memory = self.checkpoint["memory"][idx*max(self.all_num_verts):(idx+1)*max(self.all_num_verts)].detach().cpu().numpy()
-            feature_bank = torch.from_numpy(memory)
-            self.kp_features[cate] = self.checkpoint["memory"][idx*max(self.all_num_verts):(idx+1)*max(self.all_num_verts)].to(self.device)
+            memory = self.checkpoint["memory"][idx*max(self.all_num_verts):idx*max(self.all_num_verts)+self.all_num_verts[idx]]
+            # useless ?
+            feature_bank = torch.from_numpy(memory.detach().cpu().numpy())
+            self.kp_features[cate] = memory.to(self.device)
             xvert, xface = load_off(self.mesh_path.format(cate), to_torch=True)
             self.inter_module[cate] = MeshInterpolateModule(
                 xvert,

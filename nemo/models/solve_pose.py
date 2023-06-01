@@ -93,6 +93,7 @@ def solve_pose(
     kp_vis,
     px_samples=None,
     py_samples=None,
+    pose_priors=None,
     debug=False,
     device="cuda",
 ):
@@ -171,29 +172,46 @@ def solve_pose(
     else:
         extrema_2d = [[0, 0]]
     extrema = []
-    for e in extrema_2d:
-        c = corr2d[:, e[0], e[1]].reshape(
-            poses.shape[0], poses.shape[1], poses.shape[2], poses.shape[3]
-        )
-        e_azim, e_elev, e_the, e_dist = np.unravel_index(
-            np.argmax(c, axis=None), c.shape
-        )
-        if (
-            not cfg.inference.search_translation
-            or corr2d_max[e[0], e[1]] >= cfg.inference.pre_rendering_thr
-        ):
-            p = poses[e_azim, e_elev, e_the, e_dist]
-            extrema.append(
-                {
-                    "azimuth": p[0],
-                    "elevation": p[1],
-                    "theta": p[2],
-                    "distance": p[3],
-                    "px": px_samples[e[0]],
-                    "py": py_samples[e[1]],
-                    "principal": [px_samples[e[0]], py_samples[e[1]]],
-                }
+    if pose_priors is None:
+        for e in extrema_2d:
+            c = corr2d[:, e[0], e[1]].reshape(
+                poses.shape[0], poses.shape[1], poses.shape[2], poses.shape[3]
             )
+            e_azim, e_elev, e_the, e_dist = np.unravel_index(
+                np.argmax(c, axis=None), c.shape
+            )
+            if (
+                not cfg.inference.search_translation
+                or corr2d_max[e[0], e[1]] >= cfg.inference.pre_rendering_thr
+            ):
+                p = poses[e_azim, e_elev, e_the, e_dist]
+                extrema.append(
+                    {
+                        "azimuth": p[0],
+                        "elevation": p[1],
+                        "theta": p[2],
+                        "distance": p[3],
+                        "px": px_samples[e[0]],
+                        "py": py_samples[e[1]],
+                        "principal": [px_samples[e[0]], py_samples[e[1]]],
+                    }
+                )
+    else:
+        raise NotImplementedError
+        e = [0, 0]
+        px_samples = None
+        py_samples = None       
+        extrema.append(
+            {
+                "azimuth": pose_priors[0],
+                "elevation": pose_priors[1],
+                "theta": pose_priors[2],
+                "distance": pose_priors[3],
+                "px": px_samples[e[0]],
+                "py": py_samples[e[1]],
+                "principal": [px_samples[e[0]], py_samples[e[1]]],
+            }
+        )
     if debug:
         pred["pre_rendering_poses"] = extrema
         pred["corr2d"] = corr2d_max

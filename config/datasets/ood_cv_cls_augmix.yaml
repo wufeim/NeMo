@@ -1,0 +1,22 @@
+includes: config/datasets/ood_cv.yaml
+
+name: ood-cv-cls
+root_path: /misc/lmbraid21/jesslen/NeMo/data/OOD_CV_NeMo_Cls
+
+image_sizes:
+    aeroplane: [512, 512]
+    bicycle: [512, 512]
+    boat: [512, 512]
+    bus: [512, 512]
+    chair: [512, 512]
+    car: [512, 512]
+    diningtable: [512, 512]
+    motorbike: [512, 512]
+    sofa: [512, 512]
+    train: [512, 512]
+
+transforms:
+    - class_name: nemo.datasets.pascal3d.ToTensor
+    - class_name: nemo.datasets.pascal3d.Normalize
+
+augmentation: True
