@@ -7,7 +7,7 @@ PASCAL3D+ and Occluded PASCAL3D+
 .. code::
 
    python3 prepare_pascal3d.py \
-       --config config/datasets/pascal3d.yaml
+       --config config/datasets/pascal3d_runtime.yaml
 
 **Parameters.** The parameters are loaded from the :code:`.yaml` files.
 
