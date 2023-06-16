@@ -70,7 +70,9 @@ Environment (manual setup)
    conda install pillow
    conda install -c conda-forge timm tqdm pyyaml transformers
    pip install git+https://github.com/NVlabs/nvdiffrast/
+   pip install git+https://github.com/Angtian/VoGE.git
    pip install wget gdown BboxTools opencv-python xatlas pycocotools seaborn wandb
+
 
 5. Install NeMo:
 
@@ -103,12 +105,12 @@ Train and evaluate a neural mesh model (:code:`NeMo`) on PASCAL3D+ for 3D pose e
 
    CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
        --cate car \
-       --config config/pose_estimation_3d_nemo.yaml \
+       --config config/pose_estimation_3d_runtime.yaml \
        --save_dir exp/pose_estimation_3d_nemo_car
 
    CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
        --cate car \
-       --config config/pose_estimation_3d_nemo.yaml \
+       --config config/pose_estimation_3d_runtime.yaml \
        --save_dir exp/pose_estimation_3d_nemo_car \
        --checkpoint exp/pose_estimation_3d_nemo_car/ckpts/model_800.pth
 
@@ -148,7 +150,7 @@ Models
 - [ ] Faster R-CNN
 - [ ] Mask R-CNN
 - [ ] Transformers
-- [ ] VoGe Renderer
+- [ ] VoGE Renderer
 
 Datasets
 ^^^^^^^^
@@ -167,7 +169,7 @@ Misc
 - [x] Project page (Shipped: *Dec 11 2022*)
 - [ ] Configuration hierarchy
 - [ ] Visualization tools
-- [ ] Inference demo
+- [x] Inference demo
 - [ ] Save predictions for reuse
 
 Citation
