@@ -23,8 +23,8 @@ from .mesh import camera_position_to_spherical_angle
 from .mesh import campos_to_R_T
 from .mesh import campos_to_R_T_det
 from .mesh import center_crop_fun
-from .mesh import forward_interpolate
-from .mesh import load_off
+from .mesh import forward_interpolate, forward_interpolate_voge
+from .mesh import load_off, rotation_theta
 from .mesh import pre_process_mesh_pascal
 from .mesh import save_off
 from .mesh import vertex_memory_to_face_memory
@@ -55,8 +55,10 @@ __all__ = [
     "prepare_pascal3d_sample",
     "load_off",
     "save_off",
+    "rotation_theta",
     "camera_position_to_spherical_angle",
     "forward_interpolate",
+    "forward_interpolate_voge",
     "pre_process_mesh_pascal",
     "vertex_memory_to_face_memory",
     "campos_to_R_T_det",

@@ -6,6 +6,11 @@ import torch.nn.functional as F
 from pytorch3d.renderer import look_at_rotation
 from pytorch3d.renderer.mesh.rasterizer import Fragments
 
+try:
+    from VoGE.Renderer import interpolate_attr
+    enable_voge = True
+except:
+    enable_voge=False
 
 def load_off(off_file_name, to_torch=False):
     file_handle = open(off_file_name)
@@ -143,10 +148,24 @@ def forward_interpolate(
     return out_map
 
 
+def forward_interpolate_voge(R, T, meshes, verts_memory, rasterizer):
+    assert enable_voge
+    # pdb.set_trace()
+    fragments = rasterizer(meshes, R=R, T=T)
+
+    out_map = interpolate_attr(fragments, verts_memory)
+
+    out_map = out_map.transpose(3, 2).transpose(2, 1)
+    return out_map
+
+
 # For meshes in PASCAL3D+
-def pre_process_mesh_pascal(verts):
+def pre_process_mesh_pascal(verts, *args):
     verts = torch.cat((verts[:, 0:1], verts[:, 2:3], -verts[:, 1:2]), dim=1)
-    return verts
+    if len(args) == 0:
+        return verts
+    else:
+        return (verts, ) + tuple(args)
 
 
 def vertex_memory_to_face_memory(memory_bank, faces):

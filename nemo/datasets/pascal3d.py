@@ -7,6 +7,7 @@ import torch
 import torchvision
 from PIL import Image
 import skimage
+import skimage.measure
 from torch.utils.data import Dataset
 
 from nemo.utils import construct_class_by_name
@@ -117,6 +118,8 @@ class Pascal3DPlus(Dataset):
 
     def __getitem__(self, item):
         name_img, cate = self.file_list[item]
+        if '.JPEG' in name_img:
+            name_img = name_img.split('.JP')[0]
 
         if self.enable_cache and name_img in self.cache.keys():
             sample = copy.deepcopy(self.cache[name_img])
@@ -133,7 +136,7 @@ class Pascal3DPlus(Dataset):
                 kp = annotation_file["cropped_kp_list"]
                 iskpvisible = annotation_file["visible"] == 1
 
-                if self.weighted:
+                if self.weighted and 'kp_weights' in annotation_file.keys():
                     iskpvisible = iskpvisible * annotation_file["kp_weights"]
 
                 iskpvisible = np.logical_and(

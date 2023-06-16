@@ -1,3 +1,6 @@
+import sys
+sys.path.append('./')
+
 import logging
 
 import numpy as np
@@ -17,14 +20,19 @@ def inference_3d_pose_estimation(
     pose_errors = []
     running = []
     for i, sample in enumerate(tqdm(dataloader, desc=f"{cfg.task}_{cate}")):
-        if cached_pred is None:
-            pred = model.evaluate(sample)
+        if cached_pred is None or True:
+            preds = model.evaluate(sample)
+            
+            for pred, name_ in zip(preds, sample['this_name']):
+                save_pred[str(name_)] = pred
         else:
-            pred = cached_pred[sample['this_name'][0]]
-        save_pred[str(sample['this_name'][0])] = pred
-        _err = pose_error(sample, pred["final"][0])
-        pose_errors.append(_err)
-        running.append((cate, _err))
+            for name_ in sample['this_name']:
+                save_pred[str(name_)] = cached_pred[str(name_)]
+        for pred in preds:
+            # _err = pose_error(sample, pred["final"][0])
+            _err = pred['pose_error']
+            pose_errors.append(_err)
+            running.append((cate, _err))
     pose_errors = np.array(pose_errors)
 
     results = {}

@@ -5,17 +5,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from nemo.models.base_model import BaseModel
-from nemo.models.feature_banks import mask_remove_near
+from nemo.models.feature_banks import mask_remove_near, remove_near_vertices_dist
 from nemo.models.mesh_interpolate_module import MeshInterpolateModule
 from nemo.models.solve_pose import pre_compute_kp_coords
 from nemo.models.solve_pose import solve_pose
+from nemo.models.batch_solve_pose import get_pre_render_samples
+from nemo.models.batch_solve_pose import solve_pose as batch_solve_pose
 from nemo.utils import center_crop_fun
 from nemo.utils import construct_class_by_name
 from nemo.utils import get_param_samples
-from nemo.utils import load_off
 from nemo.utils import normalize_features
-from nemo.utils import pose_error, iou
+from nemo.utils import pose_error, iou, pre_process_mesh_pascal, load_off
 from nemo.utils.pascal3d_utils import IMAGE_SIZES
+
+from nemo.models.project_kp import PackedRaster
 
 
 class NeMo(BaseModel):
@@ -32,6 +35,7 @@ class NeMo(BaseModel):
         mesh_path,
         training,
         inference,
+        proj_mode='runtime',
         checkpoint=None,
         transforms=[],
         device="cuda:0",
@@ -50,6 +54,20 @@ class NeMo(BaseModel):
         self.accumulate_steps = 0
 
         self.build()
+        proj_mode = self.training_params.proj_mode
+        
+        if proj_mode != 'prepared':
+            raster_conf = {
+                    'image_size': IMAGE_SIZES[cate],
+                    **self.training_params.kp_projecter
+                }
+            if raster_conf['down_rate'] == -1:
+                raster_conf['down_rate'] = self.net.module.net_stride
+            mesh_ = pre_process_mesh_pascal(*load_off(self.mesh_path, True))
+            self.net.module.kwargs['n_vert'] = mesh_[0].shape[0]
+            self.projector = PackedRaster(raster_conf, mesh_, device='cuda')
+        else:
+            self.projector = None
 
     def build(self):
         if self.mode == "train":
@@ -94,12 +112,23 @@ class NeMo(BaseModel):
         sample = self.transforms(sample)
 
         img = sample['img'].cuda()
-        kp = sample['kp'].cuda()
-        kpvis = sample["kpvis"].cuda().type(torch.bool)
         obj_mask = sample["obj_mask"].cuda()
         index = torch.Tensor([[k for k in range(self.num_verts)]] * img.shape[0]).cuda()
 
-        features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask)
+        if self.projector.raster_type == 'voge':
+            with torch.no_grad():
+                frag_ = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda())
+            features, vert_num = self.net.forward(img, keypoint_positions=frag_, obj_mask=1 - obj_mask, do_normalize=True,)
+            kpvis = vert_num > self.projector.kp_vis_thr
+        else:
+            if self.training_params.proj_mode == 'prepared':
+                kp = sample['kp'].cuda()
+                kpvis = sample["kpvis"].cuda().type(torch.bool)
+            else:
+                with torch.no_grad():
+                    kp, kpvis = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda())
+
+            features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask, do_normalize=True,)
 
         if self.training_params.separate_bank:
             get, y_idx, noise_sim = self.memory_bank(
@@ -110,15 +139,28 @@ class NeMo(BaseModel):
 
         get /= self.training_params.T
 
-        mask_distance_legal = mask_remove_near(
-            kp,
-            thr=self.training_params.distance_thr
-            * torch.ones((img.shape[0],), dtype=torch.float32).cuda(),
-            num_neg=self.num_noise * self.max_group,
-            dtype_template=get,
-            neg_weight=self.training_params.weight_noise,
-        )
-
+        # The default manner in VoGE-NeMo
+        if self.training_params.remove_near_mode == 'vert':
+            vert_ = self.projector.get_verts_recent()  # (B, K, 3)
+            vert_dis = (vert_.unsqueeze(1) - vert_.unsqueeze(2)).pow(2).sum(-1).pow(.5)
+            mask_distance_legal = remove_near_vertices_dist(
+                vert_dis,
+                thr=self.training_params.distance_thr,
+                num_neg=self.num_noise * self.max_group,
+                neg_weight=self.training_params.weight_noise,
+            )
+            if mask_distance_legal.shape[0] != get.shape[0]:
+                mask_distance_legal = mask_distance_legal.expand(get.shape[0], -1, -1).contiguous()
+        # The default manner in original-NeMo
+        else:
+            mask_distance_legal = mask_remove_near(
+                kp,
+                thr=self.training_params.distance_thr
+                * torch.ones((img.shape[0],), dtype=torch.float32).cuda(),
+                num_neg=self.num_noise * self.max_group,
+                dtype_template=get,
+                neg_weight=self.training_params.weight_noise,
+            )
         loss_main = nn.CrossEntropyLoss(reduction="none").cuda()(
             (get.view(-1, get.shape[2]) - mask_distance_legal.view(-1, get.shape[2]))[
                 kpvis.view(-1), :
@@ -188,22 +230,34 @@ class NeMo(BaseModel):
         ].to(self.device)
 
         image_h, image_w = IMAGE_SIZES[self.cate]
-        render_image_size = max(image_h, image_w) // self.down_sample_rate
+        # render_image_size = max(image_h, image_w) // self.down_sample_rate
         map_shape = (image_h // self.down_sample_rate, image_w // self.down_sample_rate)
+
+        if self.inference_params.cameras.get('image_size', 0) == -1:
+            self.inference_params.cameras['image_size'] = (map_shape, )
+        if self.inference_params.cameras.get('principal_point', 0) == -1:
+            self.inference_params.cameras['principal_point'] = ((map_shape[1] // 2, map_shape[0] // 2), )
+        if self.inference_params.cameras.get('focal_length', None) is not None:
+            self.inference_params.cameras['focal_length'] = self.inference_params.cameras['focal_length'] / self.down_sample_rate
 
         cameras = construct_class_by_name(**self.inference_params.cameras, device=self.device)
         raster_settings = construct_class_by_name(
-            **self.inference_params.raster_settings, image_size=render_image_size
+            **self.inference_params.raster_settings, image_size=map_shape
         )
-        rasterizer = construct_class_by_name(
-            **self.inference_params.rasterizer, cameras=cameras, raster_settings=raster_settings
-        )
+        if self.inference_params.rasterizer.class_name == 'VoGE.Renderer.GaussianRenderer':
+            rasterizer = construct_class_by_name(
+                **self.inference_params.rasterizer, cameras=cameras, render_settings=raster_settings
+            )
+        else:
+            rasterizer = construct_class_by_name(
+                **self.inference_params.rasterizer, cameras=cameras, raster_settings=raster_settings
+            )
         self.inter_module = MeshInterpolateModule(
             xvert,
             xface,
             feature_bank,
-            rasterizer,
-            post_process=center_crop_fun(map_shape, (render_image_size,) * 2),
+            rasterizer=rasterizer,
+            post_process=center_crop_fun(map_shape, (render_image_size,) * 2) if self.inference_params.get('center_crop', False) else None,
         ).to(self.device)
 
         (
@@ -215,40 +269,66 @@ class NeMo(BaseModel):
             py_samples,
         ) = get_param_samples(self.cfg)
 
-        self.poses, self.kp_coords, self.kp_vis = pre_compute_kp_coords(
-            self.mesh_path,
-            azimuth_samples=azimuth_samples,
-            elevation_samples=elevation_samples,
-            theta_samples=theta_samples,
-            distance_samples=distance_samples,
-        )
+        self.init_mode = self.cfg.inference.get('init_mode', '3d_batch')
+
+        if self.init_mode == '3d_batch':
+            self.feature_pre_rendered, self.cam_pos_pre_rendered, self.theta_pre_rendered = get_pre_render_samples(
+                self.inter_module,
+                azum_samples=azimuth_samples,
+                elev_samples=elevation_samples,
+                theta_samples=theta_samples,
+                device=self.device
+            )
+
+        else:
+            self.poses, self.kp_coords, self.kp_vis = pre_compute_kp_coords(
+                self.mesh_path,
+                azimuth_samples=azimuth_samples,
+                elevation_samples=elevation_samples,
+                theta_samples=theta_samples,
+                distance_samples=distance_samples,
+            )
 
     def evaluate(self, sample, debug=False):
         self.net.eval()
 
         sample = self.transforms(sample)
         img = sample["img"].to(self.device)
-        assert len(img) == 1, "The batch size during validation should be 1"
 
         with torch.no_grad():
             feature_map = self.net.module.forward_test(img)
-        pred = solve_pose(
-            self.cfg,
-            feature_map,
-            self.inter_module,
-            self.kp_features,
-            self.clutter_bank,
-            self.poses,
-            self.kp_coords,
-            self.kp_vis,
-            debug=debug,
-            device=self.device,
-        )
-
-        if "azimuth" in sample and "elevation" in sample and "theta" in sample:
-            pred["pose_error"] = pose_error(sample, pred["final"][0])
-
-        return pred
+        if self.init_mode == '3d_batch':
+            preds = batch_solve_pose(
+                self.cfg,
+                feature_map,
+                self.inter_module,
+                self.clutter_bank,
+                cam_pos_pre_rendered=self.cam_pos_pre_rendered,
+                theta_pre_rendered=self.theta_pre_rendered,
+                feature_pre_rendered=self.feature_pre_rendered,
+                device=self.device,
+            )
+        else:
+            assert len(img) == 1, "The batch size during validation should be 1"
+            preds = solve_pose(
+                self.cfg,
+                feature_map,
+                self.inter_module,
+                self.kp_features,
+                self.clutter_bank,
+                self.poses,
+                self.kp_coords,
+                self.kp_vis,
+                debug=debug,
+                device=self.device,
+            )
+        if isinstance(preds, dict):
+            preds = [preds]
+        
+        for i, pred in enumerate(preds):
+            if "azimuth" in sample and "elevation" in sample and "theta" in sample:
+                pred["pose_error"] = pose_error({k: sample[k][i] for k in ["azimuth", "elevation", "theta"]}, pred["final"][0])
+        return preds
 
     def get_ckpt(self, **kwargs):
         ckpt = {}

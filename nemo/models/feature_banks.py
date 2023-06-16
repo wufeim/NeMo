@@ -23,6 +23,16 @@ def to_mask(y, max_size):
     return y_onehot
 
 
+def remove_near_vertices_dist(vert_dist, thr, num_neg, neg_weight, eps=1e5):
+    dtype_template = vert_dist
+    with torch.no_grad():
+        if num_neg == 0:
+            return ((vert_dist <= thr).type_as(dtype_template) - torch.eye(vert_dist.shape[1]).type_as(dtype_template).unsqueeze(dim=0)) * eps
+        else:
+            tem = (vert_dist <= thr).type_as(dtype_template) - torch.eye(vert_dist.shape[1]).type_as(dtype_template).unsqueeze(dim=0)
+            return torch.cat([tem * eps, - torch.ones(vert_dist.shape[0: 2] + (num_neg, )).type_as(dtype_template) * math.log(neg_weight)], dim=2)
+
+
 def mask_remove_near(
     keypoints, thr, dtype_template=None, num_neg=0, neg_weight=1, eps=1e5
 ):

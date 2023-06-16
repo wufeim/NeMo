@@ -136,6 +136,7 @@ def prepare_pascal3d_sample(
             if resize_rate <= 0.001:
                 resize_rate = min(out_shape[0] / box.shape[0], out_shape[1] / box.shape[1])
             try:
+            # if True:
                 box_ori = bbt.from_numpy(bbox, sorts=("x0", "y0", "x1", "y1"))
                 box = bbt.from_numpy(bbox, sorts=("x0", "y0", "x1", "y1")) * resize_rate
 
@@ -312,6 +313,7 @@ def prepare_pascal3d_sample(
                     save_parameters[k] = extra_anno[k]
 
             try:
+            # if True:
                 # Prepare 3D annotations for NeMo training
                 if not skip_3d_anno and (mesh_manager is not None and direction_dicts is not None):
 

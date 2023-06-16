@@ -14,7 +14,7 @@ mesh_path: data/PASCAL3D+_release1.1/CAD_single
 
 pad_texture: false
 single_mesh: true
-training_only: false
+training_only: true
 evaluation_only: false
 augment_by_dist: false
 prepare_mode: first

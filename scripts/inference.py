@@ -35,8 +35,9 @@ def inference(cfg):
     for cate in all_categories:
         dataset_kwargs = {"data_type": "val", "category": cate}
         val_dataset = construct_class_by_name(**cfg.dataset, **dataset_kwargs)
+
         val_dataloader = torch.utils.data.DataLoader(
-            val_dataset, batch_size=1, shuffle=True, num_workers=0
+            val_dataset, batch_size=cfg.inference.get('batch_size', 1), shuffle=False, num_workers=4
         )
         logging.info(f"Number of inference images: {len(val_dataset)}")
 

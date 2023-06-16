@@ -1,3 +1,6 @@
+import sys
+sys.path.append('./')
+
 import argparse
 import logging
 import os
@@ -5,7 +8,7 @@ import os
 import numpy as np
 import torch
 import torch.nn as nn
-import wandb
+# import wandb
 
 from nemo.models.feature_banks import mask_remove_near
 from nemo.utils import construct_class_by_name
@@ -57,7 +60,7 @@ def train(cfg):
 
     if cfg.args.dry_run:
         exit()
-
+    
     model = construct_class_by_name(
         **cfg.model, cfg=cfg, cate=cfg.args.cate, mode='train',
         image_sizes=cfg.dataset.image_sizes)
@@ -69,8 +72,8 @@ def train(cfg):
             if i >= num_iterations:
                 break
             loss_dict = model.train(sample)
-            if cfg.use_wandb:
-                wandb.log(loss_dict)
+            # if cfg.use_wandb:
+            #     wandb.log(loss_dict)
 
         if (epo + 1) % cfg.training.log_interval == 0:
             logging.info(
@@ -93,9 +96,9 @@ def main():
     set_seed(cfg.training.random_seed)
     save_src_files(args.save_dir, [args.config, __file__])
 
-    if cfg.use_wandb:
-        wandb.init(project=cfg.wandb_project_name, config=cfg.asdict())
-        wandb.run.name = f'{wandb.run.id}_{os.path.basename(args.save_dir)}'
+    # if cfg.use_wandb:
+    #     wandb.init(project=cfg.wandb_project_name, config=cfg.asdict())
+    #     wandb.run.name = f'{wandb.run.id}_{os.path.basename(args.save_dir)}'
 
     train(cfg)
 
