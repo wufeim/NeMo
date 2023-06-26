@@ -8,7 +8,7 @@ from nemo.models.upsampling_layer import DoubleConv
 from nemo.models.upsampling_layer import Up
 
 try: 
-    from VoGE.Sampler import sample_features, scatter_max
+    from VoGE.Sampler import sample_features, scatter_max_weight
     from VoGE.Renderer import Fragments
     enable_voge = True
 except:
@@ -497,7 +497,9 @@ def get_noise_pixel_index_voge(keypoints, max_size, n_samples, ):
     mask = torch.ones((n, max_size), dtype=torch.float32).to(keypoints.device)
     # print(keypoints.shape, keypoints.max(), keypoints.min())
     # [n, h, w, k] -> [n, h * w]
-    mask = torch.nn.functional.relu(mask - keypoints.sum(3).view(n, -1))
+    # print((keypoints + (keypoints < 0).float()).min(), keypoints.min())
+    mask = torch.nn.functional.relu(mask - (keypoints + (keypoints < 0).float()).sum(3).view(n, -1))
+    # print(mask.sum(1))
 
     # print(torch.sum(mask, dim=1, keepdim=True) <= n_samples)
     # if the image is full occupied by object -> fill the value to avoid error, rarely happened
@@ -564,9 +566,8 @@ class WeightSampleNetE2E(NetE2E):
 
         # X_out = F.normalize(X_out, p=2, dim=-1)
         with torch.no_grad():
-            max_weight = scatter_max(frag_, X.permute(0, 2, 3, 1), n_vert=n * k).view(n, k)
+            max_weight = scatter_max_weight(frag_, n_vert=n * k).view(n, k)
         return X_out, max_weight
-
 
 
 # For VoGE-NeMo, used in voge paper
@@ -599,4 +600,5 @@ class WeightDotNetE2E(NetE2E):
 
         # X_out = F.normalize(X_out, p=2, dim=-1)
 
-        return X_out
+        max_weight = torch.max(keypoint_positions.view(n, -1, k), dim=1)[0]
+        return X_out, max_weight
