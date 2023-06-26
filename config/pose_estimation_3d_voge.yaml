@@ -18,6 +18,7 @@ inference:
 
     search_translation: false
     optimize_translation: false
+    convert_percentage: 0.6
 
     px_sample:
         min: 0.0
