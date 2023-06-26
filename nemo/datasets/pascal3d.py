@@ -160,7 +160,8 @@ class Pascal3DPlus(Dataset):
                 box_obj = bbt.from_numpy(annotation_file["box_obj"])
                 obj_mask = np.zeros(box_obj.boundary, dtype=np.float32)
                 box_obj.assign(obj_mask, 1)
-            except KeyboardInterrupt:
+            except:
+            # except KeyboardInterrupt:
                 obj_mask = np.zeros((img.size[1], img.size[0]))
 
             label = 0 if len(self.category) == 0 else self.category.index(cate)
@@ -175,7 +176,7 @@ class Pascal3DPlus(Dataset):
                 "azimuth": float(annotation_file["azimuth"]),
                 "elevation": float(annotation_file["elevation"]),
                 "theta": float(annotation_file["theta"]),
-                "distance": 5.0,
+                "distance": 5,
                 "bbox": annotation_file["box_obj"],
                 "obj_mask": obj_mask,
                 "img": img,
@@ -183,6 +184,11 @@ class Pascal3DPlus(Dataset):
                 "label": label,
                 "index": index,
             }
+            
+            if 'px' in annotation_file.keys():
+                sample['principal'] = np.array([annotation_file['px'], annotation_file['py']])
+                sample["distance"] = float(annotation_file["distance"])
+
             if 'amodal' in self.segmentation_masks:
                 sample['amodal_mask'] = annotation_file['amodal_mask']
             if 'inmodal' in self.segmentation_masks:
