@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math
 
 from nemo.models.base_model import BaseModel
 from nemo.models.feature_banks import mask_remove_near, remove_near_vertices_dist
@@ -58,7 +59,7 @@ class NeMo(BaseModel):
         
         if proj_mode != 'prepared':
             raster_conf = {
-                    'image_size': IMAGE_SIZES[cate],
+                    'image_size': cfg.dataset.image_sizes[cate],
                     **self.training_params.kp_projecter
                 }
             if raster_conf['down_rate'] == -1:
@@ -115,18 +116,20 @@ class NeMo(BaseModel):
         obj_mask = sample["obj_mask"].cuda()
         index = torch.Tensor([[k for k in range(self.num_verts)]] * img.shape[0]).cuda()
 
-        if self.projector.raster_type == 'voge':
+        kwargs_ = dict(principal=sample['principal']) if 'principal' in sample.keys() else dict()
+        if 'voge' in self.projector.raster_type:
+            self.projector.step()
             with torch.no_grad():
-                frag_ = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda())
-            features, vert_num = self.net.forward(img, keypoint_positions=frag_, obj_mask=1 - obj_mask, do_normalize=True,)
-            kpvis = vert_num > self.projector.kp_vis_thr
+                frag_ = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), **kwargs_)
+  
+            features, kpvis = self.net.forward(img, keypoint_positions=frag_, obj_mask=1 - obj_mask, do_normalize=True,)
         else:
             if self.training_params.proj_mode == 'prepared':
                 kp = sample['kp'].cuda()
                 kpvis = sample["kpvis"].cuda().type(torch.bool)
             else:
                 with torch.no_grad():
-                    kp, kpvis = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda())
+                    kp, kpvis = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), **kwargs_)
 
             features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask, do_normalize=True,)
 
@@ -136,18 +139,23 @@ class NeMo(BaseModel):
             )
         else:
             get, y_idx, noise_sim = self.memory_bank(features, index, kpvis)
+        
+        if 'voge' in self.projector.raster_type:
+            kpvis = kpvis > self.projector.kp_vis_thr
 
         get /= self.training_params.T
 
+        kappas={'pos':self.training_params.get('weight_pos', 0), 'near':self.training_params.get('weight_near', 1e5), 'clutter': -math.log(self.training_params.weight_noise)}
         # The default manner in VoGE-NeMo
         if self.training_params.remove_near_mode == 'vert':
             vert_ = self.projector.get_verts_recent()  # (B, K, 3)
             vert_dis = (vert_.unsqueeze(1) - vert_.unsqueeze(2)).pow(2).sum(-1).pow(.5)
+
             mask_distance_legal = remove_near_vertices_dist(
                 vert_dis,
                 thr=self.training_params.distance_thr,
                 num_neg=self.num_noise * self.max_group,
-                neg_weight=self.training_params.weight_noise,
+                kappas=kappas,
             )
             if mask_distance_legal.shape[0] != get.shape[0]:
                 mask_distance_legal = mask_distance_legal.expand(get.shape[0], -1, -1).contiguous()
@@ -159,15 +167,19 @@ class NeMo(BaseModel):
                 * torch.ones((img.shape[0],), dtype=torch.float32).cuda(),
                 num_neg=self.num_noise * self.max_group,
                 dtype_template=get,
-                neg_weight=self.training_params.weight_noise,
+                kappas=kappas,
             )
-        loss_main = nn.CrossEntropyLoss(reduction="none").cuda()(
-            (get.view(-1, get.shape[2]) - mask_distance_legal.view(-1, get.shape[2]))[
-                kpvis.view(-1), :
-            ],
-            y_idx.view(-1)[kpvis.view(-1)],
-        )
-        loss_main = torch.mean(loss_main)
+
+        if self.training_params.get('training_loss_type', 'nemo') == 'nemo':
+            loss_main = nn.CrossEntropyLoss(reduction="none").cuda()(
+                (get.view(-1, get.shape[2]) - mask_distance_legal.view(-1, get.shape[2]))[
+                    kpvis.view(-1), :
+                ],
+                y_idx.view(-1)[kpvis.view(-1)],
+            )
+            loss_main = torch.mean(loss_main)
+        elif self.training_params.get('training_loss_type', 'nemo') == 'kl_alan':
+            loss_main = torch.mean((get.view(-1, get.shape[2]) * mask_distance_legal.view(-1, get.shape[2]))[kpvis.view(-1), :])
 
         if self.num_noise > 0:
             loss_reg = torch.mean(noise_sim) * self.training_params.loss_reg_weight
@@ -258,6 +270,7 @@ class NeMo(BaseModel):
             feature_bank,
             rasterizer=rasterizer,
             post_process=center_crop_fun(map_shape, (render_image_size,) * 2) if self.inference_params.get('center_crop', False) else None,
+            convert_percentage=self.inference_params.get('convert_percentage', 0.5)
         ).to(self.device)
 
         (
@@ -307,6 +320,7 @@ class NeMo(BaseModel):
                 theta_pre_rendered=self.theta_pre_rendered,
                 feature_pre_rendered=self.feature_pre_rendered,
                 device=self.device,
+                principal=sample['principal'] if 'principal' in sample.keys() else None
             )
         else:
             assert len(img) == 1, "The batch size during validation should be 1"
@@ -328,6 +342,7 @@ class NeMo(BaseModel):
         for i, pred in enumerate(preds):
             if "azimuth" in sample and "elevation" in sample and "theta" in sample:
                 pred["pose_error"] = pose_error({k: sample[k][i] for k in ["azimuth", "elevation", "theta"]}, pred["final"][0])
+                # print(pred["pose_error"])
         return preds
 
     def get_ckpt(self, **kwargs):
