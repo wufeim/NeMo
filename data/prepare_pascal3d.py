@@ -1,3 +1,7 @@
+import sys
+sys.path.append('./')
+sys.path.append('../')
+
 import argparse
 import multiprocessing
 import os
@@ -18,6 +22,7 @@ from nemo.utils.pascal3d_utils import CATEGORIES
 from nemo.utils.pascal3d_utils import MESH_LEN
 
 from create_cuboid_mesh import create_meshes
+from PIL import Image
 
 mesh_para_names = [
     "azimuth",
@@ -119,6 +124,18 @@ def download_pascal3d(cfg):
             linear_coverage=0.99,
         )
 
+    mesh_d = "single" 
+    save_mesh_path = os.path.join(pascal3d_raw_path, f"CAD_{mesh_d}")
+ 
+    print(f"Generating {mesh_d} meshes at {save_mesh_path}")
+    create_meshes(
+        mesh_d,
+        os.path.join(pascal3d_raw_path, "CAD"),
+        os.path.join(pascal3d_raw_path, f"CAD_{mesh_d}"),
+        number_vertices=1000,
+        linear_coverage=0.99,
+    )
+
     if hasattr(cfg, 'segmentation_masks') and len(getattr(cfg, 'segmentation_masks')) > 0:
         seg_data_path = get_abs_path(cfg.seg_data_path)
         if os.path.isdir(seg_data_path):
@@ -184,9 +201,9 @@ def get_target_distances():
 def prepare_pascal3d(cfg, workers=4):
     pascal3d_data_path = get_abs_path(cfg.root_path)
     dtd_raw_path = get_abs_path(cfg.dtd_raw_path)
-    if os.path.isdir(pascal3d_data_path):
-        print(f"Found prepared PASCAL3D+ dataset at {pascal3d_data_path}")
-        return
+    # if os.path.isdir(pascal3d_data_path):
+    #     print(f"Found prepared PASCAL3D+ dataset at {pascal3d_data_path}")
+    #     return
 
     if cfg.pad_texture:
         dtd_mat = sio.loadmat(os.path.join(dtd_raw_path, "imdb", "imdb.mat"))
@@ -255,7 +272,7 @@ def worker(params):
     prepare_seg = hasattr(cfg, 'segmentation_masks') and len(getattr(cfg, 'segmentation_masks')) > 0
     if prepare_seg:
         seg_data_path = get_abs_path(cfg.seg_data_path)
-
+    
     this_size = cfg.image_sizes[cate]
     out_shape = [
         ((this_size[0] - 1) // 32 + 1) * 32,
