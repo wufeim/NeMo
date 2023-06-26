@@ -1,6 +1,6 @@
 name: pascal3d
 class_name: nemo.datasets.pascal3d.Pascal3DPlus
-root_path: data/PASCAL3D_NeMo_ori
+root_path: data/PASCAL3D_ORI
 
 pascal3d_raw_path: data/PASCAL3D+_release1.1
 pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
