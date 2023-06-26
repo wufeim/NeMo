@@ -143,6 +143,7 @@ Models
 - [x] NeMo (Shipped: *Dec 08 2022*)
 - [x] NeMo-6D (Shipped: *Dec 09 2022*)
 - [x] ResNet50-General (Shipped: *Dec 09 2022*)
+- [x] VoGE Renderer (Shipped: *June 25 2023*)
 - [ ] NeMo-Cls
 - [ ] Domain adaptation (from synthetic to real)
 - [ ] StarMap
@@ -150,7 +151,6 @@ Models
 - [ ] Faster R-CNN
 - [ ] Mask R-CNN
 - [ ] Transformers
-- [ ] VoGE Renderer
 
 Datasets
 ^^^^^^^^
