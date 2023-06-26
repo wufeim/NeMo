@@ -9,6 +9,7 @@ try:
     from VoGE.Renderer import GaussianRenderSettings, GaussianRenderer
     from VoGE.Meshes import GaussianMeshesNaive as GaussianMesh
     from VoGE.Converter.Converters import naive_vertices_converter
+    from VoGE.Utils import ind_fill
 
     enable_voge = True
 except:
@@ -65,15 +66,19 @@ class PackedRaster():
                 self.meshes = Meshes(verts=to_tensor(object_mesh['verts']), faces=to_tensor(object_mesh['faces'])).to(device)
             else:
                 self.meshes = Meshes(verts=to_tensor(object_mesh[0]), faces=to_tensor(object_mesh[1])).to(device)
-        if raster_type == 'voge':
+        if raster_type == 'voge' or raster_type == 'vogew':
             assert enable_voge, 'VoGE must be install to utilize voge-nemo.'
             self.kp_vis_thr = raster_configs.get('kp_vis_thr', 0.25)
-            render_setting = GaussianRenderSettings(image_size=feature_size, max_point_per_bin=-1)
+            render_setting = GaussianRenderSettings(image_size=feature_size, max_point_per_bin=-1, max_assign=raster_configs.get('max_assign', 20))
             self.render = GaussianRenderer(render_settings=render_setting, cameras=cameras).to(device)
             self.meshes = GaussianMesh(*naive_vertices_converter(*object_mesh, percentage=0.5)).to(device)
 
+    def step(self):
+        if self.raster_type == 'voge' or self.raster_type == 'vogew':
+            self.kp_vis_thr -= 0.001 / 8
+
     def get_verts_recent(self, ):
-        if self.raster_type == 'voge':
+        if self.raster_type == 'voge' or self.raster_type == 'vogew':
             return self.meshes.verts[None]
         if self.mesh_mode == 'single':
             return self.meshes.verts_padded()
@@ -86,6 +91,10 @@ class PackedRaster():
         this_cameras.R = R
         this_cameras.T = T
 
+        if kwargs.get('principal', None) is not None:
+            this_cameras._N = R.shape[0]
+            this_cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device)
+
         if self.mesh_mode == 'single' and self.raster_type == 'near':
             return get_one_standard(self.raster, this_cameras, self.meshes, func_of_mesh=func_single, **kwargs, **self.kwargs)
         if self.raster_type == 'voge':
@@ -93,8 +102,20 @@ class PackedRaster():
             frag = self.render(self.meshes, R=R, T=T)
             get_dict = frag.to_dict()
             get_dict['start_idx'] = torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device) 
-
+            # if torch.any( torch.nn.functional.relu(1 - frag.vert_weight.sum(3).view(R.shape[0], -1)).sum(1) < 1 ):
             return get_dict
+        if self.raster_type == 'vogew':
+            # Return voge.fragments
+            frag = self.render(self.meshes, R=R, T=T)
+            get_dict = frag.to_dict()
+            get_dict['start_idx'] = torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device) 
+            get_weight = torch.zeros((*frag.vert_index.shape[0:-1], self.meshes.verts.shape[0] + 1), device=frag.vert_index.device)
+            ind = frag.vert_index.long() - torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device)[:, None, None, None] * self.meshes.verts.shape[0]
+            ind[ind < 0] = -1
+            # weight_ = torch.cat((torch.zeros((*frag.vert_index.shape[0:-1], 1), device=frag.vert_index.device), frag.vert_weight, ), dim=-1)
+            ind += 1
+            get_weight = ind_fill(get_weight, ind, frag.vert_weight, dim=3)
+            return get_weight[..., 1:]
 
 
 def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
@@ -150,9 +171,6 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
 
     #     return im
 
-    # foo(tt, vis_mask).show()
-    # import ipdb
-    # ipdb.set_trace()
     return project_verts, vis_mask & inner_mask
 
 
