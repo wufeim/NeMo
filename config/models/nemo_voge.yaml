@@ -13,7 +13,7 @@ training:
     separate_bank: false
     weight_noise: 0.005
     loss_reg_weight: 0.1
-    train_accumulate: 10
+    train_accumulate: 1
     T: 0.07
     proj_mode: runtime_voge
     remove_near_mode: vert
@@ -27,6 +27,7 @@ training:
     scheduler:
         class_name: torch.optim.lr_scheduler.MultiStepLR
         milestones:
+            - 200
             - 400
             - 600
         gamma: 0.2
@@ -35,6 +36,7 @@ training:
         type: voge
         down_rate: -1
         dist_thr: 0.01
+        max_assign: 50
 
 inference:
     init_mode: 3d_batch
@@ -49,7 +51,7 @@ inference:
     raster_settings:
         class_name: VoGE.Renderer.GaussianRenderSettings
         max_point_per_bin: -1
-        max_assign: 25
+        max_assign: 50
 
     rasterizer:
         class_name: VoGE.Renderer.GaussianRenderer
