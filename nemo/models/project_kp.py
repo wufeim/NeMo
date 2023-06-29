@@ -130,7 +130,9 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
 
     # (B, K, 2)
     project_verts = camera.transform_points(verts_)[..., 0:2].flip(-1)
-    project_verts = (camera.image_size - project_verts)
+    
+    # Don't know why, hack. Checked by visualization
+    project_verts = 2 * camera.principal_point[:, None].float().flip(-1) - project_verts
 
     # (B, K)
     inner_mask = torch.min(camera.image_size.unsqueeze(1) > project_verts, dim=-1)[0] & torch.min(0 < project_verts, dim=-1)[0]
