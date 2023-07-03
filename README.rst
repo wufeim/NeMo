@@ -9,7 +9,7 @@ NeMo
         :target: https://neural-mesh-model.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
-This is the repo for the series works on `Neural Mesh Models <https://arxiv.org/pdf/2101.12378.pdf>`_. In this repo, we implement `3D object pose estimation <https://arxiv.org/pdf/2101.12378.pdf>`_, `6D pose object estimation <https://arxiv.org/pdf/2209.05624.pdf>`_, `object classification <https://arxiv.org/pdf/2305.14668.pdf>`_, and `cross domain training <https://arxiv.org/pdf/2306.00118.pdf>`_. The original implementation of NeMo is `here <https://github.com/Angtian/NeMo>`_.
+This is the repo for the series works on `Neural Mesh Models <https://arxiv.org/pdf/2101.12378.pdf>`_. In this repo, we implement `3D object pose estimation <https://arxiv.org/pdf/2101.12378.pdf>`_, `3D object pose estimation via VoGE renderer <https://arxiv.org/pdf/2205.15401.pdf>`_, `6D pose object estimation <https://arxiv.org/pdf/2209.05624.pdf>`_, `object classification <https://arxiv.org/pdf/2305.14668.pdf>`_, and `cross domain training <https://arxiv.org/pdf/2306.00118.pdf>`_. The original implementation of NeMo is `here <https://github.com/Angtian/NeMo>`_.
 
 Features
 --------
