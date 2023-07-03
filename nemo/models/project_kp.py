@@ -4,7 +4,6 @@ from nemo.utils import rotation_theta
 from pytorch3d.structures import Meshes
 from pytorch3d.ops.interp_face_attrs import interpolate_face_attributes
 
-# if True:
 try:
     from VoGE.Renderer import GaussianRenderSettings, GaussianRenderer
     from VoGE.Meshes import GaussianMeshesNaive as GaussianMesh
@@ -50,6 +49,7 @@ class PackedRaster():
 
         self.mesh_mode = mesh_mode
         self.kwargs = raster_configs
+        self.down_rate = raster_configs.get('down_rate')
 
         image_size = raster_configs.get('image_size')
         feature_size = (image_size[0] // raster_configs.get('down_rate'), image_size[1] // raster_configs.get('down_rate'))
@@ -75,7 +75,7 @@ class PackedRaster():
 
     def step(self):
         if self.raster_type == 'voge' or self.raster_type == 'vogew':
-            self.kp_vis_thr -= 0.001 / 8
+            self.kp_vis_thr -= 0.001 / 5
 
     def get_verts_recent(self, ):
         if self.raster_type == 'voge' or self.raster_type == 'vogew':
@@ -93,7 +93,7 @@ class PackedRaster():
 
         if kwargs.get('principal', None) is not None:
             this_cameras._N = R.shape[0]
-            this_cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device)
+            this_cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
 
         if self.mesh_mode == 'single' and self.raster_type == 'near':
             return get_one_standard(self.raster, this_cameras, self.meshes, func_of_mesh=func_single, **kwargs, **self.kwargs)
@@ -128,9 +128,9 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     # Calculate the camera location
     cam_loc = -torch.matmul(torch.inverse(R), T[..., None])[:, :, 0]
 
-    # (B, K, 2)
+    # (B, K, 2), in yx format
     project_verts = camera.transform_points(verts_)[..., 0:2].flip(-1)
-    
+
     # Don't know why, hack. Checked by visualization
     project_verts = 2 * camera.principal_point[:, None].float().flip(-1) - project_verts
 
@@ -170,10 +170,8 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     #     for k, vv in zip(kps[0], vis_mask_[0]):
     #         this_bbox = bbt.box_by_shape((point_size, point_size), (int(k[0]), int(k[1])), image_boundary=im.size[::-1])
     #         imd.ellipse(this_bbox.pillow_bbox(), fill=((0, 255, 0) if vv.item() else (255, 0, 0)))
-
     #     return im
-
+    # foo(tt, vis_mask).save('ttr.jpg')
+    # import ipdb
+    # ipdb.set_trace()
     return project_verts, vis_mask & inner_mask
-
-
-
