@@ -9,6 +9,14 @@ PASCAL3D+ and Occluded PASCAL3D+
    python3 prepare_pascal3d.py \
        --config config/datasets/pascal3d_runtime.yaml
 
+Prepare data without centering and resize:
+
+.. code::
+
+   python3 prepare_pascal3d.py \
+       --config config/datasets/pascal3d_ori.yaml
+
+
 **Parameters.** The parameters are loaded from the :code:`.yaml` files.
 
 * :code:`pad_texture`: If :code:`True`, use describable textures when padding.
