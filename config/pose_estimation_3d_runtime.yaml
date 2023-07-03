@@ -48,7 +48,7 @@ inference:
     pre_rendering_thr: 80
     blur_radius: 0.0
     inter_mode: bilinear
-    epochs: 150
+    epochs: 300
     translation_scale: 0.1
 
     optimizer:
