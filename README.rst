@@ -73,12 +73,12 @@ Environment (manual setup)
    pip install git+https://github.com/Angtian/VoGE.git
    pip install wget gdown BboxTools opencv-python xatlas pycocotools seaborn wandb
 
-
-5. Install NeMo:
+3. (Optional) Install :code:`VoGE` (see `github.com/Angtian/VoGE <https://github.com/Angtian/VoGE>`_):
 
 .. code::
 
-   pip install -e .
+   pip install git+https://github.com/Angtian/VoGE.git
+
 
 Environment (from `yml`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
