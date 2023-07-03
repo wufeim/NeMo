@@ -168,8 +168,8 @@ def prepare_pascal3d_sample(
                     img = cv2.resize(img, dsize=dsize)
 
                     center = np.array([img.shape[0] // 2, img.shape[1] // 2]).astype(np.int32)
-                    new_px = float(get_anno(record, "principal", idx=obj_id)[0]) * resize_rate + (out_shape[1] - int(img.shape[1] * resize_rate)) / 2
-                    new_py = float(get_anno(record, "principal", idx=obj_id)[1]) * resize_rate + (out_shape[0] - int(img.shape[0] * resize_rate)) / 2
+                    new_px = float(get_anno(record, "principal", idx=obj_id)[0]) * resize_rate + (out_shape[1] - int(img.shape[1])) / 2
+                    new_py = float(get_anno(record, "principal", idx=obj_id)[1]) * resize_rate + (out_shape[0] - int(img.shape[0])) / 2
 
                 box1 = bbt.box_by_shape(out_shape, center)
                 if (
