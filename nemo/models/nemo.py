@@ -51,7 +51,7 @@ class NeMo(BaseModel):
         self.mesh_path = mesh_path.format(cate) if "{:s}" in mesh_path else mesh_path
         self.training_params = training
         self.inference_params = inference
-
+        self.dataset_config = cfg.dataset
         self.accumulate_steps = 0
 
         self.build()
@@ -59,7 +59,7 @@ class NeMo(BaseModel):
         
         if proj_mode != 'prepared':
             raster_conf = {
-                    'image_size': cfg.dataset.image_sizes[cate],
+                    'image_size': self.dataset_config.image_sizes[cate],
                     **self.training_params.kp_projecter
                 }
             if raster_conf['down_rate'] == -1:
@@ -107,6 +107,7 @@ class NeMo(BaseModel):
 
     def step_scheduler(self):
         self.scheduler.step()
+        self.projector.step()
 
     def train(self, sample):
         self.net.train()
@@ -118,7 +119,6 @@ class NeMo(BaseModel):
 
         kwargs_ = dict(principal=sample['principal']) if 'principal' in sample.keys() else dict()
         if 'voge' in self.projector.raster_type:
-            self.projector.step()
             with torch.no_grad():
                 frag_ = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), **kwargs_)
   
@@ -133,6 +133,8 @@ class NeMo(BaseModel):
 
             features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask, do_normalize=True,)
 
+        # import ipdb
+        # ipdb.set_trace()
         if self.training_params.separate_bank:
             get, y_idx, noise_sim = self.memory_bank(
                 features.to(self.ext_gpu), index.to(self.ext_gpu), kpvis.to(self.ext_gpu)
@@ -169,7 +171,6 @@ class NeMo(BaseModel):
                 dtype_template=get,
                 kappas=kappas,
             )
-
         if self.training_params.get('training_loss_type', 'nemo') == 'nemo':
             loss_main = nn.CrossEntropyLoss(reduction="none").cuda()(
                 (get.view(-1, get.shape[2]) - mask_distance_legal.view(-1, get.shape[2]))[
@@ -241,7 +242,7 @@ class NeMo(BaseModel):
             0 : self.memory_bank.memory.shape[0]
         ].to(self.device)
 
-        image_h, image_w = IMAGE_SIZES[self.cate]
+        image_h, image_w = self.dataset_config.image_sizes[self.cate]
         # render_image_size = max(image_h, image_w) // self.down_sample_rate
         map_shape = (image_h // self.down_sample_rate, image_w // self.down_sample_rate)
 
@@ -285,13 +286,16 @@ class NeMo(BaseModel):
         self.init_mode = self.cfg.inference.get('init_mode', '3d_batch')
 
         if self.init_mode == '3d_batch':
+            assert distance_samples.shape[0] == 1
             self.feature_pre_rendered, self.cam_pos_pre_rendered, self.theta_pre_rendered = get_pre_render_samples(
                 self.inter_module,
                 azum_samples=azimuth_samples,
                 elev_samples=elevation_samples,
                 theta_samples=theta_samples,
+                set_distance=distance_samples[0],
                 device=self.device
             )
+            self.record_distance = distance_samples[0]
 
         else:
             self.poses, self.kp_coords, self.kp_vis = pre_compute_kp_coords(
@@ -307,7 +311,6 @@ class NeMo(BaseModel):
 
         sample = self.transforms(sample)
         img = sample["img"].to(self.device)
-
         with torch.no_grad():
             feature_map = self.net.module.forward_test(img)
         if self.init_mode == '3d_batch':
@@ -320,7 +323,10 @@ class NeMo(BaseModel):
                 theta_pre_rendered=self.theta_pre_rendered,
                 feature_pre_rendered=self.feature_pre_rendered,
                 device=self.device,
-                principal=sample['principal'] if 'principal' in sample.keys() else None
+                principal=sample['principal'].float().to(self.device) / self.down_sample_rate if ('principal' in sample.keys() and self.cfg.inference.get('realign', False)) else None,
+                distance_source=sample['distance'].to(feature_map.device),
+                distance_target=self.record_distance * torch.ones(feature_map.shape[0]).to(feature_map.device),
+                pre_render=self.cfg.inference.get('pre_render', True)
             )
         else:
             assert len(img) == 1, "The batch size during validation should be 1"
@@ -339,10 +345,13 @@ class NeMo(BaseModel):
         if isinstance(preds, dict):
             preds = [preds]
         
+        to_print = []
         for i, pred in enumerate(preds):
             if "azimuth" in sample and "elevation" in sample and "theta" in sample:
                 pred["pose_error"] = pose_error({k: sample[k][i] for k in ["azimuth", "elevation", "theta"]}, pred["final"][0])
                 # print(pred["pose_error"])
+                to_print.append(pred["pose_error"])
+        print(to_print)
         return preds
 
     def get_ckpt(self, **kwargs):
@@ -415,3 +424,28 @@ class NeMo(BaseModel):
             pred['pred_mask'] = new_mask
 
         return pred
+
+    def fix_init(self, sample):
+        self.net.train()
+        sample = self.transforms(sample)
+
+        img = sample['img'].cuda()
+        obj_mask = sample["obj_mask"].cuda()
+        index = torch.Tensor([[k for k in range(self.num_verts)]] * img.shape[0]).cuda()
+
+        kwargs_ = dict(principal=sample['principal']) if 'principal' in sample.keys() else dict()
+        if 'voge' in self.projector.raster_type:
+            with torch.no_grad():
+                frag_ = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), **kwargs_)
+  
+            features, kpvis = self.net.forward(img, keypoint_positions=frag_, obj_mask=1 - obj_mask, do_normalize=True,)
+        else:
+            if self.training_params.proj_mode == 'prepared':
+                kp = sample['kp'].cuda()
+                kpvis = sample["kpvis"].cuda().type(torch.bool)
+            else:
+                with torch.no_grad():
+                    kp, kpvis = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), **kwargs_)
+
+            features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask, do_normalize=True,)
+        return features.detach(), kpvis.detach()
