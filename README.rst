@@ -70,7 +70,6 @@ Environment (manual setup)
    conda install pillow
    conda install -c conda-forge timm tqdm pyyaml transformers
    pip install git+https://github.com/NVlabs/nvdiffrast/
-   pip install git+https://github.com/Angtian/VoGE.git
    pip install wget gdown BboxTools opencv-python xatlas pycocotools seaborn wandb
 
 3. (Optional) Install :code:`VoGE` (see `github.com/Angtian/VoGE <https://github.com/Angtian/VoGE>`_):
