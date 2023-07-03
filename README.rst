@@ -212,43 +212,6 @@ Documentation
 
 See `documentation <https://wufeim.github.io/NeMo/documentation.html>`_.
 
-Roadmap
--------
-
-Models
-^^^^^^
-
-- [x] NeMo (Shipped: *Dec 08 2022*)
-- [x] NeMo-6D (Shipped: *Dec 09 2022*)
-- [x] ResNet50-General (Shipped: *Dec 09 2022*)
-- [x] VoGE Renderer (Shipped: *June 25 2023*)
-- [ ] NeMo-Cls
-- [ ] Domain adaptation (from synthetic to real)
-- [ ] StarMap
-- [ ] PASCAL3D-Specific
-- [ ] Faster R-CNN
-- [ ] Mask R-CNN
-- [ ] Transformers
-
-Datasets
-^^^^^^^^
-
-- [x] PASCAL3D+ (Shipped: *Dec 06 2022*)
-- [x] Occluded PASCAL3D+ (Shipped: *Dec 06 2022*)
-- [x] 6D training data (Shipped: *Dec 07 2022*)
-- [ ] OOD-CV
-- [ ] SyntheticPASCAL3D+
-- [ ] ObjectNet3D
-
-Misc
-^^^^
-
-- [x] Rewrite training and evaluate entry point (Shipped: *Dec 11 2022*)
-- [x] Project page (Shipped: *Dec 11 2022*)
-- [ ] Configuration hierarchy
-- [ ] Visualization tools
-- [x] Inference demo
-- [ ] Save predictions for reuse
 
 Citation
 --------
