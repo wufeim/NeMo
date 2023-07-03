@@ -114,6 +114,36 @@ Train and evaluate a neural mesh model (:code:`NeMo`) on PASCAL3D+ for 3D pose e
        --save_dir exp/pose_estimation_3d_nemo_car \
        --checkpoint exp/pose_estimation_3d_nemo_car/ckpts/model_800.pth
 
+NeMo with VoGE:
+
+.. code::
+
+   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
+       --cate car \
+       --config config/pose_estimation_3d_voge.yaml \
+       --save_dir exp/pose_estimation_3d_voge_car
+
+   CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
+       --cate car \
+       --config config/pose_estimation_3d_voge.yaml \
+       --save_dir exp/pose_estimation_3d_voge_car \
+       --checkpoint exp/pose_estimation_3d_voge_car/ckpts/model_800.pth
+
+NeMo on PASCAL3D+ without scaling during data pre-processing:
+
+.. code::
+
+   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
+       --cate car \
+       --config config/pose_estimation_3d_runtime_ori.yaml \
+       --save_dir exp/pose_estimation_3d_ori_car
+
+   CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
+       --cate car \
+       --config config/pose_estimation_3d_runtime_ori.yaml \
+       --save_dir exp/pose_estimation_3d_ori_car \
+       --checkpoint exp/pose_estimation_3d_ori_car/ckpts/model_800.pth
+
 Train and evaluate a regression-based model (:code:`ResNet50-General`) on PASCAL3D+ for 3D pose estimation:
 
 .. code::
@@ -128,6 +158,22 @@ Train and evaluate a regression-based model (:code:`ResNet50-General`) on PASCAL
        --config config/pose_estimation_3d_resnet50_general.yaml \
        --save_dir exp/pose_estimation_3d_resnet50_general \
        --checkpoint exp/pose_estimation_3d_resnet50_general/ckpts/model_90.pth
+
+Pre-trained Models
+-------------
+
+The pro-trained model for NeMo model:
+https://drive.google.com/file/d/14fByOZs_Zzd-97Ulk2BKJhVNFKAnFWvg/view?usp=sharing
+
++-------------+-------+-------+------+--------+------+------+-------+-------+-------+
+| Cate  | plane | bike  | boat | bottle | bus  | car  | chair | table | mbike |
++=============+=======+=======+======+========+======+======+=======+=======+=======+
+| Pi/6  | 86.9  | 80.3  | 77.4 | 90     | 95.3 | 98.9 | 89.1  | 80.2  | 86.6  |
+| Pi/18 | 55.3  | 30.9  | 50.2 | 56.9   | 91.5 | 96.5 | 56.7  | 63.1  | 33.2  |
+| Med   | 8.94  | 15.51 | 9.95 | 8.24   | 2.66 | 2.71 | 8.68  | 6.96  | 13.34 |
++-------------+-------+-------+------+--------+------+------+-------+-------+-------+
+
+
 
 Documentation
 -------------
