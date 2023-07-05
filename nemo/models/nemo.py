@@ -285,17 +285,22 @@ class NeMo(BaseModel):
 
         self.init_mode = self.cfg.inference.get('init_mode', '3d_batch')
 
-        if self.init_mode == '3d_batch':
-            assert distance_samples.shape[0] == 1
+        if 'batch' in self.init_mode:
+            dof = int(self.init_mode.split('d_')[0])
             self.feature_pre_rendered, self.cam_pos_pre_rendered, self.theta_pre_rendered = get_pre_render_samples(
                 self.inter_module,
                 azum_samples=azimuth_samples,
                 elev_samples=elevation_samples,
                 theta_samples=theta_samples,
-                set_distance=distance_samples[0],
+                distance_samples=distance_samples,
                 device=self.device
             )
-            self.record_distance = distance_samples[0]
+            if dof == 3:
+                assert distance_samples.shape[0] == 1
+                self.record_distance = distance_samples[0]
+            if dof == 6:
+                self.samples_principal = torch.stack((torch.from_numpy(px_samples).view(-1, 1).expand(-1, py_samples.shape[0]) * map_shape[1], 
+                                                  torch.from_numpy(py_samples).view(1, -1).expand(px_samples.shape[0], -1) * map_shape[0]), ).view(2, -1).T.to(self.device)
 
         else:
             self.poses, self.kp_coords, self.kp_vis = pre_compute_kp_coords(
@@ -313,7 +318,15 @@ class NeMo(BaseModel):
         img = sample["img"].to(self.device)
         with torch.no_grad():
             feature_map = self.net.module.forward_test(img)
-        if self.init_mode == '3d_batch':
+        if 'batch' in self.init_mode:
+            dof = int(self.init_mode.split('d_')[0])
+            if dof == 6:
+                principal = self.samples_principal
+            elif ('principal' in sample.keys()) and self.cfg.inference.get('realign', False):
+                principal = sample['principal'].float().to(self.device) / self.down_sample_rate
+            else:
+                principal = None
+            
             preds = batch_solve_pose(
                 self.cfg,
                 feature_map,
@@ -323,10 +336,11 @@ class NeMo(BaseModel):
                 theta_pre_rendered=self.theta_pre_rendered,
                 feature_pre_rendered=self.feature_pre_rendered,
                 device=self.device,
-                principal=sample['principal'].float().to(self.device) / self.down_sample_rate if ('principal' in sample.keys() and self.cfg.inference.get('realign', False)) else None,
-                distance_source=sample['distance'].to(feature_map.device),
-                distance_target=self.record_distance * torch.ones(feature_map.shape[0]).to(feature_map.device),
-                pre_render=self.cfg.inference.get('pre_render', True)
+                principal=principal,
+                distance_source=sample['distance'].to(feature_map.device) if dof == 3 else torch.ones(feature_map.shape[0]).to(feature_map.device),
+                distance_target=self.record_distance * torch.ones(feature_map.shape[0]).to(feature_map.device) if dof == 3 else torch.ones(feature_map.shape[0]).to(feature_map.device),
+                pre_render=self.cfg.inference.get('pre_render', True),
+                dof=dof
             )
         else:
             assert len(img) == 1, "The batch size during validation should be 1"
