@@ -39,8 +39,6 @@ training:
         max_assign: 50
 
 inference:
-    init_mode: 3d_batch
-
     cameras:
         class_name: pytorch3d.renderer.PerspectiveCameras
         in_ndc: false
