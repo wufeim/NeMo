@@ -1,7 +1,8 @@
 # Author: Angtian Wang
 # Adding support for batch operation 
 # Perform in original NeMo manner 
-# Support 3D-4D-6D pose as NeMo and VoGE-NeMo, 
+# Support 3D pose as NeMo and VoGE-NeMo, 
+# Not support 6D pose in current version
 
 
 import numpy as np
@@ -224,14 +225,16 @@ def solve_pose(
 
     # 3 DoF or 4 DoF
     if dof == 3 or dof == 4:
-        # Not center images
+        # Not centered images
         if principal is not None:
             maps_target_shape = inter_module.rasterizer.cameras.image_size 
             t_feature_map = align_no_centered(maps_source=feature_map, principal_source=principal, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, **kwargs)
             t_clutter_score = align_no_centered(maps_source=clutter_score[:, None], principal_source=principal, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, **kwargs).squeeze(1)
-            inter_module.rasterizer.cameras.principal_point = principal.float()
+            init_principal = principal.float()
             inter_module.rasterizer.cameras._N = feature_map.shape[0]
+        # Centered images
         else:
+            init_principal = inter_module.rasterizer.cameras.principal_point
             t_feature_map = feature_map
             t_clutter_score = clutter_score
 
@@ -293,11 +296,13 @@ def solve_pose(
 
     C = torch.nn.Parameter(init_C, requires_grad=True)
     theta = torch.nn.Parameter(init_theta, requires_grad=True)
-    if dof == 6:
+    if dof == 6 or cfg.get('optimize_translation', False):
         principals = torch.nn.Parameter(init_principal, requires_grad=True)
         inter_module.rasterizer.cameras.principal_point = principals
         optim = construct_class_by_name(**cfg.inference.optimizer, params=[C, theta, principals])
     else:
+        principals = init_principal
+        inter_module.rasterizer.cameras.principal_point = init_principal
         optim = construct_class_by_name(**cfg.inference.optimizer, params=[C, theta])
 
     scheduler_kwargs = {"optimizer": optim}
@@ -336,6 +341,7 @@ def solve_pose(
             elevation_preds[i].item(),
             azimuth_preds[i].item(),
         )
+        this_principal = principals[i]
         with torch.no_grad():
             this_loss = loss_fg_bg(object_score[i, None], clutter_score[i, None], )
         refined = [{
@@ -344,8 +350,8 @@ def solve_pose(
                 "theta": theta_pred,
                 "distance": distance_pred,
                 "principal": [
-                    hm_w * cfg.model.down_sample_rate / 2,
-                    hm_h * cfg.model.down_sample_rate / 2,
+                    this_principal[0].item(),
+                    this_principal[1].item(),
                 ],
                 "score": this_loss.item(),}]
         preds.append(dict(final=refined, **{k: pred[k] / b for k in pred.keys()}))
