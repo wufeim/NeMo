@@ -13,8 +13,10 @@ training:
     remove_no_bg: 8
 
 inference:
+    init_mode: 3d_batch
     loss: nemo.models.solve_pose.loss_fg_bg
     batch_size: 20 # set to 20 for 24GB vmem
+    realign: true
 
     search_translation: false
     optimize_translation: false
@@ -50,7 +52,6 @@ inference:
     inter_mode: bilinear
     epochs: 300
     translation_scale: 0.1
-    realign: true
     pre_render: true
 
     optimizer:
