@@ -1,8 +1,7 @@
 # Author: Angtian Wang
 # Adding support for batch operation 
 # Perform in original NeMo manner 
-# Support 3D pose as NeMo and VoGE-NeMo, 
-# Not support 6D pose in current version
+# Support 3D-4D-6D pose as NeMo and VoGE-NeMo, 
 
 
 import numpy as np
@@ -34,15 +33,15 @@ def loss_fg_bg(obj_s, clu_s, reduce_method=lambda x: torch.mean(x)):
     )
 
 
-def get_pre_render_samples(inter_module, azum_samples, elev_samples, theta_samples, set_distance=5, device='cpu',):
+def get_pre_render_samples(inter_module, azum_samples, elev_samples, theta_samples, distance_samples=[5], device='cpu',):
     with torch.no_grad():
         get_c = []
         get_theta = []
-        get_samples = [[azum_, elev_, theta_] for azum_ in azum_samples for elev_ in elev_samples for theta_ in theta_samples]
+        get_samples = [[azum_, elev_, theta_, distance_] for azum_ in azum_samples for elev_ in elev_samples for theta_ in theta_samples for distance_ in distance_samples]
         out_maps = []
         for sample_ in get_samples:
             theta_ = torch.ones(1, device=device) * sample_[2]
-            C = camera_position_from_spherical_angles(set_distance, sample_[1], sample_[0], degrees=False, device=device)
+            C = camera_position_from_spherical_angles(sample_[3], sample_[1], sample_[0], degrees=False, device=device)
 
             projected_map = inter_module(C, theta_)
             out_maps.append(projected_map)
@@ -57,7 +56,7 @@ def get_pre_render_samples(inter_module, azum_samples, elev_samples, theta_sampl
 
 
 @torch.no_grad()
-def align_no_centered(maps_source, distance_source, principal_source, maps_target_shape, distance_target, principal_target):
+def align_no_centered(maps_source, distance_source, principal_source, maps_target_shape, distance_target, principal_target, padding_mode='zeros'):
     """
     maps_source: [n, c, h1, w1]
     distance_source: [n, ]
@@ -81,33 +80,7 @@ def align_no_centered(maps_source, distance_source, principal_source, maps_targe
 
     grids = torch.cat([grid_x[..., None], grid_y[..., None]], dim=3)
 
-    return torch.nn.functional.grid_sample(maps_source, grids)
-
-
-def get_init_pos(inter_module, samples_pos, samples_theta, predicted_maps, clutter_scores=None, reset_distance=None):
-    if clutter_scores is None:
-        def cal_sim(projected_map, predicted_map, clutter_map):
-            object_score = torch.einsum('nchw,nchw->nhw', projected_map, predicted_map)
-            return loss_fg_only(object_score, reduce_method=lambda x: torch.mean(x, dim=(1, 2)))
-
-    else:
-        def cal_sim(projected_map, predicted_map, clutter_map):
-            object_score = torch.einsum('nchw,nchw->nhw', projected_map, predicted_map)
-            return loss_fg_bg(object_score, clutter_map, reduce_method=lambda x: torch.mean(x, dim=(1, 2)))
-
-    with torch.no_grad():
-        out_scores = []
-        for pos_, theta_ in zip(samples_pos, samples_theta):
-            if reset_distance is not None:
-                maps_ = inter_module(torch.nn.functional.normalize(pos_[None]) * reset_distance[:, None], theta_[None].expand(reset_distance.shape[0], -1))
-            else:
-                maps_ = inter_module(pos_[None], theta_[None])
-            scores_ = cal_sim(maps_, predicted_maps, clutter_scores)
-            out_scores.append(scores_)
-        use_indexes = torch.min(torch.stack(out_scores), dim=0)[1]
-
-    # [n, 3] -> [b, 3]
-    return torch.gather(samples_pos, dim=0, index=use_indexes.view(-1, 1).expand(-1, 3)), torch.gather(samples_theta, dim=0, index=use_indexes)
+    return torch.nn.functional.grid_sample(maps_source, grids, padding_mode=padding_mode)
 
 
 def get_init_pos_rendered(samples_maps, samples_pos, samples_theta, predicted_maps, clutter_scores=None, batch_size=32):
@@ -142,8 +115,73 @@ def get_init_pos_rendered(samples_maps, samples_pos, samples_theta, predicted_ma
         use_indexes = torch.min(get_loss, dim=0)[1]
 
     # [n, 3] -> [b, 3]
-    return torch.gather(samples_pos, dim=0, index=use_indexes.view(-1, 1).expand(-1, 3)), torch.gather(samples_theta, dim=0, index=use_indexes)
-    # return samples_pos[use_indexes], samples_theta[use_indexes]
+    return torch.gather(samples_pos, dim=0, index=use_indexes.view(-1, 1).expand(-1, 3)), torch.gather(samples_theta, dim=0, index=use_indexes), torch.min(get_loss, dim=0)[0]
+
+
+def get_init_pos_rendered_dim0(samples_maps, samples_pos, samples_theta, predicted_maps, clutter_scores=None, batch_size=32):
+    """
+    samples_pos: [n, 3]
+    samples_theta: [n, ]
+    samples_map: [n, c, h, w]
+    predicted_map: [b, c, h, w]
+    clutter_score: [b, h, w]
+    """
+    n = samples_maps.shape[0]
+    if clutter_scores is None:
+        def cal_sim(projected_map, predicted_map, clutter_map):
+            object_score = torch.einsum('nchw,chw->nhw', projected_map, predicted_map)
+            return loss_fg_only(object_score, reduce_method=lambda x: torch.mean(x, dim=(1, 2)))
+
+    else:
+        def cal_sim(projected_map, predicted_map, clutter_map):
+            object_score = torch.einsum('nchw,chw->nhw', projected_map, predicted_map)
+            return loss_fg_bg(object_score, clutter_map, reduce_method=lambda x: torch.mean(x, dim=(1, 2)))
+
+    batchifier = Batchifier(batch_size=batch_size, batch_args=('projected_map', ), target_dims=(0, ))
+
+    with torch.no_grad():
+        # [n, b, c, h, w] -> [n, b]
+        get_loss = []
+
+        for i in range(predicted_maps.shape[0]):
+            # [n]
+            get_loss.append(batchifier(cal_sim)(projected_map=samples_maps.squeeze(1), predicted_map=predicted_maps[i], clutter_map=clutter_scores[None, i]))
+
+        # b * [n, ] -> [n, b]
+        get_loss = torch.stack(get_loss).T
+
+        # [b]
+        use_indexes = torch.min(get_loss, dim=0)[1]
+
+    # [n, 3] -> [b, 3]
+    return torch.gather(samples_pos, dim=0, index=use_indexes.view(-1, 1).expand(-1, 3)), torch.gather(samples_theta, dim=0, index=use_indexes), torch.min(get_loss, dim=0)[0]
+
+
+
+def get_init_pos(inter_module, samples_pos, samples_theta, predicted_maps, clutter_scores=None, reset_distance=None):
+    if clutter_scores is None:
+        def cal_sim(projected_map, predicted_map, clutter_map):
+            object_score = torch.einsum('nchw,nchw->nhw', projected_map, predicted_map)
+            return loss_fg_only(object_score, reduce_method=lambda x: torch.mean(x, dim=(1, 2)))
+
+    else:
+        def cal_sim(projected_map, predicted_map, clutter_map):
+            object_score = torch.einsum('nchw,nchw->nhw', projected_map, predicted_map)
+            return loss_fg_bg(object_score, clutter_map, reduce_method=lambda x: torch.mean(x, dim=(1, 2)))
+
+    with torch.no_grad():
+        out_scores = []
+        for pos_, theta_ in zip(samples_pos, samples_theta):
+            if reset_distance is not None:
+                maps_ = inter_module(torch.nn.functional.normalize(pos_[None]) * reset_distance[:, None], theta_[None].expand(reset_distance.shape[0], -1))
+            else:
+                maps_ = inter_module(pos_[None], theta_[None])
+            scores_ = cal_sim(maps_, predicted_maps, clutter_scores)
+            out_scores.append(scores_)
+        use_indexes = torch.min(torch.stack(out_scores), dim=0)[1]
+
+    # [n, 3] -> [b, 3]
+    return torch.gather(samples_pos, dim=0, index=use_indexes.view(-1, 1).expand(-1, 3)), torch.gather(samples_theta, dim=0, index=use_indexes), torch.min(torch.stack(out_scores), dim=0)[0]
 
 
 def solve_pose(
@@ -157,6 +195,7 @@ def solve_pose(
     device="cuda",
     principal=None,
     pre_render=True,
+    dof=3,
     **kwargs
 ):
     b, c, hm_h, hm_w = feature_map.size()
@@ -183,31 +222,65 @@ def solve_pose(
     # Step 2: Search for initializations
     start_time = end_time
 
-    # Not center images
-    if principal is not None:
-        maps_target_shape = inter_module.rasterizer.cameras.image_size 
-        t_feature_map = align_no_centered(maps_source=feature_map, principal_source=principal, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, **kwargs)
-        t_clutter_score = align_no_centered(maps_source=clutter_score[:, None], principal_source=principal, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, **kwargs).squeeze(1)
-        inter_module.rasterizer.cameras.principal_point = principal.float()
-        inter_module.rasterizer.cameras._N = feature_map.shape[0]
-    else:
-        t_feature_map = feature_map
-        t_clutter_score = clutter_score
+    # 3 DoF or 4 DoF
+    if dof == 3 or dof == 4:
+        # Not center images
+        if principal is not None:
+            maps_target_shape = inter_module.rasterizer.cameras.image_size 
+            t_feature_map = align_no_centered(maps_source=feature_map, principal_source=principal, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, **kwargs)
+            t_clutter_score = align_no_centered(maps_source=clutter_score[:, None], principal_source=principal, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, **kwargs).squeeze(1)
+            inter_module.rasterizer.cameras.principal_point = principal.float()
+            inter_module.rasterizer.cameras._N = feature_map.shape[0]
+        else:
+            t_feature_map = feature_map
+            t_clutter_score = clutter_score
 
-    if pre_render:
-        init_C, init_theta = get_init_pos_rendered(samples_maps=feature_pre_rendered, 
-                                                samples_pos=cam_pos_pre_rendered, 
-                                                samples_theta=theta_pre_rendered, 
-                                                predicted_maps=t_feature_map, 
-                                                clutter_scores=t_clutter_score, 
-                                                batch_size=cfg.get('batch_size_no_grad', 64))
+        if pre_render:
+            init_C, init_theta, _ = get_init_pos_rendered_dim0(samples_maps=feature_pre_rendered, 
+                                                    samples_pos=cam_pos_pre_rendered, 
+                                                    samples_theta=theta_pre_rendered, 
+                                                    predicted_maps=t_feature_map, 
+                                                    clutter_scores=t_clutter_score, 
+                                                    batch_size=cfg.get('batch_size_no_grad', 144))
+        else:
+            init_C, init_theta, _ = get_init_pos(inter_module=inter_module, 
+                                                    samples_pos=cam_pos_pre_rendered, 
+                                                    samples_theta=theta_pre_rendered, 
+                                                    predicted_maps=feature_map, 
+                                                    clutter_scores=clutter_score, 
+                                                    reset_distance=kwargs.get('distance_source').float())
+
+    # 6 DoF
     else:
-        init_C, init_theta = get_init_pos(inter_module=inter_module, 
-                                                samples_pos=cam_pos_pre_rendered, 
-                                                samples_theta=theta_pre_rendered, 
-                                                predicted_maps=feature_map, 
-                                                clutter_scores=clutter_score, 
-                                                reset_distance=kwargs.get('distance_source').float())
+        assert pre_render
+        maps_target_shape = inter_module.rasterizer.cameras.image_size 
+
+        with torch.no_grad():
+            all_init_C, all_init_theta, all_init_loss = [], [], []
+            for principal_ in principal:
+                n = feature_map.shape[0]
+                distance_source = kwargs.get('distance_source')
+                principal_ = principal_[None].expand(n, -1).float()
+                t_feature_map = align_no_centered(maps_source=feature_map, principal_source=principal_, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, distance_source=distance_source, distance_target=distance_source, padding_mode='border')
+                t_clutter_score = align_no_centered(maps_source=clutter_score[:, None], principal_source=principal_, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, distance_source=distance_source, distance_target=distance_source, padding_mode='border').squeeze(1)
+
+                this_C, this_theta, this_loss = get_init_pos_rendered_dim0(samples_maps=feature_pre_rendered, 
+                                                        samples_pos=cam_pos_pre_rendered, 
+                                                        samples_theta=theta_pre_rendered, 
+                                                        predicted_maps=t_feature_map, 
+                                                        clutter_scores=t_clutter_score, 
+                                                        batch_size=cfg.get('batch_size_no_grad', 144),)
+                
+                all_init_C.append(this_C)
+                all_init_theta.append(this_theta)
+                all_init_loss.append(this_loss)
+
+            use_indexes = torch.min(torch.stack(all_init_loss), dim=0)[1]
+            init_C = torch.gather(torch.stack(all_init_C), dim=0, index=use_indexes.view(1, -1, 1).expand(-1, -1, 3)).squeeze(0)
+            init_theta = torch.gather(torch.stack(all_init_theta), dim=0, index=use_indexes.view(1, -1)).squeeze(0)
+            init_principal = torch.gather(principal, dim=0, index=use_indexes.view(-1, 1).expand(-1, 2)).float()
+            
+            inter_module.rasterizer.cameras._N = feature_map.shape[0]
 
     end_time = time.time()
     pred["pre_rendering_time"] = end_time - start_time
@@ -215,12 +288,17 @@ def solve_pose(
     # Step 3: Refine object proposals with pose optimization
     start_time = end_time
     
-    if principal is not None:
+    if principal is not None and dof == 3:
         init_C = init_C / init_C.pow(2).sum(-1).pow(.5)[..., None] * kwargs.get('distance_source')[..., None].float()
 
     C = torch.nn.Parameter(init_C, requires_grad=True)
     theta = torch.nn.Parameter(init_theta, requires_grad=True)
-    optim = construct_class_by_name(**cfg.inference.optimizer, params=[C, theta])
+    if dof == 6:
+        principals = torch.nn.Parameter(init_principal, requires_grad=True)
+        inter_module.rasterizer.cameras.principal_point = principals
+        optim = construct_class_by_name(**cfg.inference.optimizer, params=[C, theta, principals])
+    else:
+        optim = construct_class_by_name(**cfg.inference.optimizer, params=[C, theta])
 
     scheduler_kwargs = {"optimizer": optim}
     scheduler = construct_class_by_name(**cfg.inference.scheduler, **scheduler_kwargs)
