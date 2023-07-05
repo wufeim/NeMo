@@ -1,0 +1,65 @@
+dataset: config/datasets/pascal3d_ori.yaml
+model: config/models/nemo_runtime.yaml
+
+task: 3d_pose_estimation
+
+training:
+    batch_size: 48
+    workers: 0
+    total_epochs: 800
+    log_interval: 1
+    ckpt_interval: 200
+    visualize_training_data: false
+    remove_no_bg: 8
+
+inference:
+    loss: nemo.models.solve_pose.loss_fg_bg
+    batch_size: 20 # set to 20 for 24GB vmem
+    init_mode: 6d_batch
+
+    search_translation: false
+    optimize_translation: false
+
+    px_sample:
+        min: 0.25
+        max: 0.75
+        num: 5
+    py_sample:
+        min: 0.25
+        max: 0.75
+        num: 5
+    azim_sample:
+        min_pi: 0.0
+        max_pi: 2.0
+        num: 12
+    elev_sample:
+        min_pi: -0.1667
+        max_pi: 0.3333
+        num: 4
+    theta_sample:
+        min_pi: -0.1667
+        max_pi: 0.1667
+        num: 3
+    dist_sample:
+        min: 3.0
+        max: 9.0
+        num: 4
+
+    min_distance: 2
+    pre_rendering_thr: 80
+    blur_radius: 0.0
+    inter_mode: bilinear
+    epochs: 300
+    translation_scale: 0.1
+    pre_render: true
+
+    optimizer:
+        class_name: torch.optim.Adam
+        lr: 0.05
+        betas:
+            - 0.4
+            - 0.6
+
+    scheduler:
+        class_name: torch.optim.lr_scheduler.ExponentialLR
+        gamma: 0.2
