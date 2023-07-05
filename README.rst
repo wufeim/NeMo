@@ -104,12 +104,12 @@ Train and evaluate a neural mesh model (:code:`NeMo`) on PASCAL3D+ for 3D pose e
 
    CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
        --cate car \
-       --config config/pose_estimation_3d_runtime.yaml \
+       --config config/omni_nemo_pose_3d.yaml \
        --save_dir exp/pose_estimation_3d_nemo_car
 
    CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
        --cate car \
-       --config config/pose_estimation_3d_runtime.yaml \
+       --config config/omni_nemo_pose_3d.yaml \
        --save_dir exp/pose_estimation_3d_nemo_car \
        --checkpoint exp/pose_estimation_3d_nemo_car/ckpts/model_800.pth
 
@@ -119,12 +119,12 @@ NeMo with VoGE:
 
    CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
        --cate car \
-       --config config/pose_estimation_3d_voge.yaml \
+       --config config/omni_voge_pose_3d.yaml \
        --save_dir exp/pose_estimation_3d_voge_car
 
    CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
        --cate car \
-       --config config/pose_estimation_3d_voge.yaml \
+       --config config/omni_voge_pose_3d.yaml \
        --save_dir exp/pose_estimation_3d_voge_car \
        --checkpoint exp/pose_estimation_3d_voge_car/ckpts/model_800.pth
 
@@ -134,12 +134,12 @@ NeMo on PASCAL3D+ without scaling during data pre-processing:
 
    CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
        --cate car \
-       --config config/pose_estimation_3d_runtime_ori.yaml \
+       --config config/omni_nemo_pose_3d_ori.yaml \
        --save_dir exp/pose_estimation_3d_ori_car
 
    CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
        --cate car \
-       --config config/pose_estimation_3d_runtime_ori.yaml \
+       --config config/omni_nemo_pose_3d_ori.yaml \
        --save_dir exp/pose_estimation_3d_ori_car \
        --checkpoint exp/pose_estimation_3d_ori_car/ckpts/model_800.pth
 
