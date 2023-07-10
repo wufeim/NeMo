@@ -23,19 +23,18 @@ def to_mask(y, max_size):
     return y_onehot
 
 
-def remove_near_vertices_dist(vert_dist, thr, num_neg, neg_weight, eps=1e5):
+
+def remove_near_vertices_dist(vert_dist, thr, num_neg, kappas={'pos':0, 'near':1e5, 'clutter':0}, **kwargs):
     dtype_template = vert_dist
     with torch.no_grad():
         if num_neg == 0:
-            return ((vert_dist <= thr).type_as(dtype_template) - torch.eye(vert_dist.shape[1]).type_as(dtype_template).unsqueeze(dim=0)) * eps
+            return (vert_dist <= thr).type_as(dtype_template) * kappas['near'] - torch.eye(vert_dist.shape[1]).type_as(dtype_template).unsqueeze(dim=0) * (kappas['near'] - kappas['pos'])
         else:
-            tem = (vert_dist <= thr).type_as(dtype_template) - torch.eye(vert_dist.shape[1]).type_as(dtype_template).unsqueeze(dim=0)
-            return torch.cat([tem * eps, - torch.ones(vert_dist.shape[0: 2] + (num_neg, )).type_as(dtype_template) * math.log(neg_weight)], dim=2)
+            tem = (vert_dist <= thr).type_as(dtype_template) * kappas['near'] - torch.eye(vert_dist.shape[1]).type_as(dtype_template).unsqueeze(dim=0) * (kappas['near'] - kappas['pos'])
+            return torch.cat([tem, torch.ones(vert_dist.shape[0: 2] + (num_neg, )).type_as(dtype_template) * kappas['clutter']], dim=2)
 
 
-def mask_remove_near(
-    keypoints, thr, dtype_template=None, num_neg=0, neg_weight=1, eps=1e5
-):
+def mask_remove_near(keypoints, thr, dtype_template=None, num_neg=0, neg_weight=1, kappas={'pos':0, 'near':1e5, 'clutter':0}):
     if dtype_template is None:
         dtype_template = torch.ones(1, dtype=torch.float32)
     # keypoints -> [n, k, 2]
@@ -48,25 +47,21 @@ def mask_remove_near(
             dim=3,
         ).pow(0.5)
         if num_neg == 0:
-            return (
-                (distance <= thr.unsqueeze(1).unsqueeze(2)).type_as(dtype_template)
-                - torch.eye(keypoints.shape[1]).type_as(dtype_template).unsqueeze(dim=0)
-            ) * eps
+            return (distance <= thr.unsqueeze(1).unsqueeze(2)).type_as(dtype_template) * kappas['near'] - torch.eye(keypoints.shape[1]).type_as(dtype_template).unsqueeze(dim=0) * (kappas['near'] - kappas['pos'])
         else:
             tem = (distance <= thr.unsqueeze(1).unsqueeze(2)).type_as(
                 dtype_template
-            ) - torch.eye(keypoints.shape[1]).type_as(dtype_template).unsqueeze(dim=0)
+            ) * kappas['near'] - torch.eye(keypoints.shape[1]).type_as(dtype_template).unsqueeze(dim=0) * (kappas['near'] - kappas['pos'])
             return torch.cat(
                 [
-                    tem * eps,
-                    -torch.ones(keypoints.shape[0:2] + (num_neg,)).type_as(
+                    tem,
+                    torch.ones(keypoints.shape[0:2] + (num_neg,)).type_as(
                         dtype_template
-                    )
-                    * math.log(neg_weight),
+                    ) * kappas['clutter'],
                 ],
                 dim=2,
             )
-
+            
 
 class NearestMemorySelective(nn.Module):
     def forward(self, x, y, visible, n_pos, n_neg, lru, memory, params, eps=1e-8):
