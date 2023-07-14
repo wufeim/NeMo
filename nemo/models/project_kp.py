@@ -55,6 +55,7 @@ class PackedRaster():
         feature_size = (image_size[0] // raster_configs.get('down_rate'), image_size[1] // raster_configs.get('down_rate'))
         cameras = PerspectiveCameras(focal_length=raster_configs.get('focal_length', 3000) / raster_configs.get('down_rate'), principal_point=((feature_size[1] // 2, feature_size[0] // 2,), ), image_size=(feature_size, ), in_ndc=False, device=device)
         self.cameras = cameras
+        self.down_rate = raster_configs.get('down_rate')
 
         if raster_type == 'near' or raster_type == 'triangle':
             raster_setting = RasterizationSettings(image_size=feature_size, blur_radius=raster_configs.get('blur_radius', 0.0), )
@@ -94,7 +95,7 @@ class PackedRaster():
         if kwargs.get('principal', None) is not None:
             this_cameras._N = R.shape[0]
             this_cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
-
+            
         if self.mesh_mode == 'single' and self.raster_type == 'near':
             return get_one_standard(self.raster, this_cameras, self.meshes, func_of_mesh=func_single, **kwargs, **self.kwargs)
         if self.raster_type == 'voge':
