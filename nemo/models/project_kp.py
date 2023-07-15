@@ -4,6 +4,7 @@ from nemo.utils import rotation_theta
 from pytorch3d.structures import Meshes
 from pytorch3d.ops.interp_face_attrs import interpolate_face_attributes
 
+# if True:
 try:
     from VoGE.Renderer import GaussianRenderSettings, GaussianRenderer
     from VoGE.Meshes import GaussianMeshesNaive as GaussianMesh
@@ -49,7 +50,6 @@ class PackedRaster():
 
         self.mesh_mode = mesh_mode
         self.kwargs = raster_configs
-        self.down_rate = raster_configs.get('down_rate')
 
         image_size = raster_configs.get('image_size')
         feature_size = (image_size[0] // raster_configs.get('down_rate'), image_size[1] // raster_configs.get('down_rate'))
@@ -88,35 +88,41 @@ class PackedRaster():
         R, T = look_at_view_transform(dist=dist, azim=azim, elev=elev, degrees=self.use_degree, device=self.cameras.device)
         R = torch.bmm(R, rotation_theta(theta, device_=self.cameras.device))
         
-        this_cameras = self.cameras.clone()
-        this_cameras.R = R
-        this_cameras.T = T
 
-        if kwargs.get('principal', None) is not None:
-            this_cameras._N = R.shape[0]
-            this_cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
-            
         if self.mesh_mode == 'single' and self.raster_type == 'near':
+            this_cameras = self.cameras.clone()
+            this_cameras.R = R
+            this_cameras.T = T
+
+            if kwargs.get('principal', None) is not None:
+                this_cameras._N = R.shape[0]
+                this_cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
+
             return get_one_standard(self.raster, this_cameras, self.meshes, func_of_mesh=func_single, **kwargs, **self.kwargs)
-        if self.raster_type == 'voge':
-            # Return voge.fragments
-            frag = self.render(self.meshes, R=R, T=T)
-            get_dict = frag.to_dict()
-            get_dict['start_idx'] = torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device) 
-            # if torch.any( torch.nn.functional.relu(1 - frag.vert_weight.sum(3).view(R.shape[0], -1)).sum(1) < 1 ):
-            return get_dict
-        if self.raster_type == 'vogew':
-            # Return voge.fragments
-            frag = self.render(self.meshes, R=R, T=T)
-            get_dict = frag.to_dict()
-            get_dict['start_idx'] = torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device) 
-            get_weight = torch.zeros((*frag.vert_index.shape[0:-1], self.meshes.verts.shape[0] + 1), device=frag.vert_index.device)
-            ind = frag.vert_index.long() - torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device)[:, None, None, None] * self.meshes.verts.shape[0]
-            ind[ind < 0] = -1
-            # weight_ = torch.cat((torch.zeros((*frag.vert_index.shape[0:-1], 1), device=frag.vert_index.device), frag.vert_weight, ), dim=-1)
-            ind += 1
-            get_weight = ind_fill(get_weight, ind, frag.vert_weight, dim=3)
-            return get_weight[..., 1:]
+        else:
+            if kwargs.get('principal', None) is not None:
+                self.render.cameras._N = R.shape[0]
+                self.render.cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
+
+            if self.raster_type == 'voge':
+                # Return voge.fragments
+                frag = self.render(self.meshes, R=R, T=T)
+                get_dict = frag.to_dict()
+                get_dict['start_idx'] = torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device) 
+                # if torch.any( torch.nn.functional.relu(1 - frag.vert_weight.sum(3).view(R.shape[0], -1)).sum(1) < 1 ):
+                return get_dict
+            if self.raster_type == 'vogew':
+                # Return voge.fragments
+                frag = self.render(self.meshes, R=R, T=T)
+                get_dict = frag.to_dict()
+                get_dict['start_idx'] = torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device) 
+                get_weight = torch.zeros((*frag.vert_index.shape[0:-1], self.meshes.verts.shape[0] + 1), device=frag.vert_index.device)
+                ind = frag.vert_index.long() - torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device)[:, None, None, None] * self.meshes.verts.shape[0]
+                ind[ind < 0] = -1
+                # weight_ = torch.cat((torch.zeros((*frag.vert_index.shape[0:-1], 1), device=frag.vert_index.device), frag.vert_weight, ), dim=-1)
+                ind += 1
+                get_weight = ind_fill(get_weight, ind, frag.vert_weight, dim=3)
+                return get_weight[..., 1:]
 
 
 def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
@@ -129,14 +135,13 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     # Calculate the camera location
     cam_loc = -torch.matmul(torch.inverse(R), T[..., None])[:, :, 0]
 
-    # (B, K, 2), in yx format
+    # (B, K, 2)
     project_verts = camera.transform_points(verts_)[..., 0:2].flip(-1)
-
     # Don't know why, hack. Checked by visualization
     project_verts = 2 * camera.principal_point[:, None].float().flip(-1) - project_verts
 
     # (B, K)
-    inner_mask = torch.min(camera.image_size.unsqueeze(1) > project_verts, dim=-1)[0] & torch.min(0 < project_verts, dim=-1)[0]
+    inner_mask = torch.min(camera.image_size.unsqueeze(1) > torch.ones_like(project_verts), dim=-1)[0] & torch.min(0 < torch.ones_like(project_verts), dim=-1)[0]
 
     if restrict_to_boundary:
         # image_size -> (h, w)
@@ -171,8 +176,13 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     #     for k, vv in zip(kps[0], vis_mask_[0]):
     #         this_bbox = bbt.box_by_shape((point_size, point_size), (int(k[0]), int(k[1])), image_boundary=im.size[::-1])
     #         imd.ellipse(this_bbox.pillow_bbox(), fill=((0, 255, 0) if vv.item() else (255, 0, 0)))
+
     #     return im
-    # foo(tt, vis_mask).save('ttr.jpg')
+
+    # foo(tt, vis_mask).show()
     # import ipdb
     # ipdb.set_trace()
     return project_verts, vis_mask & inner_mask
+
+
+
