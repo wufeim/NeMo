@@ -59,12 +59,8 @@ def download_ood_cv(cfg):
     else:
         print(f"Downloading OOD-CV pose dataset at {ood_cv_pose_data_path}")
         gdown.download(cfg.ood_cv_pose_url, output="pose.zip", fuzzy=True)
-        os.system(f"unzip pose.zip -d {ood_cv_pose_data_path}")
+        os.system(f"unzip pose.zip")
         os.system("rm pose.zip")
-        os.system(f"mv {os.path.join(ood_cv_pose_data_path, 'pose', 'train')} {os.path.join(ood_cv_pose_data_path, 'train')}")
-        os.system(f"mv {os.path.join(ood_cv_pose_data_path, 'pose', 'phase-1')} {os.path.join(ood_cv_pose_data_path, 'phase-1')}")
-        os.system(f"mv {os.path.join(ood_cv_pose_data_path, 'pose', 'phase2')} {os.path.join(ood_cv_pose_data_path, 'phase2')}")
-        os.system(f"rm -rf {os.path.join(ood_cv_pose_data_path, 'pose')}")
 
     if not cfg.pad_texture:
         print("Skipping Describable Textures Dataset")
@@ -76,6 +72,20 @@ def download_ood_cv(cfg):
         )
         os.system("tar -xf dtd-r1.0.1.tar.gz")
         os.system("rm dtd-r1.0.1.tar.gz")
+
+    mesh_d = "single" if cfg.single_mesh else "multi"
+    save_mesh_path = os.path.join(pascal3d_raw_path, f"CAD_{mesh_d}")
+    if os.path.isdir(save_mesh_path):
+        print(f"Found {mesh_d} meshes at {save_mesh_path}")
+    else:
+        print(f"Generating {mesh_d} meshes at {save_mesh_path}")
+        create_meshes(
+            mesh_d,
+            os.path.join(pascal3d_raw_path, "CAD"),
+            os.path.join(pascal3d_raw_path, f"CAD_{mesh_d}"),
+            number_vertices=1000,
+            linear_coverage=0.99,
+        )
 
 
 def prepare_ood_cv(cfg, workers=4):
@@ -263,7 +273,7 @@ def main():
     cfg = load_config(args, load_default_config=False, log_info=False)
 
     download_ood_cv(cfg)
-    prepare_ood_cv(cfg, args.workers)
+    # prepare_ood_cv(cfg, args.workers)
 
 
 if __name__ == '__main__':

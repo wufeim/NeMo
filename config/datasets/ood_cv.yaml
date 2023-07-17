@@ -4,7 +4,7 @@ root_path: data/OOD_CV_NeMo
 
 pascal3d_raw_path: data/PASCAL3D+_release1.1
 pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
-ood_cv_pose_url: https://drive.google.com/file/d/1WwoevPJGylRROW8fbsvCtr6EZo2Mtj8q/view?usp=share_link
+ood_cv_pose_url: https://drive.google.com/file/d/1djm2ugmk98__9jgL8Sqb_QUIIpC7e1ir/view
 ood_cv_pose_data_path: data/ood_cv
 dtd_raw_path: data/dtd
 mesh_path: data/PASCAL3D+_release1.1/CAD_single
