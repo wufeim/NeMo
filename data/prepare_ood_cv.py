@@ -273,7 +273,7 @@ def main():
     cfg = load_config(args, load_default_config=False, log_info=False)
 
     download_ood_cv(cfg)
-    # prepare_ood_cv(cfg, args.workers)
+    prepare_ood_cv(cfg, args.workers)
 
 
 if __name__ == '__main__':
