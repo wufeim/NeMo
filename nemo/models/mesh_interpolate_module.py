@@ -39,7 +39,7 @@ def MeshInterpolateModule(*args, **kwargs):
 
 
 class MeshInterpolateModuleVoGE(nn.Module):
-    def __init__(self, vertices, faces, memory_bank, rasterizer, post_process=None, off_set_mesh=False):
+    def __init__(self, vertices, faces, memory_bank, rasterizer, post_process=None, off_set_mesh=False, convert_percentage=0.5, **kwargs):
         super(MeshInterpolateModuleVoGE, self).__init__()
 
         # Convert memory features of vertices to faces
@@ -51,7 +51,7 @@ class MeshInterpolateModuleVoGE(nn.Module):
         # Preprocess convert meshes in PASCAL3d+ standard to Pytorch3D
         verts = pre_process_mesh_pascal(vertices)
 
-        self.meshes = GaussianMesh(*naive_vertices_converter(verts, faces, percentage=0.5))
+        self.meshes = GaussianMesh(*naive_vertices_converter(verts, faces, percentage=convert_percentage))
 
         # Device is used during theta to R
         self.rasterizer = rasterizer
@@ -98,6 +98,7 @@ class MeshInterpolateModuleMesh(nn.Module):
         rasterizer,
         post_process=None,
         off_set_mesh=False,
+        **kwargs
     ):
         super().__init__()
 
