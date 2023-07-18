@@ -1,7 +1,7 @@
 dataset: config/datasets/pascal3d_ori.yaml
 model: config/models/nemo_runtime.yaml
 
-task: 3d_pose_estimation
+task: 4d_pose_estimation
 
 training:
     batch_size: 48
