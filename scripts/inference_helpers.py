@@ -75,4 +75,4 @@ def print_3d_pose_estimation(
     logging.info('\n'+cate_line+'\n'+pi_6_acc+'\n'+pi_18_acc+'\n'+med_err)
 
 
-helper_func_by_task = {"3d_pose_estimation": inference_3d_pose_estimation, "3d_pose_estimation_print": print_3d_pose_estimation}
+helper_func_by_task = {"3d_pose_estimation": inference_3d_pose_estimation, "4d_pose_estimation": inference_3d_pose_estimation, "6d_pose_estimation": inference_3d_pose_estimation, "3d_pose_estimation_print": print_3d_pose_estimation}
