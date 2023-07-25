@@ -141,7 +141,7 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     project_verts = 2 * camera.principal_point[:, None].float().flip(-1) - project_verts
 
     # (B, K)
-    inner_mask = torch.min(camera.image_size.unsqueeze(1) > torch.ones_like(project_verts), dim=-1)[0] & torch.min(0 < torch.ones_like(project_verts), dim=-1)[0]
+    inner_mask = torch.min(camera.image_size.unsqueeze(1) > project_verts, dim=-1)[0] & torch.min(0 < project_verts, dim=-1)[0]
 
     if restrict_to_boundary:
         # image_size -> (h, w)
