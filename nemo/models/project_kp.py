@@ -18,6 +18,8 @@ except:
 def to_tensor(val):
     if isinstance(val, torch.Tensor):
         return val[None] if len(val.shape) == 2 else val
+    elif isinstance(val, list):
+        return [(t if isinstance(val, torch.Tensor) else torch.from_numpy(t)) for t in val]
     else:
         get = torch.from_numpy(val)
         return get[None] if len(get.shape) == 2 else get
@@ -25,6 +27,13 @@ def to_tensor(val):
 
 def func_single(meshes, **kwargs):
     return meshes, meshes.verts_padded()
+
+
+def func_reselect(meshes, indexs, **kwargs):
+    verts_ = [meshes._verts_list[i] for i in indexs]
+    faces_ = [meshes._faces_list[i] for i in indexs]
+    meshes_out = Meshes(verts=verts_, faces=faces_)
+    return meshes_out, meshes_out.verts_padded()
 
 
 class PackedRaster():
@@ -141,7 +150,7 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     project_verts = 2 * camera.principal_point[:, None].float().flip(-1) - project_verts
 
     # (B, K)
-    inner_mask = torch.min(camera.image_size.unsqueeze(1) > project_verts, dim=-1)[0] & torch.min(0 < project_verts, dim=-1)[0]
+    inner_mask = torch.min(camera.image_size.unsqueeze(1) > torch.ones_like(project_verts), dim=-1)[0] & torch.min(0 < torch.ones_like(project_verts), dim=-1)[0]
 
     if restrict_to_boundary:
         # image_size -> (h, w)
@@ -149,7 +158,7 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
         project_verts = torch.max(project_verts, torch.zeros_like(project_verts))
 
     raster.cameras = camera
-    frag = raster(mesh_.extend(R.shape[0]), R=R, T=T)
+    frag = raster(mesh_.extend(R.shape[0]) if mesh_._N == 1 else mesh_, R=R, T=T)
 
     true_dist_per_vert = (cam_loc[:, None] - verts_).pow(2).sum(-1).pow(.5)
     face_dist = torch.gather(true_dist_per_vert[:, None].expand(-1, mesh_.faces_padded().shape[1], -1), dim=2, index=mesh_.faces_padded().expand(true_dist_per_vert.shape[0], -1, -1))
@@ -163,6 +172,10 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     sampled_dist_per_vert = torch.nn.functional.grid_sample(depth_, grid.flip(-1), align_corners=False, mode='nearest')[:, 0, 0, :]
 
     vis_mask = torch.abs(sampled_dist_per_vert - true_dist_per_vert) < dist_thr
+
+    if isinstance(func_of_mesh, func_reselect):
+        for i in range(R.shape[0]):
+            vis_mask[i, mesh_._num_verts_per_mesh[i]:] = False
 
     # import numpy as np
     # import BboxTools as bbt
