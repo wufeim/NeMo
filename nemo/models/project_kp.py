@@ -32,7 +32,7 @@ def func_single(meshes, **kwargs):
 def func_reselect(meshes, indexs, **kwargs):
     verts_ = [meshes._verts_list[i] for i in indexs]
     faces_ = [meshes._faces_list[i] for i in indexs]
-    meshes_out = Meshes(verts=verts_, faces=faces_)
+    meshes_out = Meshes(verts=verts_, faces=faces_).to(meshes.device)
     return meshes_out, meshes_out.verts_padded()
 
 
