@@ -301,7 +301,7 @@ def solve_pose(
         inter_module.rasterizer.cameras.principal_point = principals
         optim = construct_class_by_name(**cfg.inference.optimizer, params=[C, theta, principals])
     else:
-        principals = init_principal
+        principals = init_principal.expand(b, -1) if init_principal.shape[0] == 1 else init_principal
         inter_module.rasterizer.cameras.principal_point = init_principal
         optim = construct_class_by_name(**cfg.inference.optimizer, params=[C, theta])
 
