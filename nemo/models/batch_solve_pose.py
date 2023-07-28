@@ -264,6 +264,8 @@ def solve_pose(
                 n = feature_map.shape[0]
                 distance_source = kwargs.get('distance_source')
                 principal_ = principal_[None].expand(n, -1).float()
+
+                # Note it is correct to use distance_source as target since we do not want to rescale the feature map here. The actual distance is controlled in C
                 t_feature_map = align_no_centered(maps_source=feature_map, principal_source=principal_, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, distance_source=distance_source, distance_target=distance_source, padding_mode='border')
                 t_clutter_score = align_no_centered(maps_source=clutter_score[:, None], principal_source=principal_, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, distance_source=distance_source, distance_target=distance_source, padding_mode='border').squeeze(1)
 
