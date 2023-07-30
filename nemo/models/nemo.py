@@ -118,20 +118,14 @@ class NeMo(BaseModel):
         index = torch.Tensor([[k for k in range(self.num_verts)]] * img.shape[0]).cuda()
 
         kwargs_ = dict(principal=sample['principal']) if 'principal' in sample.keys() else dict()
-        if 'voge' in self.projector.raster_type:
-            with torch.no_grad():
-                frag_ = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), **kwargs_)
-  
-            features, kpvis = self.net.forward(img, keypoint_positions=frag_, obj_mask=1 - obj_mask, do_normalize=True,)
-        else:
-            if self.training_params.proj_mode == 'prepared':
+        if self.training_params.proj_mode == 'prepared':
                 kp = sample['kp'].cuda()
                 kpvis = sample["kpvis"].cuda().type(torch.bool)
-            else:
-                with torch.no_grad():
-                    kp, kpvis = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), **kwargs_)
-
-            features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask, do_normalize=True,)
+        else:
+            with torch.no_grad():
+                kp, kpvis  = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), **kwargs_)
+  
+        features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask, do_normalize=True,)
 
         # import ipdb
         # ipdb.set_trace()
