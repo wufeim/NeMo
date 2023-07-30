@@ -10,6 +10,7 @@ try:
     from VoGE.Meshes import GaussianMeshesNaive as GaussianMesh
     from VoGE.Converter.Converters import naive_vertices_converter
     from VoGE.Utils import ind_fill
+    from VoGE.Sampler import scatter_max_weight
 
     enable_voge = True
 except:
@@ -18,8 +19,6 @@ except:
 def to_tensor(val):
     if isinstance(val, torch.Tensor):
         return val[None] if len(val.shape) == 2 else val
-    elif isinstance(val, list):
-        return [(t if isinstance(val, torch.Tensor) else torch.from_numpy(t)) for t in val]
     else:
         get = torch.from_numpy(val)
         return get[None] if len(get.shape) == 2 else get
@@ -27,13 +26,6 @@ def to_tensor(val):
 
 def func_single(meshes, **kwargs):
     return meshes, meshes.verts_padded()
-
-
-def func_reselect(meshes, indexs, **kwargs):
-    verts_ = [meshes._verts_list[i] for i in indexs]
-    faces_ = [meshes._faces_list[i] for i in indexs]
-    meshes_out = Meshes(verts=verts_, faces=faces_).to(meshes.device)
-    return meshes_out, meshes_out.verts_padded()
 
 
 class PackedRaster():
@@ -113,13 +105,18 @@ class PackedRaster():
                 self.render.cameras._N = R.shape[0]
                 self.render.cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
 
+            n = R.shape[0]
+            k = self.meshes.verts.shape[0]
             if self.raster_type == 'voge':
                 # Return voge.fragments
                 frag = self.render(self.meshes, R=R, T=T)
                 get_dict = frag.to_dict()
                 get_dict['start_idx'] = torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device) 
+
+                with torch.no_grad():
+                    max_weight = scatter_max_weight(frag, n_vert=n * k).view(n, k)
                 # if torch.any( torch.nn.functional.relu(1 - frag.vert_weight.sum(3).view(R.shape[0], -1)).sum(1) < 1 ):
-                return get_dict
+                return get_dict, max_weight
             if self.raster_type == 'vogew':
                 # Return voge.fragments
                 frag = self.render(self.meshes, R=R, T=T)
@@ -131,6 +128,8 @@ class PackedRaster():
                 # weight_ = torch.cat((torch.zeros((*frag.vert_index.shape[0:-1], 1), device=frag.vert_index.device), frag.vert_weight, ), dim=-1)
                 ind += 1
                 get_weight = ind_fill(get_weight, ind, frag.vert_weight, dim=3)
+                
+                max_weight = torch.max(get_weight.view(n, -1, k), dim=1)[0]
                 return get_weight[..., 1:]
 
 
@@ -158,7 +157,7 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
         project_verts = torch.max(project_verts, torch.zeros_like(project_verts))
 
     raster.cameras = camera
-    frag = raster(mesh_.extend(R.shape[0]) if mesh_._N == 1 else mesh_, R=R, T=T)
+    frag = raster(mesh_.extend(R.shape[0]), R=R, T=T)
 
     true_dist_per_vert = (cam_loc[:, None] - verts_).pow(2).sum(-1).pow(.5)
     face_dist = torch.gather(true_dist_per_vert[:, None].expand(-1, mesh_.faces_padded().shape[1], -1), dim=2, index=mesh_.faces_padded().expand(true_dist_per_vert.shape[0], -1, -1))
@@ -172,10 +171,6 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     sampled_dist_per_vert = torch.nn.functional.grid_sample(depth_, grid.flip(-1), align_corners=False, mode='nearest')[:, 0, 0, :]
 
     vis_mask = torch.abs(sampled_dist_per_vert - true_dist_per_vert) < dist_thr
-
-    if isinstance(func_of_mesh, func_reselect):
-        for i in range(R.shape[0]):
-            vis_mask[i, mesh_._num_verts_per_mesh[i]:] = False
 
     # import numpy as np
     # import BboxTools as bbt
