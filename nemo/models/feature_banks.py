@@ -401,6 +401,9 @@ class NearestMemoryManager(nn.Module):
                 visible.type(self.accumulate_num.dtype), dim=0
             )
 
+    def compute_feature_dist(self, x, loss_foo=torch.nn.functional.mse_loss)
+        return loss_foo(F.normalize(x, p=2, dim=1), self.memory[0:x.shape[0]])
+        
     def normalize_memory(self):
         self.memory.copy_(F.normalize(self.memory, p=2, dim=1))
 
