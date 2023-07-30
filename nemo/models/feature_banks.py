@@ -443,3 +443,14 @@ class StaticLatentMananger():
                 else:
                     out[k].append(default_value[k][i])
         return tuple([torch.stack(t) for t in out])
+
+    def get_latent_without_default(self, names, ):
+        out = [[] for _ in range(self.n_latent)]
+        for i, name_ in enumerate(names):
+            for k in range(self.n_latent):
+                if name_ in self.latent_set[k].keys():
+                    out[k].append(self.latent_set[k][name_].to(self.to_device))
+                else:
+                    return None
+                
+        return tuple([torch.stack(t) for t in out])
