@@ -8,7 +8,7 @@ from nemo.models.upsampling_layer import DoubleConv
 from nemo.models.upsampling_layer import Up
 
 try: 
-    from VoGE.Sampler import sample_features, scatter_max_weight
+    from VoGE.Sampler import sample_features
     from VoGE.Renderer import Fragments
     enable_voge = True
 except:
@@ -565,9 +565,7 @@ class WeightSampleNetE2E(NetE2E):
         X_out = torch.cat((X_kp, X_noise.transpose(1, 2)), dim=1)
 
         # X_out = F.normalize(X_out, p=2, dim=-1)
-        with torch.no_grad():
-            max_weight = scatter_max_weight(frag_, n_vert=n * k).view(n, k)
-        return X_out, max_weight
+        return X_out
 
 
 # For VoGE-NeMo, used in voge paper
@@ -599,6 +597,4 @@ class WeightDotNetE2E(NetE2E):
         X_out = torch.cat((X_kp, X_noise), dim=2).transpose(1, 2)
 
         # X_out = F.normalize(X_out, p=2, dim=-1)
-
-        max_weight = torch.max(keypoint_positions.view(n, -1, k), dim=1)[0]
-        return X_out, max_weight
+        return X_out
