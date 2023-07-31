@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import math
 
 from nemo.models.base_model import BaseModel
-from nemo.models.feature_banks import mask_remove_near, remove_near_vertices_dist
+from nemo.models.feature_banks import mask_remove_near, remove_near_vertices_dist, StaticLatentMananger
 from nemo.models.mesh_interpolate_module import MeshInterpolateModule
 from nemo.models.solve_pose import pre_compute_kp_coords
 from nemo.models.solve_pose import solve_pose
@@ -457,3 +457,157 @@ class NeMo(BaseModel):
 
             features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask, do_normalize=True,)
         return features.detach(), kpvis.detach()
+
+
+class NeMoRuntimeOptimize(NeMo):
+    def _build_train(self):
+        super()._build_train()
+
+        self.latent_iter_per = self.training_params.latent_iter_per
+        self.latent_to_update = self.training_params.latent_to_update
+        self.latent_lr = self.training_params.latent_lr
+
+        self.n_shape_state = len(self.latent_to_update)
+        self.latent_manager = StaticLatentMananger(n_latents=self.n_shape_state, to_device='cuda', store_device='cpu')
+        self.latent_manager_optimizer = StaticLatentMananger(n_latents=self.n_shape_state * 2, to_device='cuda', store_device='cpu')
+
+    def train(self, sample):
+        self.net.train()
+        sample = self.transforms(sample)
+
+        image_names = sample['this_name']
+        img = sample['img'].cuda()
+        obj_mask = sample["obj_mask"].cuda()
+        index = torch.Tensor([[k for k in range(self.num_verts)]] * img.shape[0]).cuda()
+
+        feature_map_ = self.net.forward(img, do_normalize=True, mode=0)
+        img_shape = img.shape[2::]
+
+        # Dynamic implementation, for those in latent manager
+        # params = self.latent_manager.get_latent(image_names, sample['params'].float())
+        # Others
+        # params = sample['params'].float()
+        all_params = ['azimuth', 'elevation', 'distance', 'theta']
+
+        get_values_updated = eval(
+            'self.latent_manager.get_latent(image_names, ' +
+            ', '.join(["sample['%s'].float()" % t for t in self.latent_to_update]) +
+            ')'
+            )
+        azimuth, elevation, distance, theta = tuple([get_values_updated[self.latent_to_update.index(n_)] if n_ in self.latent_to_update else sample[n_].float() for n_ in all_params])
+
+        kwargs_ = dict(principal=sample['principal']) if 'principal' in sample.keys() else dict()
+        assert self.training_params.proj_mode != 'prepared'
+        with torch.no_grad():
+            kp, kpvis = self.projector(azim=azimuth.cuda(), elev=elevation.cuda(), dist=distance.cuda(), theta=theta.cuda(), **kwargs_)
+
+        features = self.net.forward(feature_map_, keypoint_positions=kp, obj_mask=1 - obj_mask, img_shape=img_shape, mode=1)
+
+        if self.training_params.separate_bank:
+            get, y_idx, noise_sim = self.memory_bank(
+                features.to(self.ext_gpu), index.to(self.ext_gpu), kpvis.to(self.ext_gpu)
+            )
+        else:
+            get, y_idx, noise_sim = self.memory_bank(features, index, kpvis)
+        
+        if 'voge' in self.projector.raster_type:
+            kpvis = kpvis > self.projector.kp_vis_thr
+
+        get /= self.training_params.T
+
+        kappas={'pos':self.training_params.get('weight_pos', 0), 'near':self.training_params.get('weight_near', 1e5), 'clutter': -math.log(self.training_params.weight_noise)}
+        # The default manner in VoGE-NeMo
+        if self.training_params.remove_near_mode == 'vert':
+            vert_ = self.projector.get_verts_recent()  # (B, K, 3)
+            vert_dis = (vert_.unsqueeze(1) - vert_.unsqueeze(2)).pow(2).sum(-1).pow(.5)
+
+            mask_distance_legal = remove_near_vertices_dist(
+                vert_dis,
+                thr=self.training_params.distance_thr,
+                num_neg=self.num_noise * self.max_group,
+                kappas=kappas,
+            )
+            if mask_distance_legal.shape[0] != get.shape[0]:
+                mask_distance_legal = mask_distance_legal.expand(get.shape[0], -1, -1).contiguous()
+        # The default manner in original-NeMo
+        else:
+            mask_distance_legal = mask_remove_near(
+                kp,
+                thr=self.training_params.distance_thr
+                * torch.ones((img.shape[0],), dtype=torch.float32).cuda(),
+                num_neg=self.num_noise * self.max_group,
+                dtype_template=get,
+                kappas=kappas,
+            )
+        if self.training_params.get('training_loss_type', 'nemo') == 'nemo':
+            loss_main = nn.CrossEntropyLoss(reduction="none").cuda()(
+                (get.view(-1, get.shape[2]) - mask_distance_legal.view(-1, get.shape[2]))[
+                    kpvis.view(-1), :
+                ],
+                y_idx.view(-1)[kpvis.view(-1)],
+            )
+            loss_main = torch.mean(loss_main)
+        elif self.training_params.get('training_loss_type', 'nemo') == 'kl_alan':
+            loss_main = torch.mean((get.view(-1, get.shape[2]) * mask_distance_legal.view(-1, get.shape[2]))[kpvis.view(-1), :])
+
+        self.optim.zero_grad()
+        if self.num_noise > 0:
+            loss_reg = torch.mean(noise_sim) * self.training_params.loss_reg_weight
+            loss = loss_main + loss_reg
+        else:
+            loss_reg = torch.zeros(1)
+            loss = loss_main
+
+        loss.backward()
+        self.optim.step()
+
+        self.loss_trackers['loss'].append(loss.item())
+        self.loss_trackers['loss_main'].append(loss_main.item())
+        self.loss_trackers['loss_reg'].append(loss_reg.item())
+
+        ############################ Optimize Pose During Training ##########################################
+        feature_map_detached = feature_map_.detach()
+        assert 'voge' in self.projector.raster_type, 'Current we only support VoGE as differentiable sampler.'
+
+        params_dict = {'azimuth': azimuth, 'elevation': elevation, 'distance': distance, 'theta': theta}
+        estep_params = [torch.nn.Parameter(params_dict[t]) for t in self.latent_to_update]
+        optimizer_estep = torch.optim.Adam([{'params': t, } for t in estep_params], lr=self.latent_lr, betas=(0.8, 0.6))
+        
+        with torch.no_grad():
+            states = self.latent_manager_optimizer.get_latent_without_default(image_names, )
+            if states is not None:
+                state_dicts_ = {'state': {i: {'step': 0, 'exp_avg': states[i * 2].clone(), 'exp_avg_sq': states[i * 2 + 1].clone()} for i in range(self.n_shape_state)}, 'param_groups': optimizer_estep.state_dict()['param_groups']}
+                optimizer_estep.load_state_dict(state_dicts_)
+            else:
+                print('States not found in saved dict, this should only happens in epoch 0!')
+
+        get_parameters = lambda param_name, params_dict=params_dict: estep_params[self.latent_to_update.index(param_name)] if param_name in self.latent_to_update else params_dict[param_name].cuda()
+        all_loss_estep = []
+        for latent_iter in range(self.latent_iter_per):
+            optimizer_estep.zero_grad()
+            kp, kpvis  = self.projector(azim=get_parameters('azimuth'), elev=get_parameters('elevation'), dist=get_parameters('distance'), theta=get_parameters('theta'), **kwargs_)
+            features = self.net.forward(feature_map_detached, keypoint_positions=kp, obj_mask=1 - obj_mask, img_shape=img_shape, mode=1)
+            loss_estep = self.memory_bank.compute_feature_dist(features.mean(dim=0))
+            loss_estep.backward()
+
+            optimizer_estep.step()
+            all_loss_estep.append(loss_estep.item())
+
+        optimizer_estep.zero_grad()
+        with torch.no_grad():
+            state_dict_optimizer = optimizer_estep.state_dict()['state']
+            self.latent_manager_optimizer.save_latent(image_names, *[state_dict_optimizer[i // 2]['exp_avg_sq' if i % 2 else 'exp_avg'] for i in range(self.n_shape_state * 2)])
+            self.latent_manager.save_latent(image_names, *estep_params)
+
+        return {'loss': loss.item(), 'loss_main': loss_main.item(), 'loss_reg': loss_reg.item(), 'loss_estep': sum(all_loss_estep)}
+
+    def get_ckpt(self, **kwargs):
+        ckpt = {}
+        ckpt['state'] = self.net.state_dict()
+        ckpt['memory'] = self.memory_bank.memory
+        ckpt['lr'] = self.optim.param_groups[0]['lr']
+        ckpt['update_latents'] = self.latent_to_update
+        ckpt['latents'] = self.latent_manager.latent_set
+        for k in kwargs:
+            ckpt[k] = kwargs[k]
+        return ckpt
