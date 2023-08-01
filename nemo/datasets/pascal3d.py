@@ -210,8 +210,13 @@ class Pascal3DPlus(Dataset):
             if self.enable_cache:
                 self.cache[name_img] = copy.deepcopy(sample)
 
-        if self.transforms:
-            sample = self.transforms(sample)
+        if self.training:
+            if self.transforms:
+                sample = self.transforms(sample)
+        
+        else:
+            if self.transforms_test:
+                sample = self.transforms_test(sample)
 
         return sample
 
