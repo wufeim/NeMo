@@ -34,7 +34,7 @@ def inference(cfg):
     running_results = []
     for cate in all_categories:
         dataset_kwargs = {"data_type": "val", "category": cate}
-        val_dataset = construct_class_by_name(**cfg.dataset, **dataset_kwargs)
+        val_dataset = construct_class_by_name(**cfg.dataset, **dataset_kwargs, training=False)
 
         val_dataloader = torch.utils.data.DataLoader(
             val_dataset, batch_size=cfg.inference.get('batch_size', 1), shuffle=False, num_workers=4
