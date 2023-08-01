@@ -34,10 +34,12 @@ class Pascal3DPlus(Dataset):
         skip_kp=False,
         transforms_test=None,
         segmentation_masks=[],
+        training=True,
         **kwargs,
     ):  
         if transforms_test is None:
             transforms_test = transforms
+        self.training = training
         self.data_type = data_type
         self.root_path = get_abs_path(root_path)
         self.category = category
