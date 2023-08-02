@@ -587,7 +587,8 @@ class NeMoRuntimeOptimize(NeMo):
             optimizer_estep.zero_grad()
             kp, kpvis  = self.projector(azim=get_parameters('azimuth'), elev=get_parameters('elevation'), dist=get_parameters('distance'), theta=get_parameters('theta'), **kwargs_)
             features = self.net.forward(feature_map_detached, keypoint_positions=kp, obj_mask=1 - obj_mask, img_shape=img_shape, mode=1)
-            loss_estep = self.memory_bank.compute_feature_dist(features.mean(dim=0))
+
+            loss_estep = self.memory_bank.compute_feature_dist(features, kpvis)
             loss_estep.backward()
 
             optimizer_estep.step()
