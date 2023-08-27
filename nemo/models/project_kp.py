@@ -18,6 +18,8 @@ except:
 def to_tensor(val):
     if isinstance(val, torch.Tensor):
         return val[None] if len(val.shape) == 2 else val
+    elif isinstance(val, list):
+        return [(t if isinstance(val, torch.Tensor) else torch.from_numpy(t)) for t in val]
     else:
         get = torch.from_numpy(val)
         return get[None] if len(get.shape) == 2 else get
@@ -26,6 +28,12 @@ def to_tensor(val):
 def func_single(meshes, **kwargs):
     return meshes, meshes.verts_padded()
 
+
+def func_reselect(meshes, indexs, **kwargs):
+    verts_ = [meshes._verts_list[i] for i in indexs]
+    faces_ = [meshes._faces_list[i] for i in indexs]
+    meshes_out = Meshes(verts=verts_, faces=faces_).to(meshes.device)
+    return meshes_out, meshes_out.verts_padded()
 
 class PackedRaster():
     def __init__(self, raster_configs, object_mesh, mesh_mode='single', device='cpu', ):
@@ -84,7 +92,7 @@ class PackedRaster():
         if self.mesh_mode == 'single':
             return self.meshes.verts_padded()
 
-    def __call__(self, azim, elev, dist, theta, **kwargs):
+    def __call__(self, azim, elev, dist, theta, img_label = None, **kwargs):
         R, T = look_at_view_transform(dist=dist, azim=azim, elev=elev, degrees=self.use_degree, device=self.cameras.device)
         R = torch.bmm(R, rotation_theta(theta, device_=self.cameras.device))
         
@@ -98,7 +106,7 @@ class PackedRaster():
                 this_cameras._N = R.shape[0]
                 this_cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
 
-            return get_one_standard(self.raster, this_cameras, self.meshes, func_of_mesh=func_single, **kwargs, **self.kwargs)
+            return get_one_standard(self.raster, this_cameras, self.meshes, img_label=img_label, func_of_mesh=func_single, **kwargs, **self.kwargs)
         else:
             if kwargs.get('principal', None) is not None:
                 self.render.cameras._N = R.shape[0]
@@ -125,9 +133,14 @@ class PackedRaster():
                 return get_weight[..., 1:]
 
 
-def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
+def get_one_standard(raster, camera, mesh, img_label, func_of_mesh, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
     # dist_thr => NeMo original repo: cal_occ_one_image: eps
-    mesh_, verts_ = func_of_mesh(mesh, **kwargs)
+    if img_label is None:
+        mesh_, verts_ = func_single(mesh, **kwargs)
+        func_of_mesh = func_single
+    else:
+        mesh_, verts_ = func_reselect(mesh, img_label, **kwargs)
+        func_of_mesh = func_reselect
 
     R = camera.R
     T = camera.T
@@ -141,7 +154,8 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     project_verts = 2 * camera.principal_point[:, None].float().flip(-1) - project_verts
 
     # (B, K)
-    inner_mask = torch.min(camera.image_size.unsqueeze(1) > torch.ones_like(project_verts), dim=-1)[0] & torch.min(0 < torch.ones_like(project_verts), dim=-1)[0]
+    inner_mask = torch.min(camera.image_size.unsqueeze(1) > torch.ones_like(project_verts), dim=-1)[0] & \
+                 torch.min(0 < torch.ones_like(project_verts), dim=-1)[0]
 
     if restrict_to_boundary:
         # image_size -> (h, w)
@@ -149,39 +163,23 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
         project_verts = torch.max(project_verts, torch.zeros_like(project_verts))
 
     raster.cameras = camera
-    frag = raster(mesh_.extend(R.shape[0]), R=R, T=T)
-
+    frag = raster(mesh_.extend(R.shape[0]) if mesh_._N == 1 else mesh_, R=R, T=T)
     true_dist_per_vert = (cam_loc[:, None] - verts_).pow(2).sum(-1).pow(.5)
-    face_dist = torch.gather(true_dist_per_vert[:, None].expand(-1, mesh_.faces_padded().shape[1], -1), dim=2, index=mesh_.faces_padded().expand(true_dist_per_vert.shape[0], -1, -1))
+    face_dist = torch.gather(true_dist_per_vert[:, None].expand(-1, mesh_.faces_padded().shape[1], -1), dim=2, index=mesh_.faces_padded().expand(true_dist_per_vert.shape[0], -1, -1).clamp(min=0))
+    
+    if func_of_mesh is func_reselect:
+        face_dist = torch.cat([face_dist[i, :mesh_.num_faces_per_mesh()[i]] for i in range(R.shape[0])], dim=0)
 
     # (B, 1, H, W)
     # depth_ = frag.zbuf[..., 0][:, None]
     depth_ = interpolate_face_attributes(frag.pix_to_face, frag.bary_coords, face_dist.view(-1, 3, 1))[:, :, :, 0, 0][:, None]
 
     grid = project_verts[:, None] / torch.Tensor(list(depth_.shape[2:])).to(project_verts.device) * 2 - 1
-    
+
     sampled_dist_per_vert = torch.nn.functional.grid_sample(depth_, grid.flip(-1), align_corners=False, mode='nearest')[:, 0, 0, :]
 
     vis_mask = torch.abs(sampled_dist_per_vert - true_dist_per_vert) < dist_thr
 
-    # import numpy as np
-    # import BboxTools as bbt
-    # from PIL import Image, ImageDraw
-    # tt = depth_[0] / depth_[0].max()
-    # kps = project_verts.cpu().numpy()
-    # point_size=7
-    # def foo(t0, vis_mask_):
-    #     im = Image.fromarray((t0.cpu().numpy()[0] * 255).astype(np.uint8)).convert('RGB')
-    #     imd = ImageDraw.ImageDraw(im)
-    #     for k, vv in zip(kps[0], vis_mask_[0]):
-    #         this_bbox = bbt.box_by_shape((point_size, point_size), (int(k[0]), int(k[1])), image_boundary=im.size[::-1])
-    #         imd.ellipse(this_bbox.pillow_bbox(), fill=((0, 255, 0) if vv.item() else (255, 0, 0)))
-
-    #     return im
-
-    # foo(tt, vis_mask).show()
-    # import ipdb
-    # ipdb.set_trace()
     return project_verts, vis_mask & inner_mask
 
 

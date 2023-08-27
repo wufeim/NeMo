@@ -55,7 +55,8 @@ def prepare_pascal3d_sample(
     extra_anno=None,
     seg_mask_path=None,
     center_and_resize=True,
-    skip_3d_anno=False
+    skip_3d_anno=False,
+    extra_resize=1,
 ):
     """
     Prepare a sample for training and validation.
@@ -119,6 +120,7 @@ def prepare_pascal3d_sample(
 
         if get_anno(record, "distance", idx=obj_id) <= 0:
             continue
+        
 
         if center_and_resize:
             if augment_by_dist:
@@ -134,7 +136,7 @@ def prepare_pascal3d_sample(
 
         for rr_idx, resize_rate in enumerate(all_resize_rates):
             if resize_rate <= 0.001:
-                resize_rate = min(out_shape[0] / box.shape[0], out_shape[1] / box.shape[1])
+                resize_rate = min(out_shape[0] / box.shape[0], out_shape[1] / box.shape[1]) * extra_resize
             # try:
             if True:
                 box_ori = bbt.from_numpy(bbox, sorts=("x0", "y0", "x1", "y1"))
@@ -163,7 +165,7 @@ def prepare_pascal3d_sample(
                     
                     new_px, new_py = float(out_shape[1] // 2), float(out_shape[0] // 2)
                 else:
-                    resize_rate = min(out_shape[0] / img.shape[0], out_shape[1] / img.shape[1])
+                    resize_rate = min(out_shape[0] / img.shape[0], out_shape[1] / img.shape[1]) * extra_resize
                     dsize = (int(img.shape[1] * resize_rate), int(img.shape[0] * resize_rate))
                     img = cv2.resize(img, dsize=dsize)
 

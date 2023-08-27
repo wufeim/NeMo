@@ -13,15 +13,15 @@ from nemo.utils import camera_position_to_spherical_angle
 from nemo.utils.general import tensor_linspace
 import time
 
-try:
-    from VoGE.Renderer import GaussianRenderer, GaussianRenderSettings, interpolate_attr
-    from VoGE.Utils import Batchifier
-    enable_voge = True
-except:
-    enable_voge=False
+# try:
+# from VoGE.Renderer import GaussianRenderer, GaussianRenderSettings, interpolate_attr
+from VoGE.Utils import Batchifier
+enable_voge = True
+# except:
+    # enable_voge=False
 
-if not enable_voge:
-    from TorchBatchifier import Batchifier
+# if not enable_voge:
+    # from TorchBatchifier import Batchifier
 
 
 def loss_fg_only(obj_s, clu_s=None, reduce_method=lambda x: torch.mean(x)):
@@ -33,6 +33,12 @@ def loss_fg_bg(obj_s, clu_s, reduce_method=lambda x: torch.mean(x)):
         reduce_method(torch.max(obj_s, clu_s)) - reduce_method(clu_s)
     )
 
+def object_loss_fg_bg(obj_s, clu_s, object_height, object_width, reduce_method=lambda x: torch.mean(x)):
+    obj_s = obj_s[object_height[0]:object_height[1], object_width[0]:object_width[1]]
+    clu_s = clu_s[object_height[0]:object_height[1], object_width[0]:object_width[1]]
+    return torch.ones(1, device=obj_s.device) - (
+        reduce_method(torch.max(obj_s, clu_s)) - reduce_method(clu_s)
+    )
 
 def get_pre_render_samples(inter_module, azum_samples, elev_samples, theta_samples, distance_samples=[5], device='cpu',):
     with torch.no_grad():
@@ -197,6 +203,7 @@ def solve_pose(
     principal=None,
     pre_render=True,
     dof=3,
+    bbox=None,
     **kwargs
 ):
     b, c, hm_h, hm_w = feature_map.size()
@@ -264,6 +271,8 @@ def solve_pose(
                 n = feature_map.shape[0]
                 distance_source = kwargs.get('distance_source')
                 principal_ = principal_[None].expand(n, -1).float()
+
+                # Note it is correct to use distance_source as target since we do not want to rescale the feature map here. The actual distance is controlled in C
                 t_feature_map = align_no_centered(maps_source=feature_map, principal_source=principal_, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, distance_source=distance_source, distance_target=distance_source, padding_mode='border')
                 t_clutter_score = align_no_centered(maps_source=clutter_score[:, None], principal_source=principal_, maps_target_shape=(maps_target_shape[0, 0], maps_target_shape[0, 1]), principal_target=maps_target_shape.flip(1) / 2, distance_source=distance_source, distance_target=distance_source, padding_mode='border').squeeze(1)
 
@@ -301,7 +310,7 @@ def solve_pose(
         inter_module.rasterizer.cameras.principal_point = principals
         optim = construct_class_by_name(**cfg.inference.optimizer, params=[C, theta, principals])
     else:
-        principals = init_principal
+        principals = init_principal.expand(b, -1) if init_principal.shape[0] == 1 else init_principal
         inter_module.rasterizer.cameras.principal_point = init_principal
         optim = construct_class_by_name(**cfg.inference.optimizer, params=[C, theta])
 
@@ -321,7 +330,6 @@ def solve_pose(
         object_score = torch.sum(projected_map * feature_map, dim=1)
         
         loss = loss_fg_bg(object_score, clutter_score, )
-
         loss.backward()
         optim.step()
         optim.zero_grad()
@@ -343,7 +351,15 @@ def solve_pose(
         )
         this_principal = principals[i]
         with torch.no_grad():
-            this_loss = loss_fg_bg(object_score[i, None], clutter_score[i, None], )
+            
+            if bbox is not None:
+                # print(bbox)
+                # torch.set_printoptions(profile="full")
+                object_height = (int(bbox[i][0].item() // 8), int(bbox[i][1].item() // 8))
+                object_width = (int(bbox[i][2].item() // 8), int(bbox[i][3].item() // 8))
+                this_loss = object_loss_fg_bg(object_score[i], clutter_score[i], object_height, object_width)
+            else:
+                this_loss = loss_fg_bg(object_score[i, None], clutter_score[i, None], )
         refined = [{
                 "azimuth": azimuth_pred,
                 "elevation": elevation_pred,

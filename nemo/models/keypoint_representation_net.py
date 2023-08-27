@@ -213,7 +213,9 @@ def get_noise_pixel_index(keypoints, max_size, n_samples, obj_mask=None):
     try:
         return torch.multinomial(mask, n_samples)
     except:
-        return None
+        return get_noise_pixel_index(keypoints, max_size, n_samples, obj_mask=None)
+        
+        # return None
     """
     return torch.multinomial(mask, n_samples)
     """
@@ -438,7 +440,7 @@ class NetE2E(nn.Module):
                                                        max_size=X.shape[2],
                                                        n_samples=self.n_noise_points,
                                                        obj_mask=None)
-
+            
             keypoint_all = torch.cat((keypoint_idx, keypoint_noise), dim=1)
 
         # n * c * k -> n * k * c
@@ -452,6 +454,7 @@ class NetE2E(nn.Module):
             X = X.view(n, -1, net_out_dimension[self.net_type])
         else:
             X = X.view(n, -1, self.out_layer.weight.shape[0])
+
         return X
 
     def forward(self, *args, mode=-1, **kwargs):
@@ -508,7 +511,7 @@ def get_noise_pixel_index_voge(keypoints, max_size, n_samples, ):
     return torch.multinomial(mask, n_samples)
 
 
-from VoGE.Utils import ind_fill
+# from VoGE.Utils import ind_fill
 def sample_features_debug(frag, image, n_vert=None):
     weight = torch.zeros(image.shape[0:3] + (n_vert, )).to(image.device)
     weight = ind_fill(weight, frag.vert_index.long(), dim=3, src=frag.vert_weight)

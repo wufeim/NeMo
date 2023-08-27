@@ -73,9 +73,9 @@ class MeshConverter:
             image_size=map_size,
         )
         box_ori = bbt.from_numpy(get_anno(annos, "box_ori"))
-        box_cropped = bbt.from_numpy(get_anno(annos, "box_obj").astype(np.int))
+        box_cropped = bbt.from_numpy(get_anno(annos, "box_obj").astype(np.int64))
         box_cropped.set_boundary(
-            get_anno(annos, "box_obj").astype(np.int)[4::].tolist()
+            get_anno(annos, "box_obj").astype(np.int64)[4::].tolist()
         )
 
         if_visible = np.logical_and(if_visible, box_include_2d(box_ori, points_2d))

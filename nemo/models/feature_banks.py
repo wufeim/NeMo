@@ -3,6 +3,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from nemo.utils.pascal3d_utils import CATEGORIES
 
 
 def one_hot(y, max_size=None):
@@ -15,6 +16,15 @@ def one_hot(y, max_size=None):
     y_onehot.scatter_(1, y.type(torch.long), 1)
     return y_onehot
 
+def fun_label_onehot(img_label, count_label):
+    ret = torch.zeros(img_label.shape[0], len(CATEGORIES)).to(img_label.device)
+    ret = ret.scatter_(1, img_label.unsqueeze(1), 1.0).to(img_label.device)
+    for i in range(len(CATEGORIES)):
+        count = count_label[i]
+        if count == 0:
+            continue
+        ret[:, i] /= count
+    return ret
 
 def to_mask(y, max_size):
     y_onehot = torch.zeros((len(y), max_size), dtype=torch.float32, device=y[0].device)
@@ -34,7 +44,7 @@ def remove_near_vertices_dist(vert_dist, thr, num_neg, kappas={'pos':0, 'near':1
             return torch.cat([tem, torch.ones(vert_dist.shape[0: 2] + (num_neg, )).type_as(dtype_template) * kappas['clutter']], dim=2)
 
 
-def mask_remove_near(keypoints, thr, dtype_template=None, num_neg=0, neg_weight=1, kappas={'pos':0, 'near':1e5, 'clutter':0}):
+def mask_remove_near(keypoints, thr, img_label=None, zeros=None, dtype_template=None, num_neg=0, neg_weight=1, kappas={'pos':0, 'near':1e5, 'clutter':0}):
     if dtype_template is None:
         dtype_template = torch.ones(1, dtype=torch.float32)
     # keypoints -> [n, k, 2]
@@ -52,6 +62,19 @@ def mask_remove_near(keypoints, thr, dtype_template=None, num_neg=0, neg_weight=
             tem = (distance <= thr.unsqueeze(1).unsqueeze(2)).type_as(
                 dtype_template
             ) * kappas['near'] - torch.eye(keypoints.shape[1]).type_as(dtype_template).unsqueeze(dim=0) * (kappas['near'] - kappas['pos'])
+            
+            if zeros is not None:
+                for i in range(tem.shape[0]):
+                    zeros[
+                        i,
+                        :,
+                        img_label[i] * tem.shape[1] : (img_label[i] + 1) * tem.shape[1],
+                    ] = (
+                        tem[i]
+                    )
+
+                tem = zeros
+            
             return torch.cat(
                 [
                     tem,
@@ -61,7 +84,6 @@ def mask_remove_near(keypoints, thr, dtype_template=None, num_neg=0, neg_weight=
                 ],
                 dim=2,
             )
-            
 
 class NearestMemorySelective(nn.Module):
     def forward(self, x, y, visible, n_pos, n_neg, lru, memory, params, eps=1e-8):
@@ -130,6 +152,7 @@ class NearestMemoryManager(nn.Module):
         Z=None,
         max_groups=-1,
         num_noise=-1,
+        classification=False
     ):
         super().__init__()
         self.nLem = output_size
@@ -154,15 +177,27 @@ class NearestMemoryManager(nn.Module):
 
         self.num_pos = num_pos
 
-        self.accumulate_num = torch.zeros(
-            self.num_pos, dtype=torch.long, device=self.memory.device
-        )
+        # For classification
+        self.classification = classification
+        self.single_cate_pos = int(self.num_pos / len(CATEGORIES))
+        self.single_feature_dim = int(self.num_pos / len(CATEGORIES))
+
+        if classification:
+            self.accumulate_num = torch.zeros(
+                self.single_cate_pos, dtype=torch.long, device=self.memory.device
+            ) 
+        else:
+            self.accumulate_num = torch.zeros(
+                self.num_pos, dtype=torch.long, device=self.memory.device
+            ) 
         self.accumulate_num.requires_grad = False
 
+
     # x: feature: [128, 128], y: indexes [128] -- a batch of data's index directly from the dataloader.
-    def forward(self, x, y, visible):
-        n_pos = self.num_pos  # 1024
+    def forward(self, x, y, visible, img_label):
+        n_pos = self.num_pos  # 1024 
         n_neg = self.num_noise  # 5
+        
 
         if (
             self.max_lru == -1
@@ -179,14 +214,20 @@ class NearestMemoryManager(nn.Module):
         # x [n, k, d] * memory [l, d] = similarity : [n, k, l]
         if n_neg == 0:
             similarity = torch.matmul(x, torch.transpose(self.memory, 0, 1))
-
             noise_similarity = torch.zeros(1)
         else:
-            t_ = x[:, 0:n_pos, :]
-            similarity = torch.matmul(t_, torch.transpose(self.memory, 0, 1))
-            noise_similarity = torch.matmul(
-                x[:, n_pos:, :], torch.transpose(self.memory[0:n_pos, :], 0, 1)
-            )
+            if self.classification:
+                t_ = x[:, 0:self.single_cate_pos, :]
+                similarity = torch.matmul(t_, torch.transpose(self.memory, 0, 1))
+                noise_similarity = torch.matmul(
+                    x[:, self.single_cate_pos:, :], torch.transpose(self.memory[0:n_pos, :], 0, 1)
+                )
+            else:    
+                t_ = x[:, 0:n_pos, :]
+                similarity = torch.matmul(t_, torch.transpose(self.memory, 0, 1))
+                noise_similarity = torch.matmul(
+                    x[:, n_pos:, :], torch.transpose(self.memory[0:n_pos, :], 0, 1)
+                )
 
         n_class = n_pos // group_size
 
@@ -218,13 +259,30 @@ class NearestMemoryManager(nn.Module):
 
             # update memory keypoints
             # [n, k, d]
-            get = torch.bmm(
-                torch.transpose(y_onehot, 1, 2),
-                x[:, 0:n_pos, :] * visible.type(x.dtype).view(*visible.shape, 1),
-            )
+            if self.classification:
+                count_label = torch.bincount(img_label, minlength=len(CATEGORIES))
+                label_weight_onehot = fun_label_onehot(img_label, count_label)
+                get = torch.matmul(label_weight_onehot.transpose(0, 1), (x[:, 0:self.single_cate_pos, :] * visible.type(x.dtype).view(*visible.shape, 1)).view(x.shape[0], -1))
+                get = get.view(get.shape[0] ,-1, x.shape[-1])
+                exist_cate = (count_label == 0).nonzero(as_tuple=True)[0]
+                # handle case that one category has no instance in current batch
+                for i in exist_cate:
+                    # copy memory to get
+                    get[i] = self.memory[i * self.single_cate_pos : (i + 1) * self.single_cate_pos]
+                get = get.view(-1, x.shape[-1])
+            else:
+                get = torch.bmm(
+                    torch.transpose(y_onehot, 1, 2),
+                    x[:, 0:n_pos, :] * visible.type(x.dtype).view(*visible.shape, 1),
+                )
+                # [k, d]
+                get = torch.mean(get, dim=0)  # / torch.sum(visible, dim=0).view(-1, 1)
 
-            # [k, d]
-            get = torch.mean(get, dim=0)  # / torch.sum(visible, dim=0).view(-1, 1)
+            if self.classification:
+                clutter_start = self.single_cate_pos
+            else:
+                clutter_start = n_pos
+
 
             if n_neg > 0:
                 if x.shape[0] > (self.nLem - n_pos) / n_neg:
@@ -233,7 +291,7 @@ class NearestMemoryManager(nn.Module):
                             [
                                 self.memory[0:n_pos, :] * momentum
                                 + get * (1 - momentum),
-                                x[:, n_pos::, :]
+                                x[:, clutter_start::, :]
                                 .contiguous()
                                 .view(-1, x.shape[2])[0 : self.memory.shape[0] - n_pos],
                             ],
@@ -248,7 +306,7 @@ class NearestMemoryManager(nn.Module):
                             self.memory[
                                 n_pos : n_pos + self.lru * n_neg * x.shape[0], :
                             ],
-                            x[:, n_pos::, :].contiguous().view(-1, x.shape[2]),
+                            x[:, clutter_start::, :].contiguous().view(-1, x.shape[2]),
                             self.memory[
                                 n_pos + (self.lru + 1) * n_neg * x.shape[0] : :, :
                             ],
