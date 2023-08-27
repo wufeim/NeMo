@@ -208,36 +208,36 @@ class NeMo(BaseModel):
         if self.training_params.proj_mode == 'prepared':
                 kp = sample['kp'].cuda()
                 kpvis = sample["kpvis"].cuda().type(torch.bool)
-            else:
-                with torch.no_grad():
-                    kp, kpvis = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), img_label=mesh_label, **kwargs_)             
-                    if self.training_params.classification:
-                        for i in range(kpvis.shape[0]):
-                            kpvis[i, self.all_verts_num[label[i]]:] = False
-                '''
-                for i in range(kp.shape[0]):
-                    kp_t = kp[i].detach().cpu().numpy()
-                    kpvis_t = kpvis[i].detach().cpu().numpy()
-                    img2 = np.array(sample["original_img"][i])
-                    y0, y1, x0, x1, _, _ = sample["bbox"][i]
-                    obj_mask2 = sample["obj_mask"][i]
-                    
-                    import cv2
+        else:
+            with torch.no_grad():
+                kp, kpvis = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), img_label=mesh_label, **kwargs_)             
+                if self.training_params.classification:
+                    for i in range(kpvis.shape[0]):
+                        kpvis[i, self.all_verts_num[label[i]]:] = False
+            '''
+            for i in range(kp.shape[0]):
+                kp_t = kp[i].detach().cpu().numpy()
+                kpvis_t = kpvis[i].detach().cpu().numpy()
+                img2 = np.array(sample["original_img"][i])
+                y0, y1, x0, x1, _, _ = sample["bbox"][i]
+                obj_mask2 = sample["obj_mask"][i]
+                
+                import cv2
 
-                    for i2 in range(len(kp_t)):
-                        if kpvis_t[i2]:
-                            img2 = cv2.circle(
-                                img2, (int(kp_t[i2, 1]), int(kp_t[i2, 0])), 2, (255, 0, 0), -1
-                            )
-                    img2 = cv2.rectangle(img2, (int(x0), int(y0)), (int(x1), int(y1)), (0, 255, 0), 2)
+                for i2 in range(len(kp_t)):
+                    if kpvis_t[i2]:
+                        img2 = cv2.circle(
+                            img2, (int(kp_t[i2, 1]), int(kp_t[i2, 0])), 2, (255, 0, 0), -1
+                        )
+                img2 = cv2.rectangle(img2, (int(x0), int(y0)), (int(x1), int(y1)), (0, 255, 0), 2)
 
-                    gray_img = (img2 * 0.3).astype(np.uint8)
-                    gray_img[obj_mask2 == 1] = img2[obj_mask2 == 1]
+                gray_img = (img2 * 0.3).astype(np.uint8)
+                gray_img[obj_mask2 == 1] = img2[obj_mask2 == 1]
 
-                    Image.fromarray(gray_img).save(
-                        os.path.join('/home/guofeng/Classification_OmniNeMo/tmp', f'debug_{sample["this_name"][i].replace("/", "_")}.png')
-                    )
-                '''
+                Image.fromarray(gray_img).save(
+                    os.path.join('/home/guofeng/Classification_OmniNeMo/tmp', f'debug_{sample["this_name"][i].replace("/", "_")}.png')
+                )
+            '''
                                     
         features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask, do_normalize=True,)
 

@@ -36,15 +36,9 @@ class Pascal3DPlus(Dataset):
         remove_no_bg=None,
         skip_kp=False,
         transforms_test=None,
-        transforms_test=None,
         segmentation_masks=[],
         training=True,
-        training=True,
         **kwargs,
-    ):  
-        if transforms_test is None:
-            transforms_test = transforms
-        self.training = training
     ):  
         if transforms_test is None:
             transforms_test = transforms
@@ -191,15 +185,8 @@ class Pascal3DPlus(Dataset):
                 obj_mask = np.zeros((img.size[1], img.size[0]))
 
             label = 0 if len(self.category) == 0 else self.category.index(cate)
-            pad_size = self.max_n - kp.shape[0]
-            # kp = np.pad(kp, pad_width=((0, pad_size), (0, 0)), mode='constant', constant_values=0)
-            # iskpvisible = np.pad(iskpvisible, pad_width=(0, pad_size), mode='constant', constant_values=False)
-            # kp = np.pad(kp, pad_width=((0, pad_size), (0, 0)), mode='constant', constant_values=0)
-            # iskpvisible = np.pad(iskpvisible, pad_width=(0, pad_size), mode='constant', constant_values=False)
             index = np.array([self.max_n * label + k for k in range(self.max_n)])
 
-            # print((0 if self.kwargs.get('add_noise_azimuth', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_azimuth', 0))))
-            # print((0 if self.kwargs.get('add_noise_azimuth', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_azimuth', 0))))
             sample = {
                 "this_name": this_name,
                 "cad_index": int(annotation_file["cad_index"]),
@@ -232,14 +219,6 @@ class Pascal3DPlus(Dataset):
 
             if self.enable_cache:
                 self.cache[name_img] = copy.deepcopy(sample)
-
-        if self.training:
-            if self.transforms:
-                sample = self.transforms(sample)
-        
-        else:
-            if self.transforms_test:
-                sample = self.transforms_test(sample)
 
         if self.training:
             if self.transforms:
@@ -395,13 +374,7 @@ class Normalize:
 def hflip(sample):
     sample["img"] = torchvision.transforms.functional.hflip(sample["img"])
     w = np.array(sample["img"]).shape[1]
-    w = np.array(sample["img"]).shape[1]
     if 'kp' in sample:
-        sample["kp"][:, 0] = w - sample["kp"][:, 0] - 1
-    sample["principal"][0] = w - sample["principal"][0] - 1
-    sample["azimuth"] = np.pi - sample["azimuth"]
-    sample["theta"] = - sample["theta"]
-    # raise NotImplementedError("Horizontal flip is not tested.")
         sample["kp"][:, 0] = w - sample["kp"][:, 0] - 1
     sample["principal"][0] = w - sample["principal"][0] - 1
     sample["azimuth"] = np.pi - sample["azimuth"]
@@ -435,7 +408,3 @@ class Empty:
     def __call__(self, sample):
         return sample
 
-
-class Empty:
-    def __call__(self, sample):
-        return sample

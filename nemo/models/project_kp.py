@@ -55,39 +55,6 @@ def func_multi_select(meshes, indexs, transforms, **kwargs):
     meshes_out = Meshes(verts=all_verts, faces=all_faces).to(meshes.device)
     return meshes_out, meshes_out.verts_padded()
 
-
-def func_reselect(meshes, indexs, **kwargs):
-    verts_ = [meshes._verts_list[i] for i in indexs]
-    faces_ = [meshes._faces_list[i] for i in indexs]
-    meshes_out = Meshes(verts=verts_, faces=faces_).to(meshes.device)
-    return meshes_out, meshes_out.verts_padded()
-
-
-def func_multi_select(meshes, indexs, transforms, **kwargs):
-    # index need to list of tensor [k, ] * n
-    # transformes [k, ] * n
-
-    all_verts = []
-    all_faces = []
-
-    for transform_, index_ in zip(transforms, indexs):
-        verts_ = [transform_[i].transform_points(meshes._verts_list[i]) for i in index_]
-        idx_shift = torch.cumsum(torch.Tensor([0] + [t.shape[0] for t in verts_][:-1]), dim=0).to(meshes.device)
-        faces_ = [transform_[i].transform_points(meshes._faces_list[i]) + idx_shift[i] for i in index_]
-
-        all_verts.append(torch.cat(verts_, dim=0))
-        all_faces.append(torch.cat(faces_, dim=0))
-
-    meshes_out = Meshes(verts=all_verts, faces=all_faces).to(meshes.device)
-    return meshes_out, meshes_out.verts_padded()
-
-
-def func_reselect(meshes, indexs, **kwargs):
-    verts_ = [meshes._verts_list[i] for i in indexs]
-    faces_ = [meshes._faces_list[i] for i in indexs]
-    meshes_out = Meshes(verts=verts_, faces=faces_).to(meshes.device)
-    return meshes_out, meshes_out.verts_padded()
-
 class PackedRaster():
     def __init__(self, raster_configs, object_mesh, mesh_mode='single', device='cpu', ):
         """
