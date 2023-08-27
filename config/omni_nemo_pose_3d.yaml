@@ -41,9 +41,9 @@ inference:
         max_pi: 0.1667
         num: 3
     dist_sample:
-        min: 4.0
-        max: 6.0
-        num: 3
+        min: 5.0
+        max: 5.0
+        num: 1
 
     min_distance: 2
     pre_rendering_thr: 80

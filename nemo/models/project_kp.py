@@ -10,6 +10,7 @@ try:
     from VoGE.Meshes import GaussianMeshesNaive as GaussianMesh
     from VoGE.Converter.Converters import naive_vertices_converter
     from VoGE.Utils import ind_fill
+    from VoGE.Sampler import scatter_max_weight
 
     enable_voge = True
 except:
@@ -27,6 +28,58 @@ def to_tensor(val):
 
 def func_single(meshes, **kwargs):
     return meshes, meshes.verts_padded()
+
+
+def func_reselect(meshes, indexs, **kwargs):
+    verts_ = [meshes._verts_list[i] for i in indexs]
+    faces_ = [meshes._faces_list[i] for i in indexs]
+    meshes_out = Meshes(verts=verts_, faces=faces_).to(meshes.device)
+    return meshes_out, meshes_out.verts_padded()
+
+
+def func_multi_select(meshes, indexs, transforms, **kwargs):
+    # index need to list of tensor [k, ] * n
+    # transformes [k, ] * n
+
+    all_verts = []
+    all_faces = []
+
+    for transform_, index_ in zip(transforms, indexs):
+        verts_ = [transform_[i].transform_points(meshes._verts_list[i]) for i in index_]
+        idx_shift = torch.cumsum(torch.Tensor([0] + [t.shape[0] for t in verts_][:-1]), dim=0).to(meshes.device)
+        faces_ = [transform_[i].transform_points(meshes._faces_list[i]) + idx_shift[i] for i in index_]
+
+        all_verts.append(torch.cat(verts_, dim=0))
+        all_faces.append(torch.cat(faces_, dim=0))
+
+    meshes_out = Meshes(verts=all_verts, faces=all_faces).to(meshes.device)
+    return meshes_out, meshes_out.verts_padded()
+
+
+def func_reselect(meshes, indexs, **kwargs):
+    verts_ = [meshes._verts_list[i] for i in indexs]
+    faces_ = [meshes._faces_list[i] for i in indexs]
+    meshes_out = Meshes(verts=verts_, faces=faces_).to(meshes.device)
+    return meshes_out, meshes_out.verts_padded()
+
+
+def func_multi_select(meshes, indexs, transforms, **kwargs):
+    # index need to list of tensor [k, ] * n
+    # transformes [k, ] * n
+
+    all_verts = []
+    all_faces = []
+
+    for transform_, index_ in zip(transforms, indexs):
+        verts_ = [transform_[i].transform_points(meshes._verts_list[i]) for i in index_]
+        idx_shift = torch.cumsum(torch.Tensor([0] + [t.shape[0] for t in verts_][:-1]), dim=0).to(meshes.device)
+        faces_ = [transform_[i].transform_points(meshes._faces_list[i]) + idx_shift[i] for i in index_]
+
+        all_verts.append(torch.cat(verts_, dim=0))
+        all_faces.append(torch.cat(faces_, dim=0))
+
+    meshes_out = Meshes(verts=all_verts, faces=all_faces).to(meshes.device)
+    return meshes_out, meshes_out.verts_padded()
 
 
 def func_reselect(meshes, indexs, **kwargs):
@@ -112,13 +165,18 @@ class PackedRaster():
                 self.render.cameras._N = R.shape[0]
                 self.render.cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
 
+            n = R.shape[0]
+            k = self.meshes.verts.shape[0]
             if self.raster_type == 'voge':
                 # Return voge.fragments
                 frag = self.render(self.meshes, R=R, T=T)
                 get_dict = frag.to_dict()
                 get_dict['start_idx'] = torch.arange(frag.vert_index.shape[0]).to(frag.vert_index.device) 
+
+                with torch.no_grad():
+                    max_weight = scatter_max_weight(frag, n_vert=n * k).view(n, k)
                 # if torch.any( torch.nn.functional.relu(1 - frag.vert_weight.sum(3).view(R.shape[0], -1)).sum(1) < 1 ):
-                return get_dict
+                return get_dict, max_weight
             if self.raster_type == 'vogew':
                 # Return voge.fragments
                 frag = self.render(self.meshes, R=R, T=T)
@@ -130,6 +188,8 @@ class PackedRaster():
                 # weight_ = torch.cat((torch.zeros((*frag.vert_index.shape[0:-1], 1), device=frag.vert_index.device), frag.vert_weight, ), dim=-1)
                 ind += 1
                 get_weight = ind_fill(get_weight, ind, frag.vert_weight, dim=3)
+                
+                max_weight = torch.max(get_weight.view(n, -1, k), dim=1)[0]
                 return get_weight[..., 1:]
 
 

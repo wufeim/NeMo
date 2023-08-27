@@ -459,6 +459,9 @@ class NearestMemoryManager(nn.Module):
                 visible.type(self.accumulate_num.dtype), dim=0
             )
 
+    def compute_feature_dist(self, x, vis, loss_foo=torch.nn.functional.mse_loss):
+        return (loss_foo(F.normalize(x, p=2, dim=-1), self.memory[0:x.shape[0], None], reduce=False).sum(-1)[..., :vis.shape[-1]] * vis).mean()
+        
     def normalize_memory(self):
         self.memory.copy_(F.normalize(self.memory, p=2, dim=1))
 
@@ -467,3 +470,45 @@ class NearestMemoryManager(nn.Module):
         self.accumulate_num = self.accumulate_num.cuda(device)
         self.memory = self.memory.cuda(device)
         return self
+
+
+class StaticLatentMananger():
+    def __init__(self, n_latents, to_device='cuda', store_device='cpu'):
+        self.latent_set = [dict() for _ in range(n_latents)]
+        self.to_device = to_device
+        self.store_device = store_device
+        self.n_latent = n_latents
+
+    def save_latent(self, names, *args):
+        out_all = []
+        for k in range(self.n_latent):
+            out = []
+            for i, name_ in enumerate(names):
+                if torch.isnan(args[k][i].max()).item():
+                    out.append(self.latent_set[k][name_].to(args[k].device))
+                    continue
+                self.latent_set[k][name_] = args[k][i].detach().to(self.store_device)
+                out.append(args[k][i])
+            out_all.append(torch.stack(out))
+        return tuple(out_all)
+
+    def get_latent(self, names, *default_value):
+        out = [[] for _ in range(self.n_latent)]
+        for i, name_ in enumerate(names):
+            for k in range(self.n_latent):
+                if name_ in self.latent_set[k].keys():
+                    out[k].append(self.latent_set[k][name_].to(self.to_device))
+                else:
+                    out[k].append(default_value[k][i])
+        return tuple([torch.stack(t) for t in out])
+
+    def get_latent_without_default(self, names, ):
+        out = [[] for _ in range(self.n_latent)]
+        for i, name_ in enumerate(names):
+            for k in range(self.n_latent):
+                if name_ in self.latent_set[k].keys():
+                    out[k].append(self.latent_set[k][name_].to(self.to_device))
+                else:
+                    return None
+                
+        return tuple([torch.stack(t) for t in out])
