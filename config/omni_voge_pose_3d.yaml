@@ -16,6 +16,7 @@ inference:
     init_mode: 3d_batch
     loss: nemo.models.solve_pose.loss_fg_bg
     batch_size: 12
+    classification: false
 
     search_translation: false
     optimize_translation: false

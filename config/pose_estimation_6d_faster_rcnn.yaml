@@ -15,3 +15,4 @@ training:
 inference:
     random_seed: 0
     visualize_num_samples: 0
+    classification: false

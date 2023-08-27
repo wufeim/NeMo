@@ -18,6 +18,7 @@ training:
     T: 0.07
     remove_near_mode: pixel
     proj_mode: prepared
+    classification: false
 
     optimizer:
         class_name: torch.optim.Adam

@@ -4,9 +4,9 @@ model: config/models/nemo_runtime.yaml
 task: 3d_pose_estimation
 
 training:
-    batch_size: 48
+    batch_size: 12
     workers: 0
-    total_epochs: 800
+    total_epochs: 400
     log_interval: 1
     ckpt_interval: 200
     visualize_training_data: false
@@ -17,6 +17,7 @@ inference:
     loss: nemo.models.solve_pose.loss_fg_bg
     batch_size: 20 # set to 20 for 24GB vmem
     realign: true
+    classification: false
 
     search_translation: false
     optimize_translation: false

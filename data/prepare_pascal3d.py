@@ -45,6 +45,7 @@ def parse_args():
     )
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument('--random_resize', action='store_true')
     return parser.parse_args()
 
 
@@ -317,36 +318,48 @@ def worker(params):
     num_errors = 0
     mesh_name_list = [[] for _ in range(MESH_LEN[cate])]
     for img_name in image_names:
+        resize_rate = 1
+        '''
+        resize_rate = np.random.normal(1, 0.3)
+        if resize_rate < 0.4:
+            resize_rate = 0.4
+        if resize_rate > 2:
+            resize_rate = 2
+        '''
+
         img_path = os.path.join(img_dir, f"{img_name}.JPEG")
         anno_path = os.path.join(anno_dir, f"{img_name}.mat")
+
         if prepare_seg:
             seg_mask_path = os.path.join(seg_data_path, set_type, cate, f'{img_name}.npy')
         else:
             seg_mask_path=None
 
         prepared_sample_names = prepare_pascal3d_sample(
-            cate,
-            img_name,
-            img_path,
-            anno_path,
-            occ,
-            save_image_path=save_image_path,
-            save_annotation_path=save_annotation_path,
-            out_shape=out_shape,
-            occ_path=None
-            if occ == 0
-            else os.path.join(occ_mask_dir, f"{img_name}.npz"),
-            prepare_mode=cfg.prepare_mode,
-            augment_by_dist=(set_type == "train" and cfg.augment_by_dist),
-            texture_filenames=dtd_filenames,
-            texture_path=dtd_raw_path,
-            single_mesh=cfg.single_mesh,
-            mesh_manager=manager,
-            direction_dicts=direction_dicts,
-            seg_mask_path=seg_mask_path,
-            center_and_resize=cfg.center_and_resize,
-            skip_3d_anno=cfg.skip_3d_anno
-        )
+                cate,
+                img_name,
+                img_path,
+                anno_path,
+                occ,
+                save_image_path=save_image_path,
+                save_annotation_path=save_annotation_path,
+                out_shape=out_shape,
+                occ_path=None
+                if occ == 0
+                else os.path.join(occ_mask_dir, f"{img_name}.npz"),
+                prepare_mode=cfg.prepare_mode,
+                augment_by_dist=(set_type == "train" and cfg.augment_by_dist),
+                texture_filenames=dtd_filenames,
+                texture_path=dtd_raw_path,
+                single_mesh=cfg.single_mesh,
+                mesh_manager=manager,
+                direction_dicts=direction_dicts,
+                seg_mask_path=seg_mask_path,
+                center_and_resize=cfg.center_and_resize,
+                skip_3d_anno=cfg.skip_3d_anno,
+                extra_resize=resize_rate,
+            )
+
         if prepared_sample_names is None:
             num_errors += 1
             continue

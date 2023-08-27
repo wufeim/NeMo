@@ -14,6 +14,7 @@ training:
 
 inference:
     loss: nemo.models.solve_pose.loss_fg_bg
+    classification: false
 
     search_translation: false
     optimize_translation: false

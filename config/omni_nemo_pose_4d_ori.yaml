@@ -17,6 +17,7 @@ inference:
     loss: nemo.models.solve_pose.loss_fg_bg
     batch_size: 20 # set to 20 for 24GB vmem
     realign: true
+    classification: false
 
     search_translation: false
     optimize_translation: false

@@ -12,6 +12,7 @@ transforms:
     - class_name: nemo.datasets.pascal3d.Normalize
 
 training:
+    classification: false
     loss:
         class_name: torch.nn.CrossEntropyLoss
         ignore_index: 41

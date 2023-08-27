@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import json
 
 import torch
 from inference_helpers import helper_func_by_task
@@ -11,7 +12,7 @@ from nemo.utils import load_config
 from nemo.utils import save_src_files
 from nemo.utils import set_seed
 from nemo.utils import setup_logging
-
+from VoGE.Utils import Batchifier
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Training a NeMo model")
@@ -32,9 +33,15 @@ def inference(cfg):
         all_categories = [cfg.args.cate]
 
     running_results = []
-    for cate in all_categories:
-        dataset_kwargs = {"data_type": "val", "category": cate}
+    if cfg.inference.classification:
+        dataset_kwargs = {"data_type": "val", "category": "all"}
         val_dataset = construct_class_by_name(**cfg.dataset, **dataset_kwargs, training=False)
+        
+    for cate in all_categories:
+        
+        if not cfg.inference.classification: 
+            dataset_kwargs = {"data_type": "val", "category": cate}
+            val_dataset = construct_class_by_name(**cfg.dataset, **dataset_kwargs, training=False)
 
         val_dataloader = torch.utils.data.DataLoader(
             val_dataset, batch_size=cfg.inference.get('batch_size', 1), shuffle=False, num_workers=4
@@ -52,8 +59,10 @@ def inference(cfg):
 
         if hasattr(cfg.dataset, 'occ_level'):
             save_pred_path = os.path.join(get_abs_path(cfg.args.save_dir.format(cate)), f'{cfg.dataset.name}_occ{cfg.dataset.occ_level}_{cate}_val.pth')
+            save_cls_pred_path = os.path.join(get_abs_path(cfg.args.save_dir.format(cate)), f'{cfg.dataset.name}_occ{cfg.dataset.occ_level}_{cate}_cls_val.json')
         else:
             save_pred_path = os.path.join(get_abs_path(cfg.args.save_dir.format(cate)), f'{cfg.dataset.name}_{cate}_val.pth')
+            save_cls_pred_path = os.path.join(get_abs_path(cfg.args.save_dir.format(cate)), f'{cfg.dataset.name}_{cate}_cls_val.json')
         if os.path.isfile(save_pred_path):
             cached_pred = torch.load(save_pred_path)
             results = helper_func_by_task[cfg.task](
@@ -71,6 +80,10 @@ def inference(cfg):
                 val_dataloader,
             )
             torch.save(results["save_pred"], save_pred_path)
+
+        if cfg.inference.classification:
+            out_file = open(save_cls_pred_path, "w")
+            json.dump(results["save_classification"], out_file)
 
         running_results += results['running']
 

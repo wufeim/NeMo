@@ -18,6 +18,7 @@ training:
     proj_mode: runtime_voge
     remove_near_mode: vert
     distance_thr: 0.1
+    classification: false
 
     optimizer:
         class_name: torch.optim.Adam

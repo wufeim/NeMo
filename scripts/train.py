@@ -42,6 +42,7 @@ def train(cfg):
     else:
         train_dataset_sampler = None
         shuffle = True
+
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=cfg.training.batch_size,
@@ -53,7 +54,7 @@ def train(cfg):
 
     # Debug dataset
     if cfg.training.visualize_training_data:
-        for i in range(10):
+        for i in range(1):
             train_dataset.debug(
                 np.random.randint(0, len(train_dataset)), save_dir=cfg.args.save_dir
             )
@@ -69,9 +70,17 @@ def train(cfg):
     for epo in range(cfg.training.total_epochs):
         num_iterations = int(cfg.training.scale_iterations_per_epoch * len(train_dataloader))
         for i, sample in enumerate(train_dataloader):
+            # if i % 10 != 0:
+                # continue
+
             if i >= num_iterations:
                 break
             loss_dict = model.train(sample)
+ 
+            if i % 300 == 0:
+                logging.info(
+                    f"[Iter {i}] {model.get_training_state()}"
+                )
             # if cfg.use_wandb:
             #     wandb.log(loss_dict)
 
