@@ -112,7 +112,7 @@ class PackedRaster():
         if self.mesh_mode == 'single':
             return self.meshes.verts_padded()
 
-    def __call__(self, azim, elev, dist, theta, img_label = None, **kwargs):
+    def __call__(self, azim, elev, dist, theta, **kwargs):
         R, T = look_at_view_transform(dist=dist, azim=azim, elev=elev, degrees=self.use_degree, device=self.cameras.device)
         R = torch.bmm(R, rotation_theta(theta, device_=self.cameras.device))
         
@@ -126,7 +126,7 @@ class PackedRaster():
                 this_cameras._N = R.shape[0]
                 this_cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
 
-            return get_one_standard(self.raster, this_cameras, self.meshes, img_label=img_label, func_of_mesh=func_single, **kwargs, **self.kwargs)
+            return get_one_standard(self.raster, this_cameras, self.meshes, func_of_mesh=func_single, **kwargs, **self.kwargs)
         else:
             if kwargs.get('principal', None) is not None:
                 self.render.cameras._N = R.shape[0]
@@ -162,12 +162,8 @@ class PackedRaster():
 
 def get_one_standard(raster, camera, mesh, img_label, func_of_mesh=func_single, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
     # dist_thr => NeMo original repo: cal_occ_one_image: eps
-    if img_label is None:
-        mesh_, verts_ = func_single(mesh, **kwargs)
-        func_of_mesh = func_single
-    else:
-        mesh_, verts_ = func_reselect(mesh, img_label, **kwargs)
-        func_of_mesh = func_reselect
+    mesh_, verts_ = func_of_mesh(mesh, **kwargs)
+    func_of_mesh = func_single
 
     R = camera.R
     T = camera.T
