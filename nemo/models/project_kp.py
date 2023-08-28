@@ -160,7 +160,7 @@ class PackedRaster():
                 return get_weight[..., 1:]
 
 
-def get_one_standard(raster, camera, mesh, img_label, func_of_mesh, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
+def get_one_standard(raster, camera, mesh, img_label, func_of_mesh=func_single, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
     # dist_thr => NeMo original repo: cal_occ_one_image: eps
     if img_label is None:
         mesh_, verts_ = func_single(mesh, **kwargs)
