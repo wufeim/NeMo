@@ -13,15 +13,15 @@ from nemo.utils import camera_position_to_spherical_angle
 from nemo.utils.general import tensor_linspace
 import time
 
-# try:
-# from VoGE.Renderer import GaussianRenderer, GaussianRenderSettings, interpolate_attr
-from VoGE.Utils import Batchifier
-enable_voge = True
-# except:
-    # enable_voge=False
+try:
+    from VoGE.Renderer import GaussianRenderer, GaussianRenderSettings, interpolate_attr
+    from VoGE.Utils import Batchifier
+    enable_voge = True
+except:
+    enable_voge=False
 
-# if not enable_voge:
-    # from TorchBatchifier import Batchifier
+if not enable_voge:
+    from TorchBatchifier import Batchifier
 
 
 def loss_fg_only(obj_s, clu_s=None, reduce_method=lambda x: torch.mean(x)):
