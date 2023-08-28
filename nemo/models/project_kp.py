@@ -206,7 +206,26 @@ def get_one_standard(raster, camera, mesh, img_label, func_of_mesh, restrict_to_
     sampled_dist_per_vert = torch.nn.functional.grid_sample(depth_, grid.flip(-1), align_corners=False, mode='nearest')[:, 0, 0, :]
 
     vis_mask = torch.abs(sampled_dist_per_vert - true_dist_per_vert) < dist_thr
+    
+    # import numpy as np
+    # import BboxTools as bbt
+    # from PIL import Image, ImageDraw
+    # tt = depth_[0] / depth_[0].max()
+    # kps = project_verts.cpu().numpy()
+    # point_size=7
+    # def foo(t0, vis_mask_):
+    #     im = Image.fromarray((t0.cpu().numpy()[0] * 255).astype(np.uint8)).convert('RGB')
+    #     imd = ImageDraw.ImageDraw(im)
+    #     for k, vv in zip(kps[0], vis_mask_[0]):
+    #         this_bbox = bbt.box_by_shape((point_size, point_size), (int(k[0]), int(k[1])), image_boundary=im.size[::-1])
+    #         imd.ellipse(this_bbox.pillow_bbox(), fill=((0, 255, 0) if vv.item() else (255, 0, 0)))
 
+    #     return im
+
+    # foo(tt, vis_mask).show()
+    # import ipdb
+    # ipdb.set_trace()
+    
     return project_verts, vis_mask & inner_mask
 
 
