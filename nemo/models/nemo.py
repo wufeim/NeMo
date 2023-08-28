@@ -199,12 +199,14 @@ class NeMo(BaseModel):
             index = torch.Tensor([[k for k in range(self.num_verts)]] * img.shape[0]).cuda()
         label = sample['label'].cuda()
 
+        kwargs_ = dict(principal=sample['principal']) if 'principal' in sample.keys() else dict()
+        
         if self.training_params.classification:
             mesh_label = label
+            kwargs_.update(dict(func_of_mesh=func_reselect))
         else:
             mesh_label = None
 
-        kwargs_ = dict(principal=sample['principal']) if 'principal' in sample.keys() else dict()
         if self.training_params.proj_mode == 'prepared':
                 kp = sample['kp'].cuda()
                 kpvis = sample["kpvis"].cuda().type(torch.bool)
