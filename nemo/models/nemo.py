@@ -202,10 +202,7 @@ class NeMo(BaseModel):
         kwargs_ = dict(principal=sample['principal']) if 'principal' in sample.keys() else dict()
         
         if self.training_params.classification:
-            mesh_label = label
-            kwargs_.update(dict(func_of_mesh=func_reselect))
-        else:
-            mesh_label = None
+            kwargs_.update(dict(func_of_mesh=func_reselect, mesh_label=label))
 
         if self.training_params.proj_mode == 'prepared':
                 kp = sample['kp'].cuda()
