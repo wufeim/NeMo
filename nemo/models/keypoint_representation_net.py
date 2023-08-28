@@ -511,7 +511,7 @@ def get_noise_pixel_index_voge(keypoints, max_size, n_samples, ):
     return torch.multinomial(mask, n_samples)
 
 
-# from VoGE.Utils import ind_fill
+from VoGE.Utils import ind_fill
 def sample_features_debug(frag, image, n_vert=None):
     weight = torch.zeros(image.shape[0:3] + (n_vert, )).to(image.device)
     weight = ind_fill(weight, frag.vert_index.long(), dim=3, src=frag.vert_weight)
