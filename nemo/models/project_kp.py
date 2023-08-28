@@ -126,7 +126,7 @@ class PackedRaster():
                 this_cameras._N = R.shape[0]
                 this_cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
 
-            return get_one_standard(self.raster, this_cameras, self.meshes, func_of_mesh=func_single, **kwargs, **self.kwargs)
+            return get_one_standard(self.raster, this_cameras, self.meshes, **kwargs, **self.kwargs)
         else:
             if kwargs.get('principal', None) is not None:
                 self.render.cameras._N = R.shape[0]
