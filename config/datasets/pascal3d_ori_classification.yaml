@@ -1,0 +1,50 @@
+name: pascal3d
+class_name: nemo.datasets.pascal3d.Pascal3DPlus
+root_path: data/PASCAL3D_ORI_AUGMENTED
+
+pascal3d_raw_path: data/PASCAL3D+_release1.1
+pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
+pascal3d_occ_raw_path: data/OccludedPASCAL3D
+pascal3d_occ_script_url: https://raw.githubusercontent.com/Angtian/OccludedPASCAL3D/master/download_FG.sh
+image_subsets_url: https://docs.google.com/uc?export=download&id=1NsoVXW8ngQCqTHHFSW8YYsCim9EjiXS7
+seg_data_url: https://docs.google.com/uc?export=download&id=1hx6eErHtuR7TCGlQMyl2_03gXDTQw3Qm
+seg_data_path: data/PASCAL3D_segmentation
+dtd_raw_path: data/dtd
+mesh_path: data/PASCAL3D+_release1.1/CAD_single
+
+pad_texture: false
+single_mesh: true
+training_only: false
+evaluation_only: true
+augment_by_dist: false
+prepare_mode: first
+center_and_resize: false
+skip_3d_anno: true
+
+occ_level: 3
+occ_levels:
+    train: [0]
+    val: [0, 1, 2, 3]
+
+image_sizes:
+    aeroplane: [480, 480]
+    bicycle: [480, 480]
+    boat: [480, 480]
+    bottle: [480, 480]
+    bus: [480, 480]
+    chair: [480, 480]
+    car: [480, 480]
+    diningtable: [480, 480]
+    motorbike: [480, 480]
+    sofa: [480, 480]
+    train: [480, 480]
+    tvmonitor: [480, 480]
+
+enable_cache: true
+subtypes: None
+weighted: true
+remove_no_bg: 8
+transforms:
+    - class_name: nemo.datasets.pascal3d.ToTensor
+
+sampler: None
