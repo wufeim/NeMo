@@ -1,6 +1,6 @@
 name: pascal3d
 class_name: nemo.datasets.pascal3d.Pascal3DPlus
-root_path: data/PASCAL3D_ORI_AUGMENTED
+root_path: data/PASCAL3D_ORI
 
 pascal3d_raw_path: data/PASCAL3D+_release1.1
 pascal3d_raw_url: ftp://cs.stanford.edu/cs/cvgl/PASCAL3D+_release1.1.zip
@@ -15,13 +15,13 @@ mesh_path: data/PASCAL3D+_release1.1/CAD_single
 pad_texture: false
 single_mesh: true
 training_only: false
-evaluation_only: true
+evaluation_only: false
 augment_by_dist: false
 prepare_mode: first
 center_and_resize: false
 skip_3d_anno: true
 
-occ_level: 3
+occ_level: 0
 occ_levels:
     train: [0]
     val: [0, 1, 2, 3]
