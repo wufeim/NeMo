@@ -112,7 +112,7 @@ class PackedRaster():
         if self.mesh_mode == 'single':
             return self.meshes.verts_padded()
 
-    def __call__(self, azim, elev, dist, theta, img_label = None, **kwargs):
+    def __call__(self, azim, elev, dist, theta, **kwargs):
         R, T = look_at_view_transform(dist=dist, azim=azim, elev=elev, degrees=self.use_degree, device=self.cameras.device)
         R = torch.bmm(R, rotation_theta(theta, device_=self.cameras.device))
         
@@ -126,7 +126,7 @@ class PackedRaster():
                 this_cameras._N = R.shape[0]
                 this_cameras.principal_point = kwargs.get('principal', None).to(self.cameras.device) / self.down_rate
 
-            return get_one_standard(self.raster, this_cameras, self.meshes, img_label=img_label, func_of_mesh=func_single, **kwargs, **self.kwargs)
+            return get_one_standard(self.raster, this_cameras, self.meshes, **kwargs, **self.kwargs)
         else:
             if kwargs.get('principal', None) is not None:
                 self.render.cameras._N = R.shape[0]
@@ -160,14 +160,10 @@ class PackedRaster():
                 return get_weight[..., 1:]
 
 
-def get_one_standard(raster, camera, mesh, img_label, func_of_mesh, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
+def get_one_standard(raster, camera, mesh, img_label, func_of_mesh=func_single, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
     # dist_thr => NeMo original repo: cal_occ_one_image: eps
-    if img_label is None:
-        mesh_, verts_ = func_single(mesh, **kwargs)
-        func_of_mesh = func_single
-    else:
-        mesh_, verts_ = func_reselect(mesh, img_label, **kwargs)
-        func_of_mesh = func_reselect
+    mesh_, verts_ = func_of_mesh(mesh, **kwargs)
+    func_of_mesh = func_single
 
     R = camera.R
     T = camera.T
@@ -206,7 +202,26 @@ def get_one_standard(raster, camera, mesh, img_label, func_of_mesh, restrict_to_
     sampled_dist_per_vert = torch.nn.functional.grid_sample(depth_, grid.flip(-1), align_corners=False, mode='nearest')[:, 0, 0, :]
 
     vis_mask = torch.abs(sampled_dist_per_vert - true_dist_per_vert) < dist_thr
+    
+    # import numpy as np
+    # import BboxTools as bbt
+    # from PIL import Image, ImageDraw
+    # tt = depth_[0] / depth_[0].max()
+    # kps = project_verts.cpu().numpy()
+    # point_size=7
+    # def foo(t0, vis_mask_):
+    #     im = Image.fromarray((t0.cpu().numpy()[0] * 255).astype(np.uint8)).convert('RGB')
+    #     imd = ImageDraw.ImageDraw(im)
+    #     for k, vv in zip(kps[0], vis_mask_[0]):
+    #         this_bbox = bbt.box_by_shape((point_size, point_size), (int(k[0]), int(k[1])), image_boundary=im.size[::-1])
+    #         imd.ellipse(this_bbox.pillow_bbox(), fill=((0, 255, 0) if vv.item() else (255, 0, 0)))
 
+    #     return im
+
+    # foo(tt, vis_mask).show()
+    # import ipdb
+    # ipdb.set_trace()
+    
     return project_verts, vis_mask & inner_mask
 
 

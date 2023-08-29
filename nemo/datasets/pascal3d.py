@@ -185,6 +185,11 @@ class Pascal3DPlus(Dataset):
                 obj_mask = np.zeros((img.size[1], img.size[0]))
 
             label = 0 if len(self.category) == 0 else self.category.index(cate)
+            
+            pad_size = self.max_n - kp.shape[0]
+            kp = np.pad(kp, pad_width=((0, pad_size), (0, 0)), mode='constant', constant_values=0)
+            iskpvisible = np.pad(iskpvisible, pad_width=(0, pad_size), mode='constant', constant_values=False)
+            
             index = np.array([self.max_n * label + k for k in range(self.max_n)])
 
             sample = {
