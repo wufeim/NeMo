@@ -15,25 +15,19 @@ from nemo.models.solve_pose import pre_compute_kp_coords
 from nemo.models.solve_pose import solve_pose
 from nemo.models.batch_solve_pose import get_pre_render_samples
 from nemo.models.batch_solve_pose import solve_pose as batch_solve_pose
+from nemo.models.project_kp import func_reselect
+
 from nemo.utils import center_crop_fun
 from nemo.utils import construct_class_by_name
 from nemo.utils import get_param_samples
 from nemo.utils import normalize_features
 from nemo.utils import pose_error, iou, pre_process_mesh_pascal, load_off
 from nemo.utils.pascal3d_utils import IMAGE_SIZES, CATEGORIES
+from nemo.utils.meshloader import meshloader
 
 from nemo.models.project_kp import PackedRaster
 
 from PIL import Image
-
-def to_tensor(val):
-    if isinstance(val, torch.Tensor):
-        return val[None] if len(val.shape) == 2 else val
-    elif isinstance(val, list):
-        return [(t if isinstance(val, torch.Tensor) else torch.from_numpy(t)) for t in val]
-    else:
-        get = torch.from_numpy(val)
-        return get[None] if len(get.shape) == 2 else get
 
 class NeMo(BaseModel):
     def __init__(
@@ -68,62 +62,31 @@ class NeMo(BaseModel):
         self.cate = cate
         self.batch_size = cfg.training.batch_size
 
-
         self.mesh_path = mesh_path.format(cate) if "{:s}" in mesh_path else mesh_path  
-        self.category = CATEGORIES
+        if self.training_params.classification:
+            self.category = CATEGORIES
+        else:
+            self.category = [cate]
         
         proj_mode = self.training_params.proj_mode
         
         if proj_mode != 'prepared':
-            if self.training_params.classification:
-                raster_conf = {
-                            'image_size': self.dataset_config.image_sizes[self.category[0]],
-                            **self.training_params.kp_projecter
-                        }
-                self.projector = []
-                self.all_meshes = []
-                self.all_vertices = []
-                self.all_faces = []
-                self.category = CATEGORIES
-                self.all_verts_num, self.all_faces_num = [], []
-                for subcate in self.category:
-                    mesh_path_ = mesh_path.format(subcate) if "{:s}" in mesh_path else mesh_path           
-                    mesh_ = pre_process_mesh_pascal(*load_off(mesh_path_, True)) 
-                    self.all_vertices.append(mesh_[0].numpy())
-                    self.all_faces.append(mesh_[1].numpy())
-                    self.all_verts_num.append(mesh_[0].shape[0])
-                    self.all_faces_num.append(mesh_[1].shape[0])   
-
-                self.max_vert = max(self.all_verts_num)
-                self.max_face = max(self.all_faces_num)
-                self.build()
-                if raster_conf['down_rate'] == -1:
-                    raster_conf['down_rate'] = self.net.module.net_stride
-                self.net.module.kwargs['n_vert'] = self.max_vert
-
-                for i in range(len(self.all_vertices)):
-                    vert_pad_size = self.max_vert - self.all_verts_num[i]
-                    face_pad_size = self.max_face - self.all_faces_num[i]
-                    self.all_vertices[i] = np.pad(self.all_vertices[i], pad_width=((0, vert_pad_size), (0, 0)), mode='constant', constant_values=0)
-                    self.all_faces[i] = np.pad(self.all_faces[i], pad_width=((0, face_pad_size), (0, 0)), mode='constant', constant_values=-1)
-                self.projector = PackedRaster(raster_conf, [self.all_vertices, self.all_faces], device='cuda')
-                    
-                '''
-                mesh_ = Meshes(verts=to_tensor(mesh_[0]), faces=to_tensor(mesh_[1])).cuda()
-                self.all_meshes.append(mesh_)
-                aelf.projector.append(PackedRaster(raster_conf, mesh_, device='cuda'))
-                '''
-            else:
-                self.build()
-                raster_conf = {
-                        'image_size': self.dataset_config.image_sizes[cate],
+            raster_conf = {
+                        'image_size': self.dataset_config.image_sizes[self.category[0]],
                         **self.training_params.kp_projecter
-                    }
-                if raster_conf['down_rate'] == -1:
-                    raster_conf['down_rate'] = self.net.module.net_stride
-                mesh_ = pre_process_mesh_pascal(*load_off(self.mesh_path, True))
-                self.net.module.kwargs['n_vert'] = mesh_[0].shape[0]
-                self.projector = PackedRaster(raster_conf, mesh_, device='cuda')
+            }
+            if raster_conf['down_rate'] == -1:
+                raster_conf['down_rate'] = self.net.module.net_stride
+
+            mesh_loader = meshloader(self.category, mesh_path)
+            self.num_verts = mesh_loader.get_max_vert()
+            self.all_verts_num = mesh_loader.get_verts_num_list()
+            self.build()
+
+            self.net.module.kwargs['n_vert'] = self.num_verts
+            self.all_vertices, self.all_faces = mesh_loader.get_mesh_para()
+            self.projector = PackedRaster(raster_conf, [self.all_vertices, self.all_faces], device='cuda')
+        
         else:
             self.projector = None
 
@@ -146,21 +109,12 @@ class NeMo(BaseModel):
         else:
             self.net = nn.DataParallel(net).cuda()
 
-        if self.training_params.classification:
-            self.num_verts = self.max_vert
-            memory_bank = construct_class_by_name(
-                **self.memory_bank_params,
-                output_size=self.num_verts*len(self.category)+self.num_noise*self.max_group,
-                num_pos=self.num_verts*len(self.category),
-                num_noise=self.num_noise,
-                classification=True)
-        else:
-            self.num_verts = load_off(self.mesh_path)[0].shape[0]
-            memory_bank = construct_class_by_name(
-                **self.memory_bank_params,
-                output_size=self.num_verts+self.num_noise*self.max_group,
-                num_pos=self.num_verts,
-                num_noise=self.num_noise)
+        memory_bank = construct_class_by_name(
+            **self.memory_bank_params,
+            output_size=self.num_verts*len(self.category)+self.num_noise*self.max_group,
+            num_pos=self.num_verts*len(self.category),
+            num_noise=self.num_noise,
+            classification=self.training_params.classification)
 
         if self.training_params.separate_bank:
             self.memory_bank = memory_bank.cuda(self.ext_gpu)
@@ -172,11 +126,12 @@ class NeMo(BaseModel):
         self.scheduler = construct_class_by_name(
             **self.training_params.scheduler, optimizer=self.optim)
 
-
         if self.training_params.classification:
-            self.zeros = torch.zeros(self.batch_size, self.max_vert, self.max_vert * len(self.category), dtype=torch.float32).cuda()
+            self.zeros = torch.zeros(self.batch_size, self.num_verts, self.num_verts * len(self.category), dtype=torch.float32).cuda()
         else:
             self.zeros = None
+
+
 
     def step_scheduler(self):
         self.scheduler.step()
@@ -202,7 +157,7 @@ class NeMo(BaseModel):
         kwargs_ = dict(principal=sample['principal']) if 'principal' in sample.keys() else dict()
         
         if self.training_params.classification:
-            kwargs_.update(dict(func_of_mesh=func_reselect, mesh_label=label))
+            kwargs_.update(dict(func_of_mesh=func_reselect, indexs=label))
 
         if self.training_params.proj_mode == 'prepared':
                 kp = sample['kp'].cuda()
@@ -213,30 +168,6 @@ class NeMo(BaseModel):
                 if self.training_params.classification:
                     for i in range(kpvis.shape[0]):
                         kpvis[i, self.all_verts_num[label[i]]:] = False
-            '''
-            for i in range(kp.shape[0]):
-                kp_t = kp[i].detach().cpu().numpy()
-                kpvis_t = kpvis[i].detach().cpu().numpy()
-                img2 = np.array(sample["original_img"][i])
-                y0, y1, x0, x1, _, _ = sample["bbox"][i]
-                obj_mask2 = sample["obj_mask"][i]
-                
-                import cv2
-
-                for i2 in range(len(kp_t)):
-                    if kpvis_t[i2]:
-                        img2 = cv2.circle(
-                            img2, (int(kp_t[i2, 1]), int(kp_t[i2, 0])), 2, (255, 0, 0), -1
-                        )
-                img2 = cv2.rectangle(img2, (int(x0), int(y0)), (int(x1), int(y1)), (0, 255, 0), 2)
-
-                gray_img = (img2 * 0.3).astype(np.uint8)
-                gray_img[obj_mask2 == 1] = img2[obj_mask2 == 1]
-
-                Image.fromarray(gray_img).save(
-                    os.path.join('/home/guofeng/Classification_OmniNeMo/tmp', f'debug_{sample["this_name"][i].replace("/", "_")}.png')
-                )
-            '''
                                     
         features = self.net.forward(img, keypoint_positions=kp, obj_mask=1 - obj_mask, do_normalize=True,)
 
@@ -270,7 +201,7 @@ class NeMo(BaseModel):
         # The default manner in original-NeMo
         else:
             if self.zeros is not None and self.zeros.shape[0] != img.shape[0]:
-                self.zeros = torch.zeros(img.shape[0], self.max_vert, self.max_vert * len(self.category), dtype=torch.float32).cuda()
+                self.zeros = torch.zeros(img.shape[0], self.num_verts, self.num_verts * len(self.category), dtype=torch.float32).cuda()
             
             mask_distance_legal = mask_remove_near(
                 kp,
@@ -278,6 +209,7 @@ class NeMo(BaseModel):
                 * torch.ones((img.shape[0],), dtype=torch.float32).cuda(),
                 img_label=label,
                 zeros=self.zeros,
+                classification=self.training_params.classification,
                 num_neg=self.num_noise * self.max_group,
                 dtype_template=get,
                 kappas=kappas,
@@ -330,25 +262,16 @@ class NeMo(BaseModel):
         ).to(self.device)
 
 
-        self.cate_index = CATEGORIES.index(self.cate)
-        if self.training_params.classification:
-            self.bank_base_index = self.cate_index * self.max_vert
+        self.cate_index = self.category.index(self.cate)
+        self.bank_base_index = self.cate_index * self.num_verts
             
-            clutter = (
-                self.checkpoint["memory"][len(CATEGORIES) * self.max_vert:]
-                .detach()
-                .cpu()
-                .numpy()
-            )
-        else:
-            self.bank_base_index = 0
-            
-            clutter = (
-                self.checkpoint["memory"][self.memory_bank.memory.shape[0]:]
-                .detach()
-                .cpu()
-                .numpy()
-            )
+        clutter = (
+            self.checkpoint["memory"][len(self.category) * self.num_verts:]
+            .detach()
+            .cpu()
+            .numpy()
+        )
+
 
         with torch.no_grad():
             self.memory_bank.memory.copy_(
@@ -441,6 +364,7 @@ class NeMo(BaseModel):
 
     def fast_inference(self, sample):
         self.net.eval()
+        bbox = sample['bbox']
         cls_index = self.cate_index
 
         n_vertice = self.num_verts
@@ -454,7 +378,12 @@ class NeMo(BaseModel):
         all_similarity = []
 
         for i in range(B):
-            predicted_map = all_predicted_map[i].view(C, -1)  # [C, H, W] -> [C, HW]
+            object_height = (int(bbox[i][0].item() // 8), int(bbox[i][1].item() // 8))
+            object_width = (int(bbox[i][2].item() // 8), int(bbox[i][3].item() // 8))
+            predicted_map = all_predicted_map[i][..., object_height[0] : object_height[1],object_width[0] : object_width[1],]
+            C, H, W = predicted_map.shape
+            predicted_map = predicted_map.contiguous().view(C, -1)  # [C, H, W] -> [C, HW]
+            
 
             object_score_per_vertex = torch.matmul(self.feature_bank.to(self.device), predicted_map)  # [N, C] x [C, HW] -> [N, HW]
             clutter_score = torch.matmul(self.clutter_bank, predicted_map).view(H, W)  # [H, W]

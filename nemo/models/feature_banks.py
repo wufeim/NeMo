@@ -44,7 +44,7 @@ def remove_near_vertices_dist(vert_dist, thr, num_neg, kappas={'pos':0, 'near':1
             return torch.cat([tem, torch.ones(vert_dist.shape[0: 2] + (num_neg, )).type_as(dtype_template) * kappas['clutter']], dim=2)
 
 
-def mask_remove_near(keypoints, thr, img_label=None, zeros=None, dtype_template=None, num_neg=0, neg_weight=1, kappas={'pos':0, 'near':1e5, 'clutter':0}):
+def mask_remove_near(keypoints, thr, img_label=None, zeros=None, classification=False, dtype_template=None, num_neg=0, neg_weight=1, kappas={'pos':0, 'near':1e5, 'clutter':0}):
     if dtype_template is None:
         dtype_template = torch.ones(1, dtype=torch.float32)
     # keypoints -> [n, k, 2]
@@ -63,7 +63,7 @@ def mask_remove_near(keypoints, thr, img_label=None, zeros=None, dtype_template=
                 dtype_template
             ) * kappas['near'] - torch.eye(keypoints.shape[1]).type_as(dtype_template).unsqueeze(dim=0) * (kappas['near'] - kappas['pos'])
             
-            if zeros is not None:
+            if classification:
                 for i in range(tem.shape[0]):
                     zeros[
                         i,
@@ -180,7 +180,6 @@ class NearestMemoryManager(nn.Module):
         # For classification
         self.classification = classification
         self.single_cate_pos = int(self.num_pos / len(CATEGORIES))
-        self.single_feature_dim = int(self.num_pos / len(CATEGORIES))
 
         if classification:
             self.accumulate_num = torch.zeros(

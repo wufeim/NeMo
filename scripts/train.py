@@ -70,17 +70,15 @@ def train(cfg):
     for epo in range(cfg.training.total_epochs):
         num_iterations = int(cfg.training.scale_iterations_per_epoch * len(train_dataloader))
         for i, sample in enumerate(train_dataloader):
-            # if i % 10 != 0:
-                # continue
 
             if i >= num_iterations:
                 break
             loss_dict = model.train(sample)
  
-            if i % 300 == 0:
-                logging.info(
-                    f"[Iter {i}] {model.get_training_state()}"
-                )
+            # if i % 300 == 0:
+                # logging.info(
+                    # f"[Iter {i}] {model.get_training_state()}"
+                # )
             # if cfg.use_wandb:
             #     wandb.log(loss_dict)
 

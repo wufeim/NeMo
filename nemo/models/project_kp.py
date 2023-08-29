@@ -27,10 +27,12 @@ def to_tensor(val):
 
 
 def func_single(meshes, **kwargs):
+    
     return meshes, meshes.verts_padded()
 
 
-def func_reselect(meshes, indexs, **kwargs):
+def func_reselect(meshes, **kwargs):
+    indexs = kwargs.get('indexs', None)
     verts_ = [meshes._verts_list[i] for i in indexs]
     faces_ = [meshes._faces_list[i] for i in indexs]
     meshes_out = Meshes(verts=verts_, faces=faces_).to(meshes.device)
@@ -95,6 +97,8 @@ class PackedRaster():
                 self.meshes = Meshes(verts=to_tensor(object_mesh['verts']), faces=to_tensor(object_mesh['faces'])).to(device)
             else:
                 self.meshes = Meshes(verts=to_tensor(object_mesh[0]), faces=to_tensor(object_mesh[1])).to(device)
+
+
         if raster_type == 'voge' or raster_type == 'vogew':
             assert enable_voge, 'VoGE must be install to utilize voge-nemo.'
             self.kp_vis_thr = raster_configs.get('kp_vis_thr', 0.25)
@@ -160,10 +164,9 @@ class PackedRaster():
                 return get_weight[..., 1:]
 
 
-def get_one_standard(raster, camera, mesh, img_label, func_of_mesh=func_single, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
+def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to_boundary=True, dist_thr=1e-3, **kwargs):
     # dist_thr => NeMo original repo: cal_occ_one_image: eps
     mesh_, verts_ = func_of_mesh(mesh, **kwargs)
-    func_of_mesh = func_single
 
     R = camera.R
     T = camera.T

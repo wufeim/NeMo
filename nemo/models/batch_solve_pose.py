@@ -21,7 +21,10 @@ except:
     enable_voge=False
 
 if not enable_voge:
-    from TorchBatchifier import Batchifier
+    try:
+        from VoGE.Utils import Batchifier
+    except:
+        from TorchBatchifier import Batchifier
 
 
 def loss_fg_only(obj_s, clu_s=None, reduce_method=lambda x: torch.mean(x)):
