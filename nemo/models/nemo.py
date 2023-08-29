@@ -209,7 +209,7 @@ class NeMo(BaseModel):
                 kpvis = sample["kpvis"].cuda().type(torch.bool)
         else:
             with torch.no_grad():
-                kp, kpvis = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), img_label=mesh_label, **kwargs_)             
+                kp, kpvis = self.projector(azim=sample['azimuth'].float().cuda(), elev=sample['elevation'].float().cuda(), dist=sample['distance'].float().cuda(), theta=sample['theta'].float().cuda(), img_label=label, **kwargs_)             
                 if self.training_params.classification:
                     for i in range(kpvis.shape[0]):
                         kpvis[i, self.all_verts_num[label[i]]:] = False
