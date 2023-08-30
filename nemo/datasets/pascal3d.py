@@ -270,9 +270,6 @@ class RandomResize:
         if resize_rate > 2:
             resize_rate = 2
 
-        
-        # resize_rate = 1
-
         assert 'principal' in sample
 
         img_ = np.array(sample['img'])
@@ -301,8 +298,7 @@ class RandomResize:
 
             if box_obj[i] < 0:
                 box_obj[i] = 0
-
-            
+    
         sample['bbox'] = box_obj
         try:
             box_obj = bbt.from_numpy(box_obj)
@@ -311,20 +307,7 @@ class RandomResize:
             sample['obj_mask'] = obj_mask
         except:
             return sample
-        # sample['obj_mask'] = None
-        # print(sample['bbox'])
-        # for i in range(len(sample['bbox']) - 2):
-            # sample['bbox'][i] = int(sample['bbox'][i] * resize_rate)
-        # print(sample['bbox'])
 
-        '''
-        box_obj = sample['bbox']
-        print(box_obj)
-        print(box_obj.boundary)
-        exit(0)
-        obj_mask = np.zeros(box_obj.boundary, dtype=np.float32)
-        box_obj.assign(obj_mask, 1)
-        '''
         return sample
 
 

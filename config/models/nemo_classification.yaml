@@ -1,5 +1,5 @@
-name: nemo_voge_optim
-class_name: nemo.models.nemo.NeMoRuntimeOptimize
+name: nemo
+class_name: nemo.models.nemo.NeMo
 
 mesh_path: data/PASCAL3D+_release1.1/CAD_single/{:s}/01.off
 num_noise: 5
@@ -13,18 +13,12 @@ training:
     separate_bank: false
     weight_noise: 0.005
     loss_reg_weight: 0.1
-    train_accumulate: 1
+    train_accumulate: 10
     T: 0.07
-    proj_mode: runtime_voge
-    remove_near_mode: vert
-    distance_thr: 0.1
-    classification: false
-
-    latent_iter_per: 1
-    latent_to_update: 
-        - azimuth
-        - elevation
-    latent_lr: 0.001
+    proj_mode: runtime_kp
+    remove_near_mode: pixel
+    distance_thr: 48
+    classification: true
 
     optimizer:
         class_name: torch.optim.Adam
@@ -34,16 +28,14 @@ training:
     scheduler:
         class_name: torch.optim.lr_scheduler.MultiStepLR
         milestones:
-            - 200
             - 400
             - 600
         gamma: 0.2
-
+    
     kp_projecter:
-        type: voge
-        down_rate: -1
+        type: near
+        down_rate: 1
         dist_thr: 0.01
-        max_assign: 50
 
 inference:
     cameras:
@@ -54,15 +46,16 @@ inference:
         focal_length: 3000
 
     raster_settings:
-        class_name: VoGE.Renderer.GaussianRenderSettings
-        max_point_per_bin: -1
-        max_assign: 50
+        class_name: pytorch3d.renderer.RasterizationSettings
+        blur_radius: 0.0
+        faces_per_pixel: 1
+        bin_size: 0
 
     rasterizer:
-        class_name: VoGE.Renderer.GaussianRenderer
+        class_name: pytorch3d.renderer.MeshRasterizer
 
 backbone:
-    class_name: nemo.models.keypoint_representation_net.WeightSampleNetE2E
+    class_name: nemo.models.keypoint_representation_net.NetE2E
     net_type: resnetext
     local_size:
         - 1
@@ -77,4 +70,4 @@ memory_bank:
     class_name: nemo.models.feature_banks.NearestMemoryManager
     input_size: 128
     K: 1
-    momentum: 0.96
+    momentum: 0.9

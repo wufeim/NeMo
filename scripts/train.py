@@ -70,8 +70,6 @@ def train(cfg):
     for epo in range(cfg.training.total_epochs):
         num_iterations = int(cfg.training.scale_iterations_per_epoch * len(train_dataloader))
         for i, sample in enumerate(train_dataloader):
-            # if i % 10 != 0:
-                # continue
 
             if i >= num_iterations:
                 break
