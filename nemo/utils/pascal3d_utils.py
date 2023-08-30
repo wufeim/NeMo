@@ -245,6 +245,8 @@ def get_anno(record, *args, idx=0):
             py = viewpoint["py"].item()
             out.append(np.array([px, py]))
         elif key_ in ["theta", "azimuth", "elevation"]:
+            if viewpoint[key_].size <= 0:
+                key_ += '_coarse'
             if type(viewpoint[key_].item()) == tuple:
                 tmp = viewpoint[key_].item()[0]
             else:
