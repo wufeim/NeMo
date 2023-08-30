@@ -29,6 +29,25 @@ Prepare data without centering and resize:
 * :code:`prepare_mode`: Preparation mode, :code:`first` or :code:`all`.
 * :code:`augment_by_dist`: If :code:`True`, augment samples by object distances (scales); commonly used for 6D pose estimation training.
 
+ObjectNet3D
+-----------
+
+.. code::
+
+   python3 prepare_objectnet3d.py \
+       --config config/datasets/objectnet3d.yaml
+
+**Parameters.** The parameters are loaded from the :code:`.yaml` files.
+
+* :code:`pad_texture`: If :code:`True`, use describable textures when padding.
+* :code:`single_mesh`: Type of mesh we generate.
+* :code:`root_path`: Path to the generated data.
+* :code:`training_only`: If :code:`True`, skip validation data.
+* :code:`image_sizes`: Image sizes of the output images.
+* :code:`mesh_path`: Path to the meshes used for generating 3D keypoint annotations.
+* :code:`prepare_mode`: Preparation mode, :code:`first` or :code:`all`.
+* :code:`augment_by_dist`: If :code:`True`, augment samples by object distances (scales); commonly used for 6D pose estimation training.
+
 OOD-CV
 ------
 

@@ -74,13 +74,6 @@ def train(cfg):
             if i >= num_iterations:
                 break
             loss_dict = model.train(sample)
- 
-            # if i % 300 == 0:
-                # logging.info(
-                    # f"[Iter {i}] {model.get_training_state()}"
-                # )
-            # if cfg.use_wandb:
-            #     wandb.log(loss_dict)
 
         if (epo + 1) % cfg.training.log_interval == 0:
             logging.info(
