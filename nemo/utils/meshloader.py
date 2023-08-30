@@ -1,14 +1,19 @@
 from nemo.utils import pre_process_mesh_pascal, load_off
 import numpy as np
 
+
+def pascal3D_loader(mesh_path):
+    return pre_process_mesh_pascal(*load_off(mesh_path, True)) 
+
+
 class meshloader():
-    def __init__(self, category, base_mesh_path):
+    def __init__(self, category, base_mesh_path, loader=pascal3D_loader):
         self.all_vertices, self.all_faces = [], []
         self.all_verts_num, self.all_faces_num = [], []
         
         for subcate in category:
             mesh_path_ = base_mesh_path.format(subcate) if "{:s}" in base_mesh_path else base_mesh_path
-            mesh_ = pre_process_mesh_pascal(*load_off(mesh_path_, True)) 
+            mesh_ = loader(mesh_path_)
             self.all_verts_num.append(mesh_[0].shape[0])
             self.all_faces_num.append(mesh_[1].shape[0]) 
             self.all_vertices.append(mesh_[0].numpy())
