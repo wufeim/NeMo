@@ -103,7 +103,7 @@ def create_meshes(mesh_d, CAD_path, save_path, number_vertices, linear_coverage,
     if mesh_d == 'single':
         for cate in categories:
             os.makedirs(os.path.join(save_path, cate), exist_ok=True)
-            fnames = [x for x in os.listdir(os.path.join(CAD_path, cate)) if x.endswith('.off')]
+            fnames = [x for x in os.listdir(os.path.join(CAD_path, cate)) if x.endswith('.off') and len(x) == 6]
 
             vertices = []
             for f in fnames:
