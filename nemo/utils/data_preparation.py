@@ -17,7 +17,7 @@ mesh_para_names = [
     "azimuth",
     "elevation",
     "theta",
-    "distance",
+    # "distance",
     "focal",
     "principal",
     "viewport",
@@ -55,7 +55,8 @@ def prepare_pascal3d_sample(
     extra_anno=None,
     seg_mask_path=None,
     center_and_resize=True,
-    skip_3d_anno=False
+    skip_3d_anno=False,
+    extra_resize=1,
 ):
     """
     Prepare a sample for training and validation.
@@ -119,6 +120,7 @@ def prepare_pascal3d_sample(
 
         if get_anno(record, "distance", idx=obj_id) <= 0:
             continue
+        
 
         if center_and_resize:
             if augment_by_dist:
@@ -134,8 +136,9 @@ def prepare_pascal3d_sample(
 
         for rr_idx, resize_rate in enumerate(all_resize_rates):
             if resize_rate <= 0.001:
-                resize_rate = min(out_shape[0] / box.shape[0], out_shape[1] / box.shape[1])
-            try:
+                resize_rate = min(out_shape[0] / box.shape[0], out_shape[1] / box.shape[1]) * extra_resize
+            # try:
+            if True:
                 box_ori = bbt.from_numpy(bbox, sorts=("x0", "y0", "x1", "y1"))
                 box = bbt.from_numpy(bbox, sorts=("x0", "y0", "x1", "y1")) * resize_rate
 
@@ -145,22 +148,31 @@ def prepare_pascal3d_sample(
                 img = np.array(img)
                 box_ori = box_ori.set_boundary(img.shape[0:2])
 
-                dsize = (int(img.shape[1] * resize_rate), int(img.shape[0] * resize_rate))
-                img = cv2.resize(img, dsize=dsize)
-                if occ_mask is not None:
-                    occ_mask = cv2.resize(occ_mask, dsize=dsize, interpolation=cv2.INTER_NEAREST)
-                if amodal_mask is not None:
-                    amodal_mask = cv2.resize(amodal_mask, dsize=dsize, interpolation=cv2.INTER_NEAREST)
-
                 if texture_filenames is not None:
                     texture_name = np.random.choice(texture_filenames)
 
                 if center_and_resize:
+                    dsize = (int(img.shape[1] * resize_rate), int(img.shape[0] * resize_rate))
+                    img = cv2.resize(img, dsize=dsize)
+                    if occ_mask is not None:
+                        occ_mask = cv2.resize(occ_mask, dsize=dsize, interpolation=cv2.INTER_NEAREST)
+                    if amodal_mask is not None:
+                        amodal_mask = cv2.resize(amodal_mask, dsize=dsize, interpolation=cv2.INTER_NEAREST)
+
                     center = (
                         get_anno(record, "principal", idx=obj_id)[::-1] * resize_rate
                     ).astype(int)
+                    
+                    new_px, new_py = float(out_shape[1] // 2), float(out_shape[0] // 2)
                 else:
-                    center = np.array([img.shape[0]//2, img.shape[1]//2]).astype(np.int32)
+                    resize_rate = min(out_shape[0] / img.shape[0], out_shape[1] / img.shape[1]) * extra_resize
+                    dsize = (int(img.shape[1] * resize_rate), int(img.shape[0] * resize_rate))
+                    img = cv2.resize(img, dsize=dsize)
+
+                    center = np.array([img.shape[0] // 2, img.shape[1] // 2]).astype(np.int32)
+                    new_px = float(get_anno(record, "principal", idx=obj_id)[0]) * resize_rate + (out_shape[1] - int(img.shape[1])) / 2
+                    new_py = float(get_anno(record, "principal", idx=obj_id)[1]) * resize_rate + (out_shape[0] - int(img.shape[0])) / 2
+
                 box1 = bbt.box_by_shape(out_shape, center)
                 if (
                     out_shape[0] // 2 - center[0] > 0
@@ -262,8 +274,8 @@ def prepare_pascal3d_sample(
                     states_list.append(states)
                     cropped_kp_list.append([cropped_kp_y, cropped_kp_x])
                 """
-            except KeyboardInterrupt:
-                continue
+            # except KeyboardInterrupt:
+            #     continue
 
             if augment_by_dist:
                 curr_img_name = f"{img_name}_{obj_id:02d}_aug{rr_idx}"
@@ -280,6 +292,9 @@ def prepare_pascal3d_sample(
                 occ_mask=occ_mask,
                 amodal_mask=amodal_mask,
                 inmodal_mask=inmodal_mask,
+                px=new_px,
+                py=new_py,
+                distance=target_distances[rr_idx] if center_and_resize else get_anno(record, 'distance', idx=obj_id) / resize_rate
             )
             save_parameters = {
                 **save_parameters,
@@ -311,7 +326,8 @@ def prepare_pascal3d_sample(
                 for k in extra_anno:
                     save_parameters[k] = extra_anno[k]
 
-            try:
+            # try:
+            if True:
                 # Prepare 3D annotations for NeMo training
                 if not skip_3d_anno and (mesh_manager is not None and direction_dicts is not None):
 
@@ -340,8 +356,8 @@ def prepare_pascal3d_sample(
                 save_image_names.append(
                     (get_anno(record, "cad_index", idx=obj_id), curr_img_name)
                 )
-            except:
-                continue
+            # except:
+            #     continue
 
     return save_image_names
 

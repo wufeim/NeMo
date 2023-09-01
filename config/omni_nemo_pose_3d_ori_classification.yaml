@@ -1,23 +1,25 @@
-dataset: config/datasets/pascal3d_cls.yaml
-model: config/models/nemo_cls.yaml
+dataset: config/datasets/pascal3d_ori_classification.yaml
+model: config/models/nemo_classification.yaml
 
 task: 3d_pose_estimation
 
 training:
-    random_seed: 0
-    batch_size: 36
-    workers: 8
+    batch_size: 4
+    workers: 0
     total_epochs: 200
     log_interval: 1
-    ckpt_interval: 200
+    ckpt_interval: 40
     visualize_training_data: false
     remove_no_bg: 8
+    
 
 inference:
-    random_seed: 0
+    classification: true
+    init_mode: 3d_batch
     loss: nemo.models.solve_pose.loss_fg_bg
+    batch_size: 20 # set to 20 for 24GB vmem
+    realign: true
 
-    classification: false
     search_translation: false
     optimize_translation: false
 
@@ -42,15 +44,15 @@ inference:
         max_pi: 0.1667
         num: 3
     dist_sample:
-        min: 4.0
-        max: 6.0
-        num: 3
+        min: 5.0
+        max: 5.0
+        num: 1
 
     min_distance: 2
     pre_rendering_thr: 80
     blur_radius: 0.0
     inter_mode: bilinear
-    epochs: 300
+    epochs: 150
     translation_scale: 0.1
 
     optimizer:

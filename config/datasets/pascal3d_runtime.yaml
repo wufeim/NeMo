@@ -19,7 +19,7 @@ evaluation_only: false
 augment_by_dist: false
 prepare_mode: first
 center_and_resize: true
-skip_3d_anno: false
+skip_3d_anno: true
 
 occ_level: 0
 occ_levels:

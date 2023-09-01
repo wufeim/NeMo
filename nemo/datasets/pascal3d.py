@@ -1,5 +1,6 @@
 import copy
 import os
+import random
 
 import BboxTools as bbt
 import numpy as np
@@ -7,6 +8,11 @@ import torch
 import torchvision
 from PIL import Image
 import skimage
+import skimage.measure
+import cv2
+from scipy import ndimage
+import cv2
+from scipy import ndimage
 from torch.utils.data import Dataset
 
 from nemo.utils import construct_class_by_name
@@ -29,9 +35,14 @@ class Pascal3DPlus(Dataset):
         weighted=True,
         remove_no_bg=None,
         skip_kp=False,
+        transforms_test=None,
         segmentation_masks=[],
+        training=True,
         **kwargs,
-    ):
+    ):  
+        if transforms_test is None:
+            transforms_test = transforms
+        self.training = training
         self.data_type = data_type
         self.root_path = get_abs_path(root_path)
         self.category = category
@@ -46,6 +57,14 @@ class Pascal3DPlus(Dataset):
         self.transforms = torchvision.transforms.Compose(
             [construct_class_by_name(**t) for t in transforms]
         )
+        self.transforms_test = torchvision.transforms.Compose(
+            [construct_class_by_name(**t) for t in transforms_test]
+        )
+        self.kwargs = kwargs
+        self.transforms_test = torchvision.transforms.Compose(
+            [construct_class_by_name(**t) for t in transforms_test]
+        )
+        self.kwargs = kwargs
 
         if self.category == 'all':
             self.category = CATEGORIES
@@ -117,6 +136,8 @@ class Pascal3DPlus(Dataset):
 
     def __getitem__(self, item):
         name_img, cate = self.file_list[item]
+        if '.JPEG' in name_img:
+            name_img = name_img.split('.JP')[0]
 
         if self.enable_cache and name_img in self.cache.keys():
             sample = copy.deepcopy(self.cache[name_img])
@@ -133,7 +154,7 @@ class Pascal3DPlus(Dataset):
                 kp = annotation_file["cropped_kp_list"]
                 iskpvisible = annotation_file["visible"] == 1
 
-                if self.weighted:
+                if self.weighted and 'kp_weights' in annotation_file.keys():
                     iskpvisible = iskpvisible * annotation_file["kp_weights"]
 
                 iskpvisible = np.logical_and(
@@ -156,23 +177,28 @@ class Pascal3DPlus(Dataset):
             try:
                 box_obj = bbt.from_numpy(annotation_file["box_obj"])
                 obj_mask = np.zeros(box_obj.boundary, dtype=np.float32)
+                # print(box_obj)
                 box_obj.assign(obj_mask, 1)
-            except KeyboardInterrupt:
+                # print('Not in exception')
+            except:
+            # except KeyboardInterrupt:
                 obj_mask = np.zeros((img.size[1], img.size[0]))
 
             label = 0 if len(self.category) == 0 else self.category.index(cate)
+            
             pad_size = self.max_n - kp.shape[0]
             kp = np.pad(kp, pad_width=((0, pad_size), (0, 0)), mode='constant', constant_values=0)
             iskpvisible = np.pad(iskpvisible, pad_width=(0, pad_size), mode='constant', constant_values=False)
+            
             index = np.array([self.max_n * label + k for k in range(self.max_n)])
 
             sample = {
                 "this_name": this_name,
                 "cad_index": int(annotation_file["cad_index"]),
-                "azimuth": float(annotation_file["azimuth"]),
-                "elevation": float(annotation_file["elevation"]),
-                "theta": float(annotation_file["theta"]),
-                "distance": 5.0,
+                "azimuth": float(annotation_file["azimuth"]) + (0 if self.kwargs.get('add_noise_azimuth', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_azimuth', 0))),
+                "elevation": float(annotation_file["elevation"]) + (0 if self.kwargs.get('add_noise_elevation', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_elevation', 0))),
+                "theta": float(annotation_file["theta"]) + (0 if self.kwargs.get('add_noise_theta', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_theta', 0))),
+                "distance": 5,
                 "bbox": annotation_file["box_obj"],
                 "obj_mask": obj_mask,
                 "img": img,
@@ -180,6 +206,11 @@ class Pascal3DPlus(Dataset):
                 "label": label,
                 "index": index,
             }
+            
+            if 'px' in annotation_file.keys():
+                sample['principal'] = np.array([annotation_file['px'], annotation_file['py']])
+                sample["distance"] = float(annotation_file["distance"])
+
             if 'amodal' in self.segmentation_masks:
                 sample['amodal_mask'] = annotation_file['amodal_mask']
             if 'inmodal' in self.segmentation_masks:
@@ -191,8 +222,13 @@ class Pascal3DPlus(Dataset):
             if self.enable_cache:
                 self.cache[name_img] = copy.deepcopy(sample)
 
-        if self.transforms:
-            sample = self.transforms(sample)
+        if self.training:
+            if self.transforms:
+                sample = self.transforms(sample)
+        
+        else:
+            if self.transforms_test:
+                sample = self.transforms_test(sample)
 
         return sample
 
@@ -220,21 +256,79 @@ class Pascal3DPlus(Dataset):
         )
 
 
-class Resize:
-    def __init__(self, height, width):
-        self.height = height
-        self.width = width
-        self.transform = torchvision.transforms.Resize(size=(height, width))
+class RandomResize:
+    def __init__(self, std=0.3):
+        self.std = std
 
-    def __call__(self, sample):
-        assert len(sample['img'].shape) == 4
-        b, c, h, w = sample['img'].shape
-        if h != self.height or w != self.width:
-            sample['img'] = self.transform(sample['img'])
-            if 'kp' in sample:
-                assert len(sample['kp'].shape) == 3
-                sample['kp'][:, :, 0] *= self.width / w
-                sample['kp'][:, :, 1] *= self.height / h
+    def __call__(self, sample, resize_rate=None):
+        resize_rate = np.random.normal(1, self.std) if resize_rate is None else resize_rate
+        if resize_rate < 0.4:
+            resize_rate = 0.4
+        if resize_rate > 2:
+            resize_rate = 2
+
+        assert 'principal' in sample
+
+        img_ = np.array(sample['img'])
+        ori_shape = img_.shape[:2]
+        out_image = cv2.resize(img_, dsize=(int(resize_rate * ori_shape[1]), int(resize_rate * ori_shape[0])))
+
+        if resize_rate > 1:
+            get_image = bbt.box_by_shape(ori_shape[:2], (out_image.shape[0] // 2, out_image.shape[1] // 2), ).apply(out_image)
+        else:
+            get_image = np.zeros_like(img_)
+            bbt.box_by_shape(out_image.shape[:2], (ori_shape[0] // 2, ori_shape[1] // 2), ).assign(get_image, out_image)
+
+        sample['img'] = Image.fromarray(get_image)
+        sample['distance'] = sample['distance'] / resize_rate
+        sample['principal'] = (sample['principal'] - np.array(ori_shape[::-1]) / 2) * resize_rate + np.array(ori_shape[::-1]) / 2 
+
+        box_obj = sample['bbox']
+        for i in range(len(box_obj) - 2):
+            if i < 2:
+                box_obj[i] = int((box_obj[i] - np.array(ori_shape[::-1])[0] / 2) * resize_rate + np.array(ori_shape[::-1])[0] / 2) 
+            else:
+                box_obj[i] = int((box_obj[i] - np.array(ori_shape[::-1])[1] / 2) * resize_rate + np.array(ori_shape[::-1])[1] / 2) 
+
+            if box_obj[i] > box_obj[-1]:
+                box_obj[i] = box_obj[-1]
+
+            if box_obj[i] < 0:
+                box_obj[i] = 0
+    
+        sample['bbox'] = box_obj
+        try:
+            box_obj = bbt.from_numpy(box_obj)
+            obj_mask = np.zeros(box_obj.boundary, dtype=np.float32)
+            box_obj.assign(obj_mask, 1)
+            sample['obj_mask'] = obj_mask
+        except:
+            return sample
+
+        return sample
+
+
+
+class RandomRotate:
+    def __init__(self, std=20):
+        self.std = std
+
+    def __call__(self, sample, rotation_angle=None):
+        rotation_angle = np.random.normal(0, self.std) if rotation_angle is None else rotation_angle
+        assert 'principal' in sample
+
+        pivot = sample['principal'].astype(np.int32)
+        img = np.array(sample['img'])
+
+        padX = [img.shape[1] - pivot[0], pivot[0]]
+        padY = [img.shape[0] - pivot[1], pivot[1]]
+        imgP = np.pad(img, [padY, padX, [0, 0], ], 'constant')
+        
+        imgR = ndimage.rotate(imgP, rotation_angle, reshape=False)
+
+        sample['img'] = Image.fromarray(imgR[padY[0] : -padY[1], padX[0] : -padX[1]])
+        sample['theta'] += rotation_angle / 180 * np.pi
+        
         return sample
 
 
@@ -264,11 +358,13 @@ class Normalize:
 
 def hflip(sample):
     sample["img"] = torchvision.transforms.functional.hflip(sample["img"])
+    w = np.array(sample["img"]).shape[1]
     if 'kp' in sample:
-        sample["kp"][:, 1] = sample["img"].size[0] - sample["kp"][:, 1] - 1
-    sample["azimuth"] = np.pi * 2 - sample["azimuth"]
-    sample["theta"] = np.pi * 2 - sample["theta"]
-    raise NotImplementedError("Horizontal flip is not tested.")
+        sample["kp"][:, 0] = w - sample["kp"][:, 0] - 1
+    sample["principal"][0] = w - sample["principal"][0] - 1
+    sample["azimuth"] = np.pi - sample["azimuth"]
+    sample["theta"] = - sample["theta"]
+    # raise NotImplementedError("Horizontal flip is not tested.")
 
     return sample
 
@@ -291,3 +387,9 @@ class ColorJitter:
     def __call__(self, sample):
         sample["img"] = self.trans(sample["img"])
         return sample
+
+
+class Empty:
+    def __call__(self, sample):
+        return sample
+

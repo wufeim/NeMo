@@ -1,23 +1,22 @@
-dataset: config/datasets/pascal3d_cls.yaml
-model: config/models/nemo_cls.yaml
+dataset: config/datasets/pascal3d_ori.yaml
+model: config/models/nemo_voge.yaml
 
 task: 3d_pose_estimation
 
 training:
-    random_seed: 0
-    batch_size: 36
+    batch_size: 48
     workers: 8
-    total_epochs: 200
+    total_epochs: 800
     log_interval: 1
     ckpt_interval: 200
     visualize_training_data: false
     remove_no_bg: 8
 
 inference:
-    random_seed: 0
     loss: nemo.models.solve_pose.loss_fg_bg
-
+    batch_size: 18
     classification: false
+
     search_translation: false
     optimize_translation: false
 
@@ -42,9 +41,9 @@ inference:
         max_pi: 0.1667
         num: 3
     dist_sample:
-        min: 4.0
-        max: 6.0
-        num: 3
+        min: 5.0
+        max: 5.0
+        num: 1
 
     min_distance: 2
     pre_rendering_thr: 80
@@ -52,6 +51,8 @@ inference:
     inter_mode: bilinear
     epochs: 300
     translation_scale: 0.1
+    realign: true
+    pre_render: true
 
     optimizer:
         class_name: torch.optim.Adam

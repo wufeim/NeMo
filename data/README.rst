@@ -7,7 +7,15 @@ PASCAL3D+ and Occluded PASCAL3D+
 .. code::
 
    python3 prepare_pascal3d.py \
-       --config config/datasets/pascal3d.yaml
+       --config config/datasets/pascal3d_runtime.yaml
+
+Prepare data without centering and resize:
+
+.. code::
+
+   python3 prepare_pascal3d.py \
+       --config config/datasets/pascal3d_ori.yaml
+
 
 **Parameters.** The parameters are loaded from the :code:`.yaml` files.
 

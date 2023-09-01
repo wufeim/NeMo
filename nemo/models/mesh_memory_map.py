@@ -73,6 +73,7 @@ class MeshConverter:
             image_size=map_size,
         )
         box_ori = bbt.from_numpy(get_anno(annos, "box_ori"))
+
         box_cropped = bbt.from_numpy(get_anno(annos, "box_obj").astype(np.int32))
         box_cropped.set_boundary(
             get_anno(annos, "box_obj").astype(np.int32)[4::].tolist()

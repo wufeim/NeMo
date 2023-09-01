@@ -10,15 +10,86 @@ except:
 
     use_textures = False
 
+try:
+    from VoGE.Meshes import GaussianMeshesNaive as GaussianMesh
+    from VoGE.Converter.Converters import naive_vertices_converter
+
+    enable_voge = True
+except:
+    enable_voge = False
+
+from pytorch3d.renderer import MeshRasterizer
+
 from nemo.utils import (
     forward_interpolate,
+    forward_interpolate_voge,
     pre_process_mesh_pascal,
     vertex_memory_to_face_memory,
     campos_to_R_T,
 )
 
 
-class MeshInterpolateModule(nn.Module):
+def MeshInterpolateModule(*args, **kwargs):
+    rasterizer = kwargs.get('rasterizer')
+    if isinstance(rasterizer, MeshRasterizer):
+        return MeshInterpolateModuleMesh(*args, **kwargs)
+    else:
+        assert enable_voge
+        return MeshInterpolateModuleVoGE(*args, **kwargs)
+
+
+class MeshInterpolateModuleVoGE(nn.Module):
+    def __init__(self, vertices, faces, memory_bank, rasterizer, post_process=None, off_set_mesh=False, convert_percentage=0.5, **kwargs):
+        super(MeshInterpolateModuleVoGE, self).__init__()
+
+        # Convert memory features of vertices to faces
+        self.memory = None
+        self.update_memory(memory_bank=memory_bank,)
+
+        self.n_mesh = 1
+        
+        # Preprocess convert meshes in PASCAL3d+ standard to Pytorch3D
+        verts = pre_process_mesh_pascal(vertices)
+
+        self.meshes = GaussianMesh(*naive_vertices_converter(verts, faces, percentage=convert_percentage))
+
+        # Device is used during theta to R
+        self.rasterizer = rasterizer
+        self.post_process = post_process
+        self.off_set_mesh = off_set_mesh
+
+    def update_memory(self, memory_bank, ):
+        self.memory = memory_bank
+
+    def to(self, *args, **kwargs):
+        if 'device' in kwargs.keys():
+            device = kwargs['device']
+        else:
+            device = args[0]
+        super(MeshInterpolateModuleVoGE, self).to(device)
+        self.rasterizer.cameras = self.rasterizer.cameras.to(device)
+        self.memory = self.memory.to(device)
+        self.meshes = self.meshes.to(device)
+        return self
+
+    def cuda(self, device=None):
+        return self.to(torch.device("cuda"))
+
+    def forward(self, campos, theta, deform_verts=None, **kwargs):
+        R, T = campos_to_R_T(campos, theta, device=campos.device, )
+
+        if self.off_set_mesh:
+            meshes = self.meshes.offset_verts(deform_verts)
+        else:
+            meshes = self.meshes
+        get = forward_interpolate_voge(R, T, meshes, self.memory.repeat(R.shape[0], 1), rasterizer=self.rasterizer, )
+
+        if self.post_process is not None:
+            get = self.post_process(get)
+        return get
+
+
+class MeshInterpolateModuleMesh(nn.Module):
     def __init__(
         self,
         vertices,
@@ -27,6 +98,7 @@ class MeshInterpolateModule(nn.Module):
         rasterizer,
         post_process=None,
         off_set_mesh=False,
+        **kwargs
     ):
         super().__init__()
 

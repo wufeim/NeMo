@@ -9,7 +9,7 @@ NeMo
         :target: https://neural-mesh-model.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
-Neural mesh models for 3D reasoning.
+This is the repo for the series works on `Neural Mesh Models <https://arxiv.org/pdf/2101.12378.pdf>`_. In this repo, we implement `3D object pose estimation <https://arxiv.org/pdf/2101.12378.pdf>`_, `3D object pose estimation via VoGE renderer <https://arxiv.org/pdf/2205.15401.pdf>`_, `6D pose object estimation <https://arxiv.org/pdf/2209.05624.pdf>`_, `object classification <https://arxiv.org/pdf/2305.14668.pdf>`_, and `cross domain training <https://arxiv.org/pdf/2306.00118.pdf>`_. The original implementation of NeMo is `here <https://github.com/Angtian/NeMo>`_.
 
 Features
 --------
@@ -72,11 +72,12 @@ Environment (manual setup)
    pip install git+https://github.com/NVlabs/nvdiffrast/
    pip install wget gdown BboxTools opencv-python xatlas pycocotools seaborn wandb
 
-5. Install NeMo:
+3. (Optional) Install :code:`VoGE` (see `github.com/Angtian/VoGE <https://github.com/Angtian/VoGE>`_):
 
 .. code::
 
-   pip install -e .
+   pip install git+https://github.com/Angtian/VoGE.git
+
 
 Environment (from `yml`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -103,14 +104,44 @@ Train and evaluate a neural mesh model (:code:`NeMo`) on PASCAL3D+ for 3D pose e
 
    CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
        --cate car \
-       --config config/pose_estimation_3d_nemo.yaml \
+       --config config/omni_nemo_pose_3d.yaml \
        --save_dir exp/pose_estimation_3d_nemo_car
 
    CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
        --cate car \
-       --config config/pose_estimation_3d_nemo.yaml \
+       --config config/omni_nemo_pose_3d.yaml \
        --save_dir exp/pose_estimation_3d_nemo_car \
        --checkpoint exp/pose_estimation_3d_nemo_car/ckpts/model_800.pth
+
+NeMo with VoGE:
+
+.. code::
+
+   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
+       --cate car \
+       --config config/omni_voge_pose_3d.yaml \
+       --save_dir exp/pose_estimation_3d_voge_car
+
+   CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
+       --cate car \
+       --config config/omni_voge_pose_3d.yaml \
+       --save_dir exp/pose_estimation_3d_voge_car \
+       --checkpoint exp/pose_estimation_3d_voge_car/ckpts/model_800.pth
+
+NeMo on PASCAL3D+ without scaling during data pre-processing:
+
+.. code::
+
+   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/train.py \
+       --cate car \
+       --config config/omni_nemo_pose_3d_ori.yaml \
+       --save_dir exp/pose_estimation_3d_ori_car
+
+   CUDA_VISIBLE_DEVICES=0 python3 scripts/inference.py \
+       --cate car \
+       --config config/omni_nemo_pose_3d_ori.yaml \
+       --save_dir exp/pose_estimation_3d_ori_car \
+       --checkpoint exp/pose_estimation_3d_ori_car/ckpts/model_800.pth
 
 Train and evaluate a regression-based model (:code:`ResNet50-General`) on PASCAL3D+ for 3D pose estimation:
 
@@ -127,48 +158,70 @@ Train and evaluate a regression-based model (:code:`ResNet50-General`) on PASCAL
        --save_dir exp/pose_estimation_3d_resnet50_general \
        --checkpoint exp/pose_estimation_3d_resnet50_general/ckpts/model_90.pth
 
+Pre-trained Models
+-------------
+
+Pre-trained Models for 3D pose estimation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+The pre-trained model for NeMo model:
+
+https://drive.google.com/file/d/14fByOZs_Zzd-97Ulk2BKJhVNFKAnFWvg/view?usp=sharing
+
++---------+-------+-------+------+--------+------+------+-------+-------+-------+------+-------+-------+-------+
+| 3D pose | plane | bike  | boat | bottle | bus  | car  | chair | table | mbike | sofa | train | tv    | Mean  |
++=========+=======+=======+======+========+======+======+=======+=======+=======+======+=======+=======+=======+
+| Pi/6    | 86.9  | 80.3  | 77.4 | 90.0   | 95.3 | 98.9 | 89.1  | 80.2  | 86.6  | 95.8 | 64.4  | 82.0  | 87.4  |
+| Pi/18   | 55.3  | 30.9  | 50.2 | 56.9   | 91.5 | 96.5 | 56.7  | 63.1  | 33.2  | 65.9 | 55.3  | 48.6  | 65.5  |
+| Med     | 8.94  | 15.51 | 9.95 | 8.24   | 2.66 | 2.71 | 8.68  | 6.96  | 13.34 | 7.18 | 7.32  | 10.61 | 7.42  |
++---------+-------+-------+------+--------+------+------+-------+-------+-------+------+-------+-------+-------+
+
+
+The pre-trained model for NeMo-VoGE model:
+
+https://drive.google.com/file/d/1kogFdjVbOIuSlKx1NQ1c1XEjbvJEQWJg/view?usp=sharing
+
++---------+-------+-------+------+--------+------+------+-------+-------+-------+------+-------+------+-------+
+| 3D pose | plane | bike  | boat | bottle | bus  | car  | chair | table | mbike | sofa | train | tv   | Mean  |
++=========+=======+=======+======+========+======+======+=======+=======+=======+======+=======+======+=======+
+| Pi/6    | 87.8  | 82.9  | 75.4 | 88.2   | 97.4 | 99.0 | 90.7  | 83.6  | 87.4  | 94.4 | 91.3  | 80.5 | 89.5  |
+| Pi/18   | 62.3  | 36.7  | 51.0 | 55.2   | 94.5 | 96.4 | 54.9  | 69.7  | 39.1  | 65.4 | 83.3  | 54.4 | 69.5  |
+| Med     | 7.57  | 14.02 | 9.7  | 9.1    | 2.38 | 2.89 | 8.96  | 5.7   | 12.3  | 7.77 | 3.84  | 8.80 | 6.82  |
++---------+-------+-------+------+--------+------+------+-------+-------+-------+------+-------+------+-------+
+
+
+The pre-trained model for NeMo model without scaling:
+
+https://drive.google.com/file/d/1ybVTDx6DvV_H01SUZkKqWQjKu-BfweGJ/view?usp=sharing
+
++---------+-------+-------+-------+--------+------+------+-------+-------+-------+------+-------+-------+-------+
+| 3D pose | plane | bike  | boat  | bottle | bus  | car  | chair | table | mbike | sofa | train | tv    | Mean  |
++=========+=======+=======+=======+========+======+======+=======+=======+=======+======+=======+=======+=======+
+| Pi/6    | 83.0  | 75.7  | 68.3  | 84.5   | 96.2 | 98.8 | 85.8  | 80.4  | 78.1  | 94.6 | 79.2  | 85.8  | 86.0  |
+| Pi/18   | 48.0  | 24.7  | 34.0  | 44.3   | 90.0 | 95.4 | 44.6  | 58.5  | 26.6  | 58.8 | 64.0  | 45.6  | 60.2  |
+| Med     | 10.62 | 18.54 | 14.97 | 11.67  | 3.00 | 3.12 | 11.01 | 8.07  | 15.22 | 8.31 | 6.65  | 11.25 | 8.99  |
++---------+-------+-------+-------+--------+------+------+-------+-------+-------+------+-------+-------+-------+
+
+
+The pre-trained model for NeMo-VoGE model without scaling:
+
+https://drive.google.com/file/d/10ggpneADVWClXWx42yQeJ_unFt53oQ1I/view?usp=sharing
+
++---------+-------+-------+-------+--------+------+------+-------+-------+-------+------+-------+-------+-------+
+| 3D pose | plane | bike  | boat  | bottle | bus  | car  | chair | table | mbike | sofa | train | tv    | Mean  |
++=========+=======+=======+=======+========+======+======+=======+=======+=======+======+=======+=======+=======+
+| Pi/6    | 83.1  | 80.2  | 68.1  | 83.9   | 98.1 | 98.3 | 89.0  | 83.0  | 81.8  | 94.1 | 90.5  | 83.7  | 87.4  |
+| Pi/18   | 51.9  | 29.9  | 36.3  | 44.6   | 94.2 | 93.2 | 50.1  | 65.0  | 32.8  | 61.4 | 76.1  | 46.4  | 62.9  |
+| Med     | 9.56  | 16.33 | 14.97 | 11.07  | 2.92 | 3.75 | 9.97  | 6.70  | 14.06 | 8.03 | 5.45  | 10.70 | 8.51  |
++---------+-------+-------+-------+--------+------+------+-------+-------+-------+------+-------+-------+-------+
+
+
 Documentation
 -------------
 
 See `documentation <https://wufeim.github.io/NeMo/documentation.html>`_.
 
-Roadmap
--------
-
-Models
-^^^^^^
-
-- [x] NeMo (Shipped: *Dec 08 2022*)
-- [x] NeMo-6D (Shipped: *Dec 09 2022*)
-- [x] ResNet50-General (Shipped: *Dec 09 2022*)
-- [ ] NeMo-Cls
-- [ ] Domain adaptation (from synthetic to real)
-- [ ] StarMap
-- [ ] PASCAL3D-Specific
-- [ ] Faster R-CNN
-- [ ] Mask R-CNN
-- [ ] Transformers
-- [ ] VoGe Renderer
-
-Datasets
-^^^^^^^^
-
-- [x] PASCAL3D+ (Shipped: *Dec 06 2022*)
-- [x] Occluded PASCAL3D+ (Shipped: *Dec 06 2022*)
-- [x] 6D training data (Shipped: *Dec 07 2022*)
-- [ ] OOD-CV
-- [ ] SyntheticPASCAL3D+
-- [ ] ObjectNet3D
-
-Misc
-^^^^
-
-- [x] Rewrite training and evaluate entry point (Shipped: *Dec 11 2022*)
-- [x] Project page (Shipped: *Dec 11 2022*)
-- [ ] Configuration hierarchy
-- [ ] Visualization tools
-- [ ] Inference demo
-- [ ] Save predictions for reuse
 
 Citation
 --------
