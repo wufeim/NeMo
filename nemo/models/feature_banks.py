@@ -193,11 +193,10 @@ class NearestMemoryManager(nn.Module):
 
 
     # x: feature: [128, 128], y: indexes [128] -- a batch of data's index directly from the dataloader.
-    def forward(self, x, y, visible, img_label):
+    def forward(self, x, y, visible, img_label=None):
         n_pos = self.num_pos  # 1024 
         n_neg = self.num_noise  # 5
         
-
         if (
             self.max_lru == -1
             and n_neg > 0
