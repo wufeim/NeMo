@@ -4,7 +4,7 @@ model: config/models/nemo_runtime.yaml
 task: 3d_pose_estimation
 
 training:
-    batch_size: 12
+    batch_size: 48
     workers: 0
     total_epochs: 400
     log_interval: 1
