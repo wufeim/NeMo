@@ -8,6 +8,7 @@ from .data_preparation import prepare_pascal3d_sample, prepare_pascal3d_sample_d
 from .distributed_utils import is_main_process
 from .dnnlib import call_func_by_name
 from .dnnlib import construct_class_by_name
+from .dnnlib import get_obj_by_name
 from .dnnlib import EasyDict
 from .evaluate import pose_error, iou
 from .features import normalize_features
