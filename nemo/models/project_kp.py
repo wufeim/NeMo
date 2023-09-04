@@ -27,7 +27,6 @@ def to_tensor(val):
 
 
 def func_single(meshes, **kwargs):
-    
     return meshes, meshes.verts_padded()
 
 
@@ -47,9 +46,10 @@ def func_multi_select(meshes, indexs, transforms, **kwargs):
     all_faces = []
 
     for transform_, index_ in zip(transforms, indexs):
-        verts_ = [transform_[i].transform_points(meshes._verts_list[i]) for i in index_]
+        n_obj = len(transform_)
+        verts_ = [transform_[i].transform_points(meshes._verts_list[index_[i]]) for i in range(n_obj)]
         idx_shift = torch.cumsum(torch.Tensor([0] + [t.shape[0] for t in verts_][:-1]), dim=0).to(meshes.device)
-        faces_ = [transform_[i].transform_points(meshes._faces_list[i]) + idx_shift[i] for i in index_]
+        faces_ = [meshes._faces_list[index_[i]] + idx_shift[i] for i in range(n_obj)]
 
         all_verts.append(torch.cat(verts_, dim=0))
         all_faces.append(torch.cat(faces_, dim=0))
@@ -117,10 +117,13 @@ class PackedRaster():
             return self.meshes.verts_padded()
 
     def __call__(self, azim, elev, dist, theta, **kwargs):
-        R, T = look_at_view_transform(dist=dist, azim=azim, elev=elev, degrees=self.use_degree, device=self.cameras.device)
-        R = torch.bmm(R, rotation_theta(theta, device_=self.cameras.device))
+        if 'R' in kwargs.keys() and 'T' in kwargs.keys():
+            R = kwargs.get('R')
+            T = kwargs.get('T')
+        else:
+            R, T = look_at_view_transform(dist=dist, azim=azim, elev=elev, degrees=self.use_degree, device=self.cameras.device)
+            R = torch.bmm(R, rotation_theta(theta, device_=self.cameras.device))
         
-
         if self.mesh_mode == 'single' and self.raster_type == 'near':
             this_cameras = self.cameras.clone()
             this_cameras.R = R
@@ -173,7 +176,7 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
 
     # Calculate the camera location
     cam_loc = -torch.matmul(torch.inverse(R), T[..., None])[:, :, 0]
-
+    
     # (B, K, 2)
     project_verts = camera.transform_points(verts_)[..., 0:2].flip(-1)
     # Don't know why, hack. Checked by visualization
@@ -193,7 +196,7 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     true_dist_per_vert = (cam_loc[:, None] - verts_).pow(2).sum(-1).pow(.5)
     face_dist = torch.gather(true_dist_per_vert[:, None].expand(-1, mesh_.faces_padded().shape[1], -1), dim=2, index=mesh_.faces_padded().expand(true_dist_per_vert.shape[0], -1, -1).clamp(min=0))
     
-    if func_of_mesh is func_reselect:
+    if func_of_mesh is not func_single:
         face_dist = torch.cat([face_dist[i, :mesh_.num_faces_per_mesh()[i]] for i in range(R.shape[0])], dim=0)
 
     # (B, 1, H, W)
@@ -205,6 +208,10 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     sampled_dist_per_vert = torch.nn.functional.grid_sample(depth_, grid.flip(-1), align_corners=False, mode='nearest')[:, 0, 0, :]
 
     vis_mask = torch.abs(sampled_dist_per_vert - true_dist_per_vert) < dist_thr
+    if func_of_mesh is not func_single:
+        with torch.no_grad()
+            for i in range(vis_mask.shape[0]):
+                vis_mask[i, mesh_.num_verts_per_mesh()[i]:] = False
     
     # import numpy as np
     # import BboxTools as bbt
