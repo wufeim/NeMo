@@ -20,7 +20,7 @@ def to_tensor(val):
     if isinstance(val, torch.Tensor):
         return val[None] if len(val.shape) == 2 else val
     elif isinstance(val, list):
-        return [(t if isinstance(val, torch.Tensor) else torch.from_numpy(t)) for t in val]
+        return [(t if torch.is_tensor(t) else torch.from_numpy(t)) for t in val]
     else:
         get = torch.from_numpy(val)
         return get[None] if len(get.shape) == 2 else get
