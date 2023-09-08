@@ -6,7 +6,7 @@ task: 3d_pose_estimation
 training:
     batch_size: 48
     workers: 0
-    total_epochs: 400
+    total_epochs: 800
     log_interval: 1
     ckpt_interval: 200
     visualize_training_data: false
