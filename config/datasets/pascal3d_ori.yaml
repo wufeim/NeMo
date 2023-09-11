@@ -40,6 +40,7 @@ image_sizes:
     train: [480, 480]
     tvmonitor: [480, 480]
 
+occ_level: 0
 enable_cache: true
 subtypes: None
 weighted: true

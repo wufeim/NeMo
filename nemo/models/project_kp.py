@@ -4,6 +4,7 @@ from nemo.utils import rotation_theta
 from pytorch3d.structures import Meshes
 from pytorch3d.ops.interp_face_attrs import interpolate_face_attributes
 
+
 # if True:
 try:
     from VoGE.Renderer import GaussianRenderSettings, GaussianRenderer
@@ -16,18 +17,18 @@ try:
 except:
     enable_voge = False
 
+
 def to_tensor(val):
     if isinstance(val, torch.Tensor):
         return val[None] if len(val.shape) == 2 else val
-    elif isinstance(val, list):
-        return [(t if isinstance(val, torch.Tensor) else torch.from_numpy(t)) for t in val]
+    elif isinstance(val, list) or isinstance(val, tuple):
+        return [None if t is None else (t if torch.is_tensor(t) else torch.from_numpy(t)) for t in val]
     else:
         get = torch.from_numpy(val)
         return get[None] if len(get.shape) == 2 else get
 
 
 def func_single(meshes, **kwargs):
-    
     return meshes, meshes.verts_padded()
 
 
@@ -47,15 +48,17 @@ def func_multi_select(meshes, indexs, transforms, **kwargs):
     all_faces = []
 
     for transform_, index_ in zip(transforms, indexs):
-        verts_ = [transform_[i].transform_points(meshes._verts_list[i]) for i in index_]
+        n_obj = len(transform_)
+        verts_ = [transform_[i].transform_points(meshes._verts_list[index_[i]]) for i in range(n_obj)]
         idx_shift = torch.cumsum(torch.Tensor([0] + [t.shape[0] for t in verts_][:-1]), dim=0).to(meshes.device)
-        faces_ = [transform_[i].transform_points(meshes._faces_list[i]) + idx_shift[i] for i in index_]
+        faces_ = [meshes._faces_list[index_[i]] + idx_shift[i] for i in range(n_obj)]
 
         all_verts.append(torch.cat(verts_, dim=0))
         all_faces.append(torch.cat(faces_, dim=0))
 
     meshes_out = Meshes(verts=all_verts, faces=all_faces).to(meshes.device)
     return meshes_out, meshes_out.verts_padded()
+
 
 class PackedRaster():
     def __init__(self, raster_configs, object_mesh, mesh_mode='single', device='cpu', ):
@@ -98,13 +101,16 @@ class PackedRaster():
             else:
                 self.meshes = Meshes(verts=to_tensor(object_mesh[0]), faces=to_tensor(object_mesh[1])).to(device)
 
-
         if raster_type == 'voge' or raster_type == 'vogew':
+            assert len(object_mesh[0]) == 1
             assert enable_voge, 'VoGE must be install to utilize voge-nemo.'
+            object_mesh = (object_mesh[0][0], object_mesh[1][0])
             self.kp_vis_thr = raster_configs.get('kp_vis_thr', 0.25)
             render_setting = GaussianRenderSettings(image_size=feature_size, max_point_per_bin=-1, max_assign=raster_configs.get('max_assign', 20))
             self.render = GaussianRenderer(render_settings=render_setting, cameras=cameras).to(device)
-            self.meshes = GaussianMesh(*naive_vertices_converter(*object_mesh, percentage=0.5)).to(device)
+            self.meshes = GaussianMesh(*to_tensor(naive_vertices_converter(*object_mesh, percentage=0.5))).to(device)
+            self.meshes.verts = self.meshes.verts.type(torch.float32)
+            self.meshes.sigmas = self.meshes.sigmas.type(torch.float32)
 
     def step(self):
         if self.raster_type == 'voge' or self.raster_type == 'vogew':
@@ -117,10 +123,13 @@ class PackedRaster():
             return self.meshes.verts_padded()
 
     def __call__(self, azim, elev, dist, theta, **kwargs):
-        R, T = look_at_view_transform(dist=dist, azim=azim, elev=elev, degrees=self.use_degree, device=self.cameras.device)
-        R = torch.bmm(R, rotation_theta(theta, device_=self.cameras.device))
+        if 'R' in kwargs.keys() and 'T' in kwargs.keys():
+            R = kwargs.get('R')
+            T = kwargs.get('T')
+        else:
+            R, T = look_at_view_transform(dist=dist, azim=azim, elev=elev, degrees=self.use_degree, device=self.cameras.device)
+            R = torch.bmm(R, rotation_theta(theta, device_=self.cameras.device))
         
-
         if self.mesh_mode == 'single' and self.raster_type == 'near':
             this_cameras = self.cameras.clone()
             this_cameras.R = R
@@ -173,7 +182,7 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
 
     # Calculate the camera location
     cam_loc = -torch.matmul(torch.inverse(R), T[..., None])[:, :, 0]
-
+    
     # (B, K, 2)
     project_verts = camera.transform_points(verts_)[..., 0:2].flip(-1)
     # Don't know why, hack. Checked by visualization
@@ -193,7 +202,7 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     true_dist_per_vert = (cam_loc[:, None] - verts_).pow(2).sum(-1).pow(.5)
     face_dist = torch.gather(true_dist_per_vert[:, None].expand(-1, mesh_.faces_padded().shape[1], -1), dim=2, index=mesh_.faces_padded().expand(true_dist_per_vert.shape[0], -1, -1).clamp(min=0))
     
-    if func_of_mesh is func_reselect:
+    if func_of_mesh is not func_single:
         face_dist = torch.cat([face_dist[i, :mesh_.num_faces_per_mesh()[i]] for i in range(R.shape[0])], dim=0)
 
     # (B, 1, H, W)
@@ -205,6 +214,11 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     sampled_dist_per_vert = torch.nn.functional.grid_sample(depth_, grid.flip(-1), align_corners=False, mode='nearest')[:, 0, 0, :]
 
     vis_mask = torch.abs(sampled_dist_per_vert - true_dist_per_vert) < dist_thr
+    
+    if func_of_mesh is not func_single:
+        with torch.no_grad():
+            for i in range(vis_mask.shape[0]):
+                vis_mask[i, mesh_.num_verts_per_mesh()[i]:] = False
     
     # import numpy as np
     # import BboxTools as bbt

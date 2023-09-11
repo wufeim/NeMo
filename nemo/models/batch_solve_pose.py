@@ -21,10 +21,7 @@ except:
     enable_voge=False
 
 if not enable_voge:
-    try:
-        from VoGE.Utils import Batchifier
-    except:
-        from TorchBatchifier import Batchifier
+    from TorchBatchifier import Batchifier
 
 
 def loss_fg_only(obj_s, clu_s=None, reduce_method=lambda x: torch.mean(x)):
@@ -354,12 +351,9 @@ def solve_pose(
         )
         this_principal = principals[i]
         with torch.no_grad():
-            
             if bbox is not None:
-                # print(bbox)
-                # torch.set_printoptions(profile="full")
-                object_height = (int(bbox[i][0].item() // 8), int(bbox[i][1].item() // 8))
-                object_width = (int(bbox[i][2].item() // 8), int(bbox[i][3].item() // 8))
+                object_height = (int(bbox[i][0].item() / kwargs.get('down_sample_rate', 8) + .5), int(bbox[i][1].item() / kwargs.get('down_sample_rate', 8) + .5))
+                object_width = (int(bbox[i][2].item() / kwargs.get('down_sample_rate', 8) + .5), int(bbox[i][3].item() / kwargs.get('down_sample_rate', 8) + .5))
                 this_loss = object_loss_fg_bg(object_score[i], clutter_score[i], object_height, object_width)
             else:
                 this_loss = loss_fg_bg(object_score[i, None], clutter_score[i, None], )

@@ -1,0 +1,30 @@
+name: superclever
+class_name: nemo.datasets.super_clever.SuperClever
+root_path: data/SuperClever
+mesh_path: data/SuperClever/objs_downsample/
+
+pad_texture: false
+single_mesh: true
+training_only: true
+evaluation_only: false
+augment_by_dist: false
+prepare_mode: first
+center_and_resize: true
+skip_3d_anno: false
+
+occ_level: 0
+occ_levels:
+    train: [0]
+    val: [0]
+
+image_sizes: [960, 1280]
+
+occ_level: 0
+enable_cache: true
+subtypes: None
+weighted: true
+remove_no_bg: 8
+transforms:
+    - class_name: nemo.datasets.pascal3d.ToTensor
+
+sampler: None

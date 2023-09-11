@@ -49,6 +49,7 @@ ext_modules = [
     extension('CuNeMo._C', [
         os.path.join(extensions_dir, 'ext.cpp'),
         os.path.join(extensions_dir, 'gather_features', 'gather_features.cu'),
+        os.path.join(extensions_dir, 'mask_weight', 'mask_weight.cu'),
     ],
     include_dirs=[extensions_dir],
     define_macros=define_macros,
@@ -64,7 +65,7 @@ setup(
     author='Angtian Wang',
     packages=find_packages(),
     license='MIT License',
-    version='0.1',
+    version='0.3',
     install_requires=INSTALL_REQUIREMENTS,
     ext_modules=ext_modules,
     cmdclass={'build_ext': BuildExtension}

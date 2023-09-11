@@ -10,7 +10,6 @@ import torch
 import torch.nn as nn
 # import wandb
 
-from nemo.models.feature_banks import mask_remove_near
 from nemo.utils import construct_class_by_name
 from nemo.utils import load_config
 from nemo.utils import load_off
@@ -64,7 +63,7 @@ def train(cfg):
     
     model = construct_class_by_name(
         **cfg.model, cfg=cfg, cate=cfg.args.cate, mode='train',
-        image_sizes=cfg.dataset.image_sizes)
+        image_sizes=cfg.dataset.image_sizes, mesh_loader=train_dataset.mesh_loader if hasattr(train_dataset, 'mesh_loader') else None)
 
     logging.info("Start training")
     for epo in range(cfg.training.total_epochs):

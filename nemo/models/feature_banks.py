@@ -5,6 +5,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from nemo.utils.pascal3d_utils import CATEGORIES
 
+try:
+    from CuNeMo import get_mask
+    from CuNeMo import gather_features
+    enable_cunemo = True
+except:
+    enable_cunemo = False
+
 
 def one_hot(y, max_size=None):
     if not max_size:
@@ -16,6 +23,7 @@ def one_hot(y, max_size=None):
     y_onehot.scatter_(1, y.type(torch.long), 1)
     return y_onehot
 
+
 def fun_label_onehot(img_label, count_label):
     ret = torch.zeros(img_label.shape[0], len(CATEGORIES)).to(img_label.device)
     ret = ret.scatter_(1, img_label.unsqueeze(1), 1.0).to(img_label.device)
@@ -26,118 +34,202 @@ def fun_label_onehot(img_label, count_label):
         ret[:, i] /= count
     return ret
 
-def to_mask(y, max_size):
-    y_onehot = torch.zeros((len(y), max_size), dtype=torch.float32, device=y[0].device)
-    for i in range(len(y)):
-        y_onehot[i].scatter_(0, y[i].type(torch.long), 1)
-    return y_onehot
 
 
-
-def remove_near_vertices_dist(vert_dist, thr, num_neg, kappas={'pos':0, 'near':1e5, 'clutter':0}, **kwargs):
-    dtype_template = vert_dist
-    with torch.no_grad():
-        if num_neg == 0:
-            return (vert_dist <= thr).type_as(dtype_template) * kappas['near'] - torch.eye(vert_dist.shape[1]).type_as(dtype_template).unsqueeze(dim=0) * (kappas['near'] - kappas['pos'])
+class MaskCreater():
+    def __init__(self, dist_thr, kappas, n_noise, verts_ori=None, device='cpu'):
+        """
+        dist_thr: float, distance threshold for hard negetive mining in CoKe
+        kappas: dict, {'pos', 'near', 'clutter', 'class'} weight for each term in NeMo loss, applied via exp(f * theta - kappa_x), kappa_class = 1e5 when on classification loss
+        n_noise: int
+        verts_ori: list of tensor, [(K, 3), ] verts locations
+        """
+        if verts_ori is not None:
+            with torch.no_grad():
+                vert_max_num = max([v.shape[0] for v in verts_ori])
+                self.vert_sum_num = sum([v.shape[0] for v in verts_ori])
+                
+                out_vert_dist = []
+                assert isinstance(verts_ori, list)
+                for vv in verts_ori:
+                    get_vert_ = torch.cat([vv, torch.zeros((vert_max_num - vv.shape[0], 3), dtype=vv.dtype, device=vv.device)], dim=0)
+                    vert_dist = (get_vert_[:, None] - get_vert_[None]).pow(2).sum(-1).pow(.5)
+                    out_vert_dist.append(vert_dist)
+                vert_dists = torch.stack(out_vert_dist)
+            self.verts_dist_weight = (vert_dists <= dist_thr).to(device).type(torch.float32) * kappas['near'] + torch.eye(vert_max_num).to(device).type(torch.float32).unsqueeze(dim=0) * (kappas['pos'] - kappas['near'])
+            self.mesh_n_list = [v.shape[0] for v in verts_ori]
         else:
-            tem = (vert_dist <= thr).type_as(dtype_template) * kappas['near'] - torch.eye(vert_dist.shape[1]).type_as(dtype_template).unsqueeze(dim=0) * (kappas['near'] - kappas['pos'])
-            return torch.cat([tem, torch.ones(vert_dist.shape[0: 2] + (num_neg, )).type_as(dtype_template) * kappas['clutter']], dim=2)
+            self.verts_dist_weight = None
 
+        self.kappas = {'pos':0, 'near':1e5, 'clutter': 5, 'class':1e5}
+        self.kappas.update(kappas)
+        self.dist_thr = dist_thr
+        self.n_noise = n_noise
+        self.device = device
 
-def mask_remove_near(keypoints, thr, img_label=None, zeros=None, classification=False, dtype_template=None, num_neg=0, neg_weight=1, kappas={'pos':0, 'near':1e5, 'clutter':0}):
-    if dtype_template is None:
-        dtype_template = torch.ones(1, dtype=torch.float32)
-    # keypoints -> [n, k, 2]
-    with torch.no_grad():
-        # distance -> [n, k, k]
-        distance = torch.sum(
-            (torch.unsqueeze(keypoints, dim=1) - torch.unsqueeze(keypoints, dim=2)).pow(
-                2
-            ),
-            dim=3,
-        ).pow(0.5)
-        if num_neg == 0:
-            return (distance <= thr.unsqueeze(1).unsqueeze(2)).type_as(dtype_template) * kappas['near'] - torch.eye(keypoints.shape[1]).type_as(dtype_template).unsqueeze(dim=0) * (kappas['near'] - kappas['pos'])
+    def __call__(self, sample_indexs=None, K_padded=None, vis_mask=None, kps=None, dtype_template=None):
+        """
+        Usable combinations: 
+        One object per image:
+            [kps, (optional) vis_mask] => Ori NeMo
+            [dtype_template, (optional) vis_mask] => VoGE NeMo, OmniNeMo
+        Multiple objects per image:
+            [sample_indexs, dtype_template, (optional) vis_mask]
+            [sample_indexs, K_padded, (optional) vis_mask]
+
+        sample_indexs: (B, ) or (B, M), class label of each instance in each image
+        K_padded: int, number of max verts in each branch -> dtype_template.shape[1]
+        vis_mask: (B, K_padded)
+        kps: (B, K_padded, 2) project keypoints locations
+        dtype_template: (B, K_padded) or (B, K_padded, N_verts_total + N_noise) reference for tensor shape
+
+        return:
+        weight_mask: (S, N_verts_total + N_noise), the weight matrix
+        vert_index: (S, ), type=long, index label for computing coke loss
+        """
+        if kps is not None:
+            # assert self.verts_dist_weight is None, 'Ethier keypoint location of verts is specificed!'
+            # (b, k, k)
+            vert_dists = (kps[:, None] - kps[:, :, None]).pow(2).sum(-1).pow(.5)
+            verts_dist_weight = (vert_dists <= self.dist_thr).to(self.device).type(torch.float32) * self.kappas['near'] + torch.eye(kps.shape[1]).to(self.device).type(torch.float32).unsqueeze(dim=0) * (self.kappas['pos'] - self.kappas['near'])
         else:
-            tem = (distance <= thr.unsqueeze(1).unsqueeze(2)).type_as(
-                dtype_template
-            ) * kappas['near'] - torch.eye(keypoints.shape[1]).type_as(dtype_template).unsqueeze(dim=0) * (kappas['near'] - kappas['pos'])
+            verts_dist_weight = self.verts_dist_weight
             
-            if classification:
-                for i in range(tem.shape[0]):
-                    zeros[
-                        i,
-                        :,
-                        img_label[i] * tem.shape[1] : (img_label[i] + 1) * tem.shape[1],
-                    ] = (
-                        tem[i]
-                    )
-
-                tem = zeros
+        if sample_indexs is None:
+            # CoKe loss only -> for pose
+            if verts_dist_weight.dim() == 2:
+                verts_dist_weight = verts_dist_weight[None]
+            get = torch.cat([verts_dist_weight, torch.ones(verts_dist_weight.shape[0: 2] + (self.n_noise, ), device=verts_dist_weight.device) * self.kappas['clutter']], dim=2)
+            if get.shape[0] == 1:
+                assert dtype_template is not None
+                b_ = dtype_template.shape[0]
+                get = get.expand(b_, -1, -1).contiguous()
+            else:
+                b_ = get.shape[0]
             
-            return torch.cat(
-                [
-                    tem,
-                    torch.ones(keypoints.shape[0:2] + (num_neg,)).type_as(
-                        dtype_template
-                    ) * kappas['clutter'],
-                ],
-                dim=2,
+            vert_index = torch.arange(verts_dist_weight.shape[1], device=self.device)[None].long().expand(b_, -1).contiguous()
+
+            if vis_mask is not None:
+                return get[vis_mask], vert_index[vis_mask]
+            else:
+                return get.view(-1), vert_index.view(-1)
+        else:
+            if not enable_cunemo:
+                raise Exception("Multi class in same batch requires CuNeMo (located at ./cu_layers)")
+            assert kps is None, 'Current only support verts based distance constrin'
+            # Classification & CoKe -> for multiple class of instance in same batch
+            
+            if sample_indexs.dim() == 1:
+                sample_indexs = sample_indexs[:, None]
+            # assert K_padded is not None
+            if K_padded is None:
+                assert dtype_template is not None
+                K_padded = dtype_template.shape[1]
+            total_size = self.vert_sum_num + self.n_noise
+
+            return get_mask(verts_dist_weight, sample_indexs, self.mesh_n_list, total_size, K_padded, self.kappas['class'], self.kappas['clutter'], mask_sel=vis_mask, n_noise=self.n_noise)
+
+
+class FeatureBankNeMo(nn.Module):
+    # New and clear implementation of NeMo feature banks
+    def __init__(
+        self,
+        input_size,  # n channels
+        num_pos,  # n vertex total
+        num_noise=-1,  # n clutter per image
+        max_groups=-1,  # n image contains clutter saved
+        momentum=0.5,
+        **kwargs
+    ):
+        super().__init__()
+
+        stdv = 1.0 / math.sqrt(input_size / 3)
+
+        self.memory_pos = torch.rand(num_pos, input_size).mul_(2 * stdv).add_(-stdv)
+        self.memory_neg = torch.rand(num_noise * max_groups if max_groups > 0 else 0, input_size).mul_(2 * stdv).add_(-stdv)
+
+        self.memory_pos.requires_grad = False
+        self.memory_neg.requires_grad = False
+
+        self.num_noise = num_noise
+
+        self.lru = 0
+        if max_groups > 0:
+            self.max_lru = max_groups
+        else:
+            self.max_lru = -1
+
+        self.kwargs = kwargs
+        self.momentum = momentum
+    
+    def forward(self, x, visible, x_to_bank=None, object_labels=None, vis_mask=None):
+        """
+        x (B, K, C): extracted vertex features
+        visible (B, K): vertex visibility, should handle the padded vertex -> padded vertex vis = False
+        x_to_bank (B, K, C) or (M, C): can be directly pass to banks, otherwise x_to_bank is reduce_function(x)
+        object_labels (B, N_obj_per_img): indicates object class in each image, -1 for padding
+        vis_mask: (B, K_padded)
+
+        return:
+        similarity (S, N_verts_total + N_noise)
+        noise_similarity (B, N_noise, N_verts_total)
+        """
+        if self.num_noise == 0:
+            t_ = x
+            noise_similarity = torch.zeros(1)
+        else:   
+            t_ = x[:, 0:(x.shape[1] - self.num_noise), :]
+            noise_similarity = torch.matmul(
+                x[:, -self.num_noise:, :], torch.transpose(self.memory_pos, 0, 1)
             )
-
-class NearestMemorySelective(nn.Module):
-    def forward(self, x, y, visible, n_pos, n_neg, lru, memory, params, eps=1e-8):
-        group_size = int(params[0].item())
-        T = params[1].item()
-        Z = params[2].item()
-        momentum = params[3].item()
-
-        similarity = torch.sum(
-            torch.unsqueeze(x[0:n_pos], 1) * torch.unsqueeze(memory, 0), dim=2
-        )
-
-        n_class = n_pos // group_size
-        y_onehot = one_hot(y, n_class)
-
-        if not group_size == 1:
-            y_onehot = (
-                y_onehot.unsqueeze(2)
-                .expand(-1, -1, group_size)
-                .contiguous()
-                .view(y.shape[0], -1)
-            )
-
-        y_idx = torch.argmax(similarity[:, 0:n_pos] + y_onehot * 2, dim=1).type(
-            torch.long
-        )
-        visible = to_mask(visible, n_pos)
+        
+        similarity = torch.matmul(t_.view(-1) if vis_mask is None else t_[vis_mask], torch.transpose(self.memory, 0, 1))
 
         with torch.no_grad():
-            # update memory keypoints
-            # [n, k]
-            idx_onehot = one_hot(y_idx, n_pos)
+            if x_to_bank is None:
+                x_to_bank = x[:, 0:(x.shape[1] - self.num_noise), :]
+            b_ = x_to_bank.shape[0]
 
-            # [k, d]
-            get = torch.mm(torch.t(idx_onehot), x[0:n_pos, :])
-            counts = torch.t(torch.sum(idx_onehot, dim=0, keepdim=True))
-            valid_mask = (counts > 0.1).type(counts.dtype) * visible.view(-1, 1)
-            get /= counts + eps
+            # Expect x_to_bank to be (n_pos, c), if not, do reduce
+            if x_to_bank.dim() == 3:
+                # Average reducation
+                if object_labels is None:
+                    x_to_bank = torch.mean(x_to_bank * visible.type(x.dtype)[..., None], dim=0)
+                else:
+                    x_to_bank, x_vis_count = gather_features(x_to_bank, weights=visible.type(torch.float32), sample_indexs=object_labels.type(torch.int32), mesh_n_list=self.kwargs.get('mesh_n_list'))
+                    x_to_bank = x_to_bank / b_
 
-            memory[0:n_pos, :].copy_(
-                F.normalize(
-                    memory[0:n_pos, :] * (valid_mask * momentum + 1 - valid_mask)
-                    + get * (1 - momentum) * valid_mask,
-                    dim=1,
-                    p=2,
-                )
-            )
+            # Assume x is aligned to banked features
+            self.memory_pos = F.normalize(self.memory_pos * self.momentum + x_to_bank * (1 - self.momentum), dim=1, p=2, )
 
-            # Update trash bin
-            memory[n_pos + lru * n_neg : n_pos + (lru + 1) * n_neg, :].copy_(
-                x[n_pos::, :]
-            )
+            if self.num_noise > 0:
+                if x.shape[0] * self.num_noise > self.memory_neg.shape[0]:
+                    self.memory_neg = x[:, -self.num_noise:, :].contiguous().view(-1, x.shape[2])[0:self.memory_neg.shape[0]]
+                else:
+                    self.memory_neg = torch.cat(
+                        [
+                            self.memory_neg[0:self.lru * self.num_noise, :],
+                            x[:, -self.num_noise:, :].contiguous().view(-1, x.shape[2]),
+                            self.memory_neg[(self.lru + x.shape[0]) * self.num_noise ::,:],
+                        ],
+                        dim=0,
+                    )[:self.max_lru * self.num_noise]
 
-        return similarity, y_idx
+            self.lru += x.shape[0]
+            self.lru = self.lru % self.max_lru
+
+        # out.shape: [d, n_neg + n_pos]
+        return similarity, noise_similarity
+
+    def cuda(self, device=None):
+        super().cuda(device)
+        self.memory_pos = self.memory_pos.cuda(device)
+        self.memory_neg = self.memory_neg.cuda(device)
+        return self
+
+    @property
+    def memory(self):
+        return torch.cat((self.memory_pos, self.memory_neg), dim=0)
 
 
 class NearestMemoryManager(nn.Module):
@@ -152,7 +244,8 @@ class NearestMemoryManager(nn.Module):
         Z=None,
         max_groups=-1,
         num_noise=-1,
-        classification=False
+        classification=False,
+        **kwargs
     ):
         super().__init__()
         self.nLem = output_size
@@ -190,7 +283,6 @@ class NearestMemoryManager(nn.Module):
                 self.num_pos, dtype=torch.long, device=self.memory.device
             ) 
         self.accumulate_num.requires_grad = False
-
 
     # x: feature: [128, 128], y: indexes [128] -- a batch of data's index directly from the dataloader.
     def forward(self, x, y, visible, img_label=None):
@@ -233,27 +325,7 @@ class NearestMemoryManager(nn.Module):
             # [n, k, k]
             y_onehot = one_hot(y, n_class).view(x.shape[0], -1, n_class)
 
-            # useless branch
-            if not group_size == 1:
-                # [n, k, k * g]
-                y_onehot = (
-                    y_onehot.unsqueeze(2)
-                    .expand(-1, -1, group_size)
-                    .contiguous()
-                    .view(x.shape[0], -1, n_pos)
-                )
-                visible = (
-                    visible.unsqueeze(2)
-                    .expand(-1, -1, group_size)
-                    .contiguous()
-                    .view(x.shape[0], -1, n_pos)
-                )
-
-                y_idx = torch.argmax(
-                    similarity[:, :, 0:n_pos] + y_onehot * 2, dim=2
-                ).type(torch.long)
-            else:
-                y_idx = y.type(torch.long)
+            y_idx = y.type(torch.long)
 
             # update memory keypoints
             # [n, k, d]
@@ -269,11 +341,7 @@ class NearestMemoryManager(nn.Module):
                     get[i] = self.memory[i * self.single_cate_pos : (i + 1) * self.single_cate_pos]
                 get = get.view(-1, x.shape[-1])
             else:
-                get = torch.bmm(
-                    torch.transpose(y_onehot, 1, 2),
-                    x[:, 0:n_pos, :] * visible.type(x.dtype).view(*visible.shape, 1),
-                )
-                # [k, d]
+                get = x[:, 0:n_pos, :] * visible.type(x.dtype).view(*visible.shape, 1)
                 get = torch.mean(get, dim=0)  # / torch.sum(visible, dim=0).view(-1, 1)
 
             if self.classification:

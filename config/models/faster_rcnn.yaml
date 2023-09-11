@@ -7,7 +7,6 @@ num_classes: 2
 transforms: []
 
 training:
-    classification: false
     optimizer:
         class_name: torch.optim.SGD
         lr: 0.02
