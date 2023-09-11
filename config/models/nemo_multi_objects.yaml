@@ -10,7 +10,7 @@ transforms:
     - class_name: nemo.datasets.pascal3d.Normalize
 
 training:
-    separate_bank: false
+    separate_bank: true
     weight_noise: 0.005
     loss_reg_weight: 0.1
     train_accumulate: 10
@@ -18,6 +18,9 @@ training:
     proj_mode: runtime_kp
     remove_near_mode: vert
     distance_thr: 0.1
+    func_of_mesh: nemo.models.project_kp.func_multi_select
+
+    weight_class: 10
 
     optimizer:
         class_name: torch.optim.Adam
@@ -30,7 +33,7 @@ training:
             - 400
             - 600
         gamma: 0.2
-    
+
     kp_projecter:
         type: near
         down_rate: 1
@@ -66,7 +69,7 @@ backbone:
     n_noise_points: 5
 
 memory_bank:
-    class_name: nemo.models.feature_banks.NearestMemoryManager
+    class_name: nemo.models.feature_banks.FeatureBankNeMo
     input_size: 128
     K: 1
-    momentum: 0.9
+    momentum: 0.96

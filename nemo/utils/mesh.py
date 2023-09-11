@@ -159,9 +159,11 @@ def forward_interpolate_voge(R, T, meshes, verts_memory, rasterizer):
     return out_map
 
 
-# For meshes in PASCAL3D+
 def pre_process_mesh_pascal(verts, *args):
-    verts = torch.cat((verts[:, 0:1], verts[:, 2:3], -verts[:, 1:2]), dim=1)
+    if torch.is_tensor(verts):
+        verts = torch.cat((verts[:, 0:1], verts[:, 2:3], -verts[:, 1:2]), dim=1)
+    else:
+        verts = np.concatenate((verts[:, 0:1], verts[:, 2:3], -verts[:, 1:2]), axis=1)
     if len(args) == 0:
         return verts
     else:

@@ -1,14 +1,14 @@
-dataset: config/datasets/pascal3d_ori.yaml
-model: config/models/nemo_runtime.yaml
+dataset: config/datasets/super_clever.yaml
+model: config/models/nemo_multi_objects.yaml
 
 task: 3d_pose_estimation
 
 training:
-    batch_size: 48
+    batch_size: 3
     workers: 0
-    total_epochs: 800
+    total_epochs: 2000
     log_interval: 1
-    ckpt_interval: 200
+    ckpt_interval: 500
     visualize_training_data: false
     remove_no_bg: 8
 

@@ -177,11 +177,9 @@ class Pascal3DPlus(Dataset):
             try:
                 box_obj = bbt.from_numpy(annotation_file["box_obj"])
                 obj_mask = np.zeros(box_obj.boundary, dtype=np.float32)
-                # print(box_obj)
                 box_obj.assign(obj_mask, 1)
                 # print('Not in exception')
             except:
-            # except KeyboardInterrupt:
                 obj_mask = np.zeros((img.size[1], img.size[0]))
 
             label = 0 if len(self.category) == 0 else self.category.index(cate)
@@ -198,18 +196,18 @@ class Pascal3DPlus(Dataset):
                 "azimuth": float(annotation_file["azimuth"]) + (0 if self.kwargs.get('add_noise_azimuth', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_azimuth', 0))),
                 "elevation": float(annotation_file["elevation"]) + (0 if self.kwargs.get('add_noise_elevation', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_elevation', 0))),
                 "theta": float(annotation_file["theta"]) + (0 if self.kwargs.get('add_noise_theta', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_theta', 0))),
-                "azimuth": float(annotation_file["azimuth"]) + (0 if self.kwargs.get('add_noise_azimuth', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_azimuth', 0))),
-                "elevation": float(annotation_file["elevation"]) + (0 if self.kwargs.get('add_noise_elevation', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_elevation', 0))),
-                "theta": float(annotation_file["theta"]) + (0 if self.kwargs.get('add_noise_theta', 0) == 0 else np.random.normal(0, self.kwargs.get('add_noise_theta', 0))),
                 "distance": 5,
                 "bbox": annotation_file["box_obj"],
                 "obj_mask": obj_mask,
                 "img": img,
                 "original_img": np.array(img),
-                "label": label,
                 "index": index,
             }
-            
+
+            if len(self.category) > 1:
+                # Classification
+                sample.update({"label": label,})
+                
             if 'px' in annotation_file.keys():
                 sample['principal'] = np.array([annotation_file['px'], annotation_file['py']])
                 sample["distance"] = float(annotation_file["distance"])
@@ -284,30 +282,7 @@ class RandomResize:
 
         sample['img'] = Image.fromarray(get_image)
         sample['distance'] = sample['distance'] / resize_rate
-        sample['principal'] = (sample['principal'] - np.array(ori_shape[::-1]) / 2) * resize_rate + np.array(ori_shape[::-1]) / 2 
-
-        box_obj = sample['bbox']
-        for i in range(len(box_obj) - 2):
-            if i < 2:
-                box_obj[i] = int((box_obj[i] - np.array(ori_shape[::-1])[0] / 2) * resize_rate + np.array(ori_shape[::-1])[0] / 2) 
-            else:
-                box_obj[i] = int((box_obj[i] - np.array(ori_shape[::-1])[1] / 2) * resize_rate + np.array(ori_shape[::-1])[1] / 2) 
-
-            if box_obj[i] > box_obj[-1]:
-                box_obj[i] = box_obj[-1]
-
-            if box_obj[i] < 0:
-                box_obj[i] = 0
-    
-        sample['bbox'] = box_obj
-        try:
-            box_obj = bbt.from_numpy(box_obj)
-            obj_mask = np.zeros(box_obj.boundary, dtype=np.float32)
-            box_obj.assign(obj_mask, 1)
-            sample['obj_mask'] = obj_mask
-        except:
-            return sample
-
+        sample['principal'] = (sample['principal'] - np.array(ori_shape[::-1]) / 2) * resize_rate + np.array(ori_shape[::-1]) / 2
         return sample
 
 
