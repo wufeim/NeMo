@@ -21,6 +21,7 @@ except:
 def to_tensor(val):
     if isinstance(val, torch.Tensor):
         return val[None] if len(val.shape) == 2 else val
+      
     elif isinstance(val, list) or isinstance(val, tuple):
         return [None if t is None else (t if torch.is_tensor(t) else torch.from_numpy(t)) for t in val]
     else:
@@ -214,6 +215,10 @@ def get_one_standard(raster, camera, mesh, func_of_mesh=func_single, restrict_to
     sampled_dist_per_vert = torch.nn.functional.grid_sample(depth_, grid.flip(-1), align_corners=False, mode='nearest')[:, 0, 0, :]
 
     vis_mask = torch.abs(sampled_dist_per_vert - true_dist_per_vert) < dist_thr
+    if func_of_mesh is not func_single:
+        with torch.no_grad()
+            for i in range(vis_mask.shape[0]):
+                vis_mask[i, mesh_.num_verts_per_mesh()[i]:] = False
     
     if func_of_mesh is not func_single:
         with torch.no_grad():

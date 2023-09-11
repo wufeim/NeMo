@@ -84,10 +84,9 @@ class SuperClever(Dataset):
             C = torch.Tensor(anno['camera']['location'])[None] @ R__ 
             R = look_at_rotation(C, )
             T = -torch.bmm(R.transpose(1, 2), C[:, :, None])[:, :, 0]
-            try:
-                sub_cates_indexs = [self.mesh_sub_cates.index(anno['objects'][i]['shape']) for i in range(len(anno['objects']))] + [-1 for _ in range(self.max_objects_in_scenes - len(anno['objects']))]
-            except:
-                print(name_img)
+
+            sub_cates_indexs = [self.mesh_sub_cates.index(anno['objects'][i]['shape']) for i in range(len(anno['objects']))] + [-1 for _ in range(self.max_objects_in_scenes - len(anno['objects']))]
+
 
             label = np.array(sub_cates_indexs)
 
@@ -143,6 +142,7 @@ if __name__ == '__main__':
     home_path = '/home/angtian/data/OmniNeMoSuperClever/data/SuperClever/'
 
     mesh_path = home_path + 'objs_downsample'
+    
     mesh_sub_cates = [t.split('.')[0] for t in os.listdir(mesh_path)]
     mesh_loader = meshloader.MeshLoader(category=mesh_sub_cates, base_mesh_path=os.path.join(mesh_path, '{:s}.obj'), loader=meshloader.superclever_loader, pad=False, to_torch=True)
     
@@ -212,7 +212,9 @@ if __name__ == '__main__':
         rate_ = 0.8
         img_out = img[..., :3] * img[..., 3:] * rate_ * 255 + img_[..., :3] * (1 - img[..., 3:] * rate_)
         # Image.fromarray(img_out.astype(np.uint8)).save('debug/super_clever_cc2.png')
+
         Image.fromarray((img[..., 3] * 255).astype(np.uint8)).save(home_path + 'masks/superCLEVR_new_%06d.png' % image_idx)
+
 
 
 
