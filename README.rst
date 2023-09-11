@@ -11,28 +11,6 @@ NeMo
 
 This is the repo for the series works on `Neural Mesh Models <https://arxiv.org/pdf/2101.12378.pdf>`_. In this repo, we implement `3D object pose estimation <https://arxiv.org/pdf/2101.12378.pdf>`_, `3D object pose estimation via VoGE renderer <https://arxiv.org/pdf/2205.15401.pdf>`_, `6D pose object estimation <https://arxiv.org/pdf/2209.05624.pdf>`_, `object classification <https://arxiv.org/pdf/2305.14668.pdf>`_, and `cross domain training <https://arxiv.org/pdf/2306.00118.pdf>`_. The original implementation of NeMo is `here <https://github.com/Angtian/NeMo>`_.
 
-Release Note on Sept 10 (by Angtian)
---------
-Introduce a major refactor, main for feature banks and "mask remove" functions. In the new implementation, the feature banks support multiple objects in each training image with different class labels. 
-Note the implementation of multiple classes is CUDA-based, which requires installation of the specific CUDA layer. (Running 3D pose only should be fine without these CUDA layers.) To install:
-
-.. code::
-
-   cd cu_layers
-   python setup.py install
-
-After the installation, you will find a lib named "CuNeMo" in your Python libs.
-
-
-Previous configs should be compatible except for changes in config/model
-
-.. code::
-
-   memory_bank:
-       class_name: nemo.models.feature_banks.FeatureBankNeMo
-
-The previous implementation of classification NeMo is removed, we will add support for classification NeMo very soon. Contact me directly if you find any bugs or compatibility issues.
-
 Features
 --------
 
