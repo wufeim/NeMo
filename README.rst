@@ -18,8 +18,8 @@ Note the implementation of multiple classes is CUDA-based, which requires instal
 
 .. code::
 
-cd cu_layers
-python setup.py install
+   cd cu_layers
+   python setup.py install
 
 After the installation, you will find a lib named "CuNeMo" in your Python libs.
 
@@ -28,8 +28,8 @@ Previous configs should be compatible except for changes in config/model
 
 .. code::
 
-memory_bank:
-    class_name: nemo.models.feature_banks.FeatureBankNeMo
+   memory_bank:
+       class_name: nemo.models.feature_banks.FeatureBankNeMo
 
 The previous implementation of classification NeMo is removed, we will add support for classification NeMo very soon. Contact me directly if you find any bugs or compatibility issues.
 
