@@ -170,35 +170,47 @@ def solve_pose(
         )
     else:
         extrema_2d = [[0, 0]]
-    extrema = []
+    larger_thr_ext_2d = []
+    max_e = None
+    max_v = 0
     for e in extrema_2d:
+        if corr2d_max[e[0], e[1]] >= cfg.inference.pre_rendering_thr:
+            larger_thr_ext_2d.append(e)
+        if corr2d_max[e[0], e[1]] > max_v:
+            max_v = corr2d_max[e[0], e[1]]
+            max_e = e
+    
+    extrema = []
+    if len(larger_thr_ext_2d) > 0:
+        iter_extrema_2d = larger_thr_ext_2d
+    else:
+        iter_extrema_2d = [max_e]
+
+    for e in iter_extrema_2d:
         c = corr2d[:, e[0], e[1]].reshape(
             poses.shape[0], poses.shape[1], poses.shape[2], poses.shape[3]
         )
         e_azim, e_elev, e_the, e_dist = np.unravel_index(
             np.argmax(c, axis=None), c.shape
         )
-        if (
-            not cfg.inference.search_translation
-            or corr2d_max[e[0], e[1]] >= cfg.inference.pre_rendering_thr
-        ):
-            p = poses[e_azim, e_elev, e_the, e_dist]
-            extrema.append(
-                {
-                    "azimuth": p[0],
-                    "elevation": p[1],
-                    "theta": p[2],
-                    "distance": p[3],
-                    "px": px_samples[e[0]],
-                    "py": py_samples[e[1]],
-                    "principal": [px_samples[e[0]], py_samples[e[1]]],
-                }
-            )
+        p = poses[e_azim, e_elev, e_the, e_dist]
+        extrema.append(
+            {
+                "azimuth": p[0],
+                "elevation": p[1],
+                "theta": p[2],
+                "distance": p[3],
+                "px": px_samples[e[0]],
+                "py": py_samples[e[1]],
+                "principal": [px_samples[e[0]], py_samples[e[1]]],
+            }
+        )
     if debug:
         pred["pre_rendering_poses"] = extrema
         pred["corr2d"] = corr2d_max
 
     if len(extrema) == 0:
+        raise NotImplementedError
         pred["final"] = []
         return pred
 
@@ -317,7 +329,13 @@ def solve_pose(
     if len(refined) == 1:
         pred["final"] = refined
     else:
-        raise NotImplementedError
+        min_score = 1000
+        ret = None
+        for result in refined:
+            if result['score'] < min_score:
+                ret = result
+                min_score = result['score']
+        pred['final'] = ret
 
     if debug:
         object_score_maps = np.array(object_score_list)
